@@ -41,7 +41,7 @@ export function HomeWidgets() {
   const activity = useQuery({ queryKey: ["activity-home"], queryFn: () => api<Activity[]>("/activity?limit=12") });
 
   return (
-    <div className="mt-6 grid gap-4 lg:grid-cols-2">
+    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 [&>*]:min-w-0">
       <Card>
         <CardHeader>
           <CardTitle>Approvals waiting for you</CardTitle>
