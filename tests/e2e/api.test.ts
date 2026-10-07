@@ -398,6 +398,19 @@ describe.runIf(process.env.E2E === "1")("API end-to-end", () => {
     expect((await portal("/portal/profile", "PATCH", { name: "Changed" })).status).toBe(409);
   });
 
+  it("platform admin endpoints need a platform admin session; feedback is open with an email", async () => {
+    expect((await api("", "GET", "/admin/organisations")).status).toBe(401);
+    expect((await api("owner", "GET", "/admin/organisations")).status).toBe(401); // API keys never reach the console
+    const report = { kind: "bug", title: "E2E: button does nothing", description: "Clicking save on the e2e page does nothing." };
+    const noEmail = await api("", "POST", "/feedback", report, { "x-forwarded-for": "203.0.113.77" });
+    expect(noEmail.status).toBe(422);
+    const ok = await api("", "POST", "/feedback", { ...report, email: "visitor@example.test" }, { "x-forwarded-for": "203.0.113.77" });
+    expect(ok.status).toBe(201);
+    const { rows } = await pool.query("select kind, email, user_id from feedback where id = $1", [ok.json.data.id]);
+    expect(rows[0]).toEqual({ kind: "bug", email: "visitor@example.test", user_id: null });
+    await pool.query("delete from feedback where id = $1", [ok.json.data.id]);
+  });
+
   it("OpenAPI spec is generated from the route table", async () => {
     const spec = (await fetch(`${BASE}/openapi.json`).then((r) => r.json())) as { openapi: string; paths: Record<string, unknown> };
     expect(spec.openapi).toBe("3.1.0");

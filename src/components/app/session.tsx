@@ -4,8 +4,12 @@ import { grantsAllow, type Grant, type Scope, type ScopeMode } from "@/lib/auth/
 
 export interface SessionData {
   user: { id: string; email: string | null; full_name: string | null; avatar_path: string | null };
-  org: { id: string; name: string; slug: string; timezone: string; currency: string; locale: string; fy_start_month: number; logo_path: string | null; settings: Record<string, unknown> };
-  orgs: { id: string; name: string; slug: string }[];
+  org: {
+    id: string; name: string; slug: string; timezone: string; currency: string; locale: string; fy_start_month: number; logo_path: string | null;
+    settings: Record<string, unknown>; kind: "organisation" | "personal"; licensed_modules: string[];
+  };
+  orgs: { id: string; name: string; slug: string; kind?: string }[];
+  isPlatformAdmin: boolean;
   modules: string[];
   permissions: Grant[];
   campuses: { id: string; name: string; code: string }[];
@@ -16,6 +20,11 @@ const Ctx = createContext<SessionData | null>(null);
 
 export function SessionProvider({ value, children }: { value: SessionData; children: React.ReactNode }) {
   return <Ctx value={value}>{children}</Ctx>;
+}
+
+/** Session when rendered inside the app; null elsewhere (e.g. the platform console). */
+export function useOptionalSession() {
+  return useContext(Ctx);
 }
 
 export function useSession() {

@@ -594,6 +594,8 @@ describe("platform", () => {
       expect(await s.val("select accept_invitation('tok123')")).toBe(o.orgId);
       expect(await s.val("select app.has_permission($1, 'issue:update', $2, $3)", [invitee, o.orgId, o.campusA])).toBe(true);
       expect(await s.val("select app.has_permission($1, 'issue:update', $2, $3)", [invitee, o.orgId, o.campusB])).toBe(false);
+      expect(await s.val("select accept_invitation('tok123')")).toBe(o.orgId); // reopening the link is harmless
+      await s.as(stranger);
       expect(await s.error("select accept_invitation('tok123')")).toMatch(/invalid or has expired/);
     }));
 });

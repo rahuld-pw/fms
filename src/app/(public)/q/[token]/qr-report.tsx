@@ -8,7 +8,7 @@ import { Input, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Field } from "@/components/shared/fields";
 import { cn } from "@/lib/utils/cn";
-import { captchaEnabled, Turnstile } from "../../turnstile";
+import { captchaEnabled, Turnstile } from "@/components/shared/turnstile";
 
 interface QrInfo { kind: "location" | "asset"; id: string; name: string; path: string | null; campus: string; org_name: string; asset_tag?: string; facility_enabled: boolean; public_reporting: boolean; categories: { id: string; name: string }[] }
 type Result = { number: string; tracking_token: string };

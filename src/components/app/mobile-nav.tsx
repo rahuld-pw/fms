@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CheckSquare, Home, Inbox, QrCode } from "lucide-react";
+import { hasApprovals } from "@/lib/nav";
 import { cn } from "@/lib/utils/cn";
 import { useCan, useSession } from "./session";
 
@@ -13,7 +14,7 @@ export function MobileNav() {
   const items = [
     { href: "/", label: "Home", icon: Home, show: true },
     { href: "/scan", label: "Scan", icon: QrCode, show: modules.includes("facility") },
-    { href: "/approvals", label: "Approvals", icon: Inbox, show: true },
+    { href: "/approvals", label: "Approvals", icon: Inbox, show: hasApprovals(modules) },
     { href: "/tasks", label: "Tasks", icon: CheckSquare, show: modules.includes("tasks") && can("task:read") },
   ].filter((i) => i.show);
   return (

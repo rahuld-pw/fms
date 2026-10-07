@@ -1,6 +1,7 @@
 import { PageHeader, Stat } from "@/components/shared/page-header";
 import { requireSession } from "@/lib/auth/session-data";
 import { unwrap } from "@/lib/api/errors";
+import { hasApprovals } from "@/lib/nav";
 import { HomeWidgets } from "./home-widgets";
 
 export const metadata = { title: "Home" };
@@ -15,7 +16,9 @@ export default async function HomePage() {
     <div className="mx-auto max-w-6xl">
       <PageHeader title={`${greeting}, ${data.user.full_name?.split(" ")[0] ?? "there"}`} description={ctx.org.name} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Waiting for my approval" value={stats.my_approvals ?? 0} href="/approvals" tone={stats.my_approvals ? "warning" : "default"} />
+        {hasApprovals(data.modules) && (
+          <Stat label="Waiting for my approval" value={stats.my_approvals ?? 0} href="/approvals" tone={stats.my_approvals ? "warning" : "default"} />
+        )}
         {m.has("tasks") && (
           <Stat
             label="My open tasks"

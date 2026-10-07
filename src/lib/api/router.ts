@@ -41,7 +41,8 @@ interface RouteMeta {
 
 export interface AuthedRoute<B = unknown> extends RouteMeta {
   public?: false;
-  module?: Module;
+  /** Required module; a list means any one of them (shared master data). */
+  module?: Module | Module[];
   permission?: string;
   body?: z.ZodType<B>;
   handler: (args: AuthedArgs<B>) => Promise<unknown>;

@@ -16,6 +16,7 @@ import { CampusSelect, DepartmentSelect, Field, UserPicker } from "@/components/
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface Role { id: string; key: string; name: string; is_system: boolean }
@@ -64,6 +65,7 @@ export function UsersSettings() {
                   <span className="hidden max-w-[45%] flex-wrap justify-end gap-1 sm:flex">
                     {(m.roles ?? []).map((a: any) => <Badge key={a.id}>{a.role?.name}{scopeLabel(a) && ` · ${scopeLabel(a)}`}</Badge>)}
                   </span>
+                  {m.module_access && <Badge tone="blue" className="hidden sm:inline-flex">{m.module_access.map((x: string) => MODULE_LABELS[x] ?? x).join(", ")} only</Badge>}
                   {m.status !== "active" && <StatusBadge status={m.status} />}
                 </button>
               </li>
@@ -217,6 +219,7 @@ function MemberSheet({ member, roles, manage, onClose, scopeLabel }: { member: a
                 </div>
               )}
             </section>
+            {manage && <ModuleAccess key={`ma-${member.id}`} member={member} onSave={(v) => patch({ module_access: v })} busy={busy} />}
             {manage && (
               <section className="flex flex-col gap-3">
                 <h3 className="text-sm font-semibold">Profile in this organisation</h3>
@@ -233,6 +236,43 @@ function MemberSheet({ member, roles, manage, onClose, scopeLabel }: { member: a
         </SheetContent>
       )}
     </Dialog>
+  );
+}
+
+const MODULE_LABELS: Record<string, string> = { facility: "Facilities", expense: "Expenses", tasks: "Tasks", po: "Purchasing" };
+
+/** Per-member module access: all modules the organisation has on, or a chosen subset. */
+function ModuleAccess({ member, onSave, busy }: { member: any; onSave: (v: string[] | null) => void; busy: boolean }) {
+  const { data: orgModules } = useQuery({ queryKey: ["org", "modules"], queryFn: () => api<{ module: string; enabled: boolean }[]>("/org/modules") });
+  const available = (orgModules ?? []).filter((m) => m.enabled).map((m) => m.module).sort();
+  const [mode, setMode] = useState<"all" | "some">(member.module_access ? "some" : "all");
+  const [chosen, setChosen] = useState<string[]>(member.module_access ?? available);
+  const toggle = (m: string) => setChosen(chosen.includes(m) ? chosen.filter((x) => x !== m) : [...chosen, m]);
+  const dirty = mode === "all" ? member.module_access !== null : JSON.stringify([...chosen].sort()) !== JSON.stringify([...(member.module_access ?? [])].sort());
+  return (
+    <section className="flex flex-col gap-2">
+      <h3 className="text-sm font-semibold">Module access</h3>
+      <p className="text-xs text-muted-foreground">Roles decide what someone can do; module access decides which modules they see at all.</p>
+      <NativeSelect value={mode} onChange={(e) => setMode(e.target.value as "all" | "some")} aria-label="Module access">
+        <option value="all">All modules the organisation uses</option>
+        <option value="some">Only selected modules</option>
+      </NativeSelect>
+      {mode === "some" && (
+        <div className="flex flex-wrap gap-2">
+          {available.map((m) => (
+            <button key={m} type="button" aria-pressed={chosen.includes(m)} onClick={() => toggle(m)}
+              className={cn("rounded-full border px-3 py-1.5 text-sm", chosen.includes(m) ? "border-primary bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted")}>
+              {MODULE_LABELS[m] ?? m}
+            </button>
+          ))}
+        </div>
+      )}
+      {dirty && (
+        <Button size="sm" className="self-start" disabled={busy || (mode === "some" && chosen.length === 0)} onClick={() => onSave(mode === "all" ? null : chosen)}>
+          Save module access
+        </Button>
+      )}
+    </section>
   );
 }
 

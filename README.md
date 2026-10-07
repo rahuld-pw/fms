@@ -12,6 +12,7 @@ Built with Next.js (App Router, TypeScript strict), Tailwind CSS, shadcn-style c
 - [Architecture](#architecture)
 - [Getting started](#getting-started)
 - [Sign-in methods](#sign-in-methods)
+- [Organisations and access](#organisations-and-access)
 - [Demo data](#demo-data)
 - [Configuration](#configuration)
 - [API](#api)
@@ -94,9 +95,9 @@ npm run db:types                    # regenerate src/lib/supabase/database.types
 npm run dev                         # http://localhost:3000
 ```
 
-Sign in as `owner@greenfield.test` / `Password123!` (see [Demo data](#demo-data)). Emails sent locally (invitations, sign-in codes) appear in the local mail viewer at http://127.0.0.1:54324.
+Sign in as `owner@greenfield.test` (or `admin@platform.test` for the platform console) / `Password123!` (see [Demo data](#demo-data)). Emails sent locally (invitations, sign-in codes) appear in the local mail viewer at http://127.0.0.1:54324.
 
-To start from an empty database instead, skip the seed (`supabase db reset --no-seed`), open `/signup`, create an account and then an organisation at `/onboarding`. Bootstrapping creates the default roles, modules, SLAs, fiscal year and approval policies.
+To start from an empty database instead, skip the seed (`supabase db reset --no-seed`), allow-list a platform admin (see [Organisations and access](#organisations-and-access)), sign up with that email and create the first organisation in the console at `/admin`.
 
 **Docker-free alternative.** If Docker isn't available, `scripts/e2e-stack.sh` runs migrations and seed on a plain Postgres 16, starts PostgREST and a small gateway (`tests/e2e/gateway.mjs`) that emulates the parts of Supabase Auth and Storage the app uses. See [Testing](#testing).
 
@@ -110,6 +111,33 @@ Two methods are offered on `/login`:
 For codes, Supabase's "Magic Link" email template must include `{{ .Token }}`. Locally this is configured in `supabase/config.toml` (`[auth.email.template.magic_link]` → `supabase/templates/magic_link.html`). On a hosted project, paste the same template under **Authentication → Email Templates → Magic Link** and set **OTP expiry** (Authentication → Providers → Email).
 
 Users who signed up with a code can set a password later in **Settings → My profile**. Invitations (`/invite/[token]`) and sign-up use email + password.
+
+## Organisations and access
+
+There are three kinds of account:
+
+| Who | How they get in | What they can do |
+|---|---|---|
+| **Platform super admin** | Their email is in `platform_admin_emails`; the account becomes a platform admin when it signs up | Console at `/admin`: create organisations, choose the licensed modules (Facility, Expense, Tasks, Purchasing), invite each organisation's first admin, suspend/reactivate, triage feedback, add other platform admins. They cannot read an organisation's data unless they are also a member of it. |
+| **Organisation admin and staff** | Invitation link (`/invite/[token]`) | The organisation admin (owner role) manages campuses and departments (the sub-units of the organisation), users, roles, approval policies and which licensed modules are switched on. Users can be limited to some modules (**Settings → Users → Module access**). |
+| **Public sign-up** | `/signup` | Gets a personal workspace with **Tasks only**. If they are later invited to a school, they can switch between the two from the account menu. |
+
+Rules enforced in the database (not only the UI):
+
+- An organisation can only enable modules in its licence; `org_modules` rejects anything else and only platform admins change `licensed_modules`.
+- Purchasing depends on Expenses (budgets and approvals): turning Purchasing on turns Expenses on; turning Expenses off turns Purchasing off. Vendors and locations are available to Facility or Purchasing users.
+- Every permission check (`app.has_permission`, RLS) also checks the organisation is active, the module is enabled and the user's module access allows it.
+- Suspended organisations disappear for their members; data is kept.
+
+**First super admin on a hosted project.** Run once in the SQL editor, then sign up at `/signup` with that email:
+
+```sql
+insert into public.platform_admin_emails (email) values ('you@example.com');
+```
+
+More platform admins can be added from **/admin → Platform admins**.
+
+**Feedback.** Anyone can report a bug or suggest a feature: signed-in users from the account menu, visitors at `/feedback` (email + captcha, rate-limited). Reports are triaged at **/admin → Feedback**.
 
 ## Demo data
 
@@ -125,6 +153,7 @@ Users who signed up with a code can set a password later in **Settings → My pr
 | hod.science@greenfield.test | Department head (Science) |
 | teacher@greenfield.test | Staff |
 | auditor@greenfield.test | Auditor (read-only) |
+| admin@platform.test | Platform super admin (console at `/admin`, no organisation) |
 
 Try the public QR form at `/q/demo-room-101`. A read-only demo API key is seeded for local development only: `co_live_demo0000000_seedkey-only-for-local-dev-000000`.
 

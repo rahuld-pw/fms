@@ -18,7 +18,7 @@ export default async function InvitePage(props: PageProps<"/invite/[token]">) {
           <Link href={`/login?next=/invite/${token}`}>Sign in to accept</Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href={`/signup`}>Create an account</Link>
+          <Link href={`/signup?next=/invite/${token}`}>Create an account</Link>
         </Button>
       </div>
     );

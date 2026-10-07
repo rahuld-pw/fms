@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Building2, Check, LogOut, Menu, Monitor, Moon, Plus, Search, Sun, User } from "lucide-react";
+import { Bug, Building2, Check, Lightbulb, LogOut, Menu, Monitor, Moon, Plus, Search, ShieldCheck, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api, errorMessage } from "@/lib/client/api";
+import { FeedbackDialog, type FeedbackKind } from "@/components/shared/feedback-form";
 import { CommandPalette } from "./command-palette";
 import { NotificationBell } from "./notifications";
 import { useCan, useSession } from "./session";
@@ -27,7 +28,8 @@ export function Topbar() {
   const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
   const qc = useQueryClient();
-  const { user, org, orgs, modules } = useSession();
+  const { user, org, orgs, modules, isPlatformAdmin } = useSession();
+  const [feedback, setFeedback] = useState<FeedbackKind | null>(null);
   const can = useCan();
   const { theme, setTheme } = useTheme();
 
@@ -115,6 +117,17 @@ export function Topbar() {
             <DropdownMenuItem onSelect={() => router.push("/settings/profile")}>
               <User /> Profile & notifications
             </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setFeedback("bug")}>
+              <Bug /> Report a bug
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setFeedback("feature")}>
+              <Lightbulb /> Suggest a feature
+            </DropdownMenuItem>
+            {isPlatformAdmin && (
+              <DropdownMenuItem onSelect={() => router.push("/admin")}>
+                <ShieldCheck /> Platform admin
+              </DropdownMenuItem>
+            )}
             {orgs.length > 1 && (
               <>
                 <DropdownMenuSeparator />
@@ -149,6 +162,7 @@ export function Topbar() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+      <FeedbackDialog open={!!feedback} onOpenChange={(o) => !o && setFeedback(null)} kind={feedback ?? "bug"} />
     </header>
   );
 }

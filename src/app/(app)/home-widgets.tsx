@@ -2,13 +2,14 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Circle } from "lucide-react";
-import { useModule } from "@/components/app/session";
+import { useModule, useSession } from "@/components/app/session";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime, DueDate, Money } from "@/components/shared/format";
 import { StatusBadge } from "@/components/shared/status";
 import { api, apiList } from "@/lib/client/api";
 import { humanize } from "@/lib/utils/format";
+import { hasApprovals } from "@/lib/nav";
 
 interface Approval { id: string; title: string; entity_type: string; entity_id: string; amount: number | null; submitted_at: string; requester: { full_name: string | null } | null }
 interface Task { id: string; title: string; due_date: string | null; status: string; project: { name: string } | null }
@@ -35,35 +36,38 @@ export function activityPhrase(action: string, entityType: string) {
 export function HomeWidgets() {
   const tasks = useModule("tasks");
   const facility = useModule("facility");
-  const approvals = useQuery({ queryKey: ["approvals-inbox"], queryFn: () => api<Approval[]>("/approvals/inbox") });
+  const showApprovals = hasApprovals(useSession().modules);
+  const approvals = useQuery({ queryKey: ["approvals-inbox"], queryFn: () => api<Approval[]>("/approvals/inbox"), enabled: showApprovals });
   const myTasks = useQuery({ queryKey: ["tasks-mine-home"], queryFn: () => apiList<Task>("/tasks/mine?limit=8&sort=due_date"), enabled: tasks });
   const issues = useQuery({ queryKey: ["issues-home"], queryFn: () => apiList<Issue>("/issues?limit=6&sort=-created_at"), enabled: facility });
   const activity = useQuery({ queryKey: ["activity-home"], queryFn: () => api<Activity[]>("/activity?limit=12") });
 
   return (
     <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 [&>*]:min-w-0">
-      <Card>
-        <CardHeader>
-          <CardTitle>Approvals waiting for you</CardTitle>
-          <Link href="/approvals" className="text-xs text-primary hover:underline">View all</Link>
-        </CardHeader>
-        <CardContent className="flex flex-col divide-y">
-          {approvals.isLoading && <Skeleton className="h-24" />}
-          {approvals.data?.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nothing to approve. 🎉</p>}
-          {approvals.data?.slice(0, 6).map((a) => (
-            <Link key={a.id} href={entityHref(a.entity_type, a.entity_id)} className="flex items-center gap-3 py-2.5 hover:bg-muted/40">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{a.title}</p>
-                <p className="text-xs text-muted-foreground">
-                  {humanize(a.entity_type)} · {a.requester?.full_name} · <DateTime value={a.submitted_at} relative />
-                </p>
-              </div>
-              {a.amount !== null && <Money value={a.amount} className="text-sm" />}
-              <ArrowRight className="size-4 text-muted-foreground" />
-            </Link>
-          ))}
-        </CardContent>
-      </Card>
+      {showApprovals && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Approvals waiting for you</CardTitle>
+            <Link href="/approvals" className="text-xs text-primary hover:underline">View all</Link>
+          </CardHeader>
+          <CardContent className="flex flex-col divide-y">
+            {approvals.isLoading && <Skeleton className="h-24" />}
+            {approvals.data?.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nothing to approve. 🎉</p>}
+            {approvals.data?.slice(0, 6).map((a) => (
+              <Link key={a.id} href={entityHref(a.entity_type, a.entity_id)} className="flex items-center gap-3 py-2.5 hover:bg-muted/40">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium">{a.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {humanize(a.entity_type)} · {a.requester?.full_name} · <DateTime value={a.submitted_at} relative />
+                  </p>
+                </div>
+                {a.amount !== null && <Money value={a.amount} className="text-sm" />}
+                <ArrowRight className="size-4 text-muted-foreground" />
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       {tasks && (
         <Card>

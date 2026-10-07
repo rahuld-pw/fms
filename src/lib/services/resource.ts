@@ -31,7 +31,7 @@ export interface ResourceSpec {
   /** Entity type used by polymorphic tables (comments, attachments, approvals). */
   entityType: string;
   table: TableName;
-  module?: Module;
+  module?: Module | Module[];
   /** Permission resource prefix, e.g. "issue" -> issue:read/create/update/delete. */
   permission: string;
   readPermission?: string;

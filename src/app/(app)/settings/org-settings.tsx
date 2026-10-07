@@ -2,7 +2,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClipboardList, ListChecks, ShoppingCart, Wallet } from "lucide-react";
+import { ClipboardList, ListChecks, Lock, ShoppingCart, Wallet } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import { toast } from "sonner";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
@@ -27,13 +28,19 @@ const MODULES = [
 export function OrgSettings() {
   const can = useCan();
   const manage = can("org:manage", {}, "strict");
+  const { org } = useSession();
+  const personal = org.kind === "personal";
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Organisation" description="Profile, regional settings, modules, campuses and departments." />
+      <PageHeader
+        title={personal ? "Workspace" : "Organisation"}
+        description={personal ? "Your personal task workspace. Invite collaborators from Users." : "Profile, regional settings, modules, campuses (branches) and departments."}
+      />
       {manage ? (
         <>
           <OrgForm />
           <ModulesCard />
+          {!personal && <>
           <CrudSection
             title="Campuses"
             endpoint="/campuses"
@@ -73,6 +80,7 @@ export function OrgSettings() {
             ]}
             toForm={(r) => ({ name: r.name, code: r.code, campus_id: r.campus_id, head_user_id: r.head_user_id })}
           />
+          </>}
         </>
       ) : (
         <Card><CardContent className="pt-4 text-sm text-muted-foreground">You don&apos;t have access to organisation settings. Use the menu to manage your profile.</CardContent></Card>
@@ -82,7 +90,7 @@ export function OrgSettings() {
 }
 
 function OrgForm() {
-  const { org } = useSession();
+  const { org, modules } = useSession();
   const router = useRouter();
   const { data } = useQuery({ queryKey: ["org"], queryFn: () => api<any>("/org") });
   const o = data ?? org;
@@ -131,12 +139,14 @@ function OrgForm() {
         <Field label="Academic year starts">
           <NativeSelect value={v.academic_year_start_month} onChange={(e) => set("academic_year_start_month", e.target.value)}>{MONTHS.map((m, i) => <option key={m} value={i + 1}>{m}</option>)}</NativeSelect>
         </Field>
-        <Field label="3-way match price tolerance (%)"><Input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={v.price_tol} onChange={(e) => set("price_tol", e.target.value)} /></Field>
-        <Field label="3-way match quantity tolerance (%)"><Input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={v.qty_tol} onChange={(e) => set("qty_tol", e.target.value)} /></Field>
-        <label className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
+        {modules.includes("po") && <>
+          <Field label="3-way match price tolerance (%)"><Input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={v.price_tol} onChange={(e) => set("price_tol", e.target.value)} /></Field>
+          <Field label="3-way match quantity tolerance (%)"><Input type="number" inputMode="decimal" min="0" max="25" step="0.5" value={v.qty_tol} onChange={(e) => set("qty_tol", e.target.value)} /></Field>
+        </>}
+        {modules.includes("facility") && <label className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
           <span>Public issue reporting via QR<span className="block text-xs text-muted-foreground">Anyone scanning a location QR can report without signing in</span></span>
           <Switch checked={v.public_issue_reporting} onCheckedChange={(c) => set("public_issue_reporting", c)} />
-        </label>
+        </label>}
         <label className="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
           <span>Require captcha on public forms<span className="block text-xs text-muted-foreground">Cloudflare Turnstile</span></span>
           <Switch checked={v.require_captcha} onCheckedChange={(c) => set("require_captcha", c)} />
@@ -149,6 +159,8 @@ function OrgForm() {
 
 function ModulesCard() {
   const qc = useQueryClient();
+  const { org } = useSession();
+  const licensed = new Set(org.licensed_modules);
   const router = useRouter();
   const { data } = useQuery({ queryKey: ["org", "modules"], queryFn: () => api<{ module: string; enabled: boolean }[]>("/org/modules") });
   const enabled = new Set((data ?? []).filter((m) => m.enabled).map((m) => m.module));
@@ -167,13 +179,21 @@ function ModulesCard() {
       <CardHeader><CardTitle>Modules</CardTitle></CardHeader>
       <CardContent className="grid gap-2 sm:grid-cols-2">
         {MODULES.map((m) => (
-          <label key={m.key} className="flex items-start gap-3 rounded-md border p-3">
+          <label key={m.key} className={cn("flex items-start gap-3 rounded-md border p-3", !licensed.has(m.key) && "bg-muted/40")}>
             <m.icon className="mt-0.5 size-4 text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">{m.label}<span className="block text-xs font-normal text-muted-foreground">{m.description}</span></span>
-            <Switch checked={enabled.has(m.key)} onCheckedChange={(c) => toggle(m.key, c)} aria-label={m.label} />
+            <span className="flex-1 text-sm font-medium">
+              {m.label}
+              <span className="block text-xs font-normal text-muted-foreground">{licensed.has(m.key) ? m.description : "Not included in your plan — contact the platform administrator"}</span>
+            </span>
+            {licensed.has(m.key)
+              ? <Switch checked={enabled.has(m.key)} onCheckedChange={(c) => toggle(m.key, c)} aria-label={m.label} />
+              : <Lock className="mt-0.5 size-4 text-muted-foreground" aria-label="Not licensed" />}
           </label>
         ))}
-        <p className="text-xs text-muted-foreground sm:col-span-2">Disabled modules are hidden from navigation and their API endpoints return 403. Data is kept.</p>
+        <p className="text-xs text-muted-foreground sm:col-span-2">
+          Disabled modules are hidden and their API endpoints return 403; data is kept. Purchasing uses Expenses for budgets and approvals, so turning Purchasing on also turns Expenses on.
+          Limit individual users to some modules on the Users page.
+        </p>
       </CardContent>
     </Card>
   );

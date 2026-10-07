@@ -97,7 +97,7 @@ export function LoginForm() {
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         New to Campus Ops?{" "}
-        <Link href="/signup" className="text-primary hover:underline">Create an organisation</Link>
+        <Link href="/signup" className="text-primary hover:underline">Create a free account</Link>
       </p>
     </form>
   );

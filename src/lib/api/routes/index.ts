@@ -6,6 +6,7 @@ import { expenseRoutes } from "./expense";
 import { taskRoutes } from "./tasks";
 import { poRoutes } from "./po";
 import { publicRoutes } from "./public";
+import { platformRoutes } from "./platform";
 import { buildOpenApi } from "@/lib/api/openapi";
 import { publicRoute } from "@/lib/api/router";
 
@@ -33,6 +34,7 @@ const docsRoutes: RouteDef[] = [
 export const allRoutes: RouteDef[] = [
   ...docsRoutes,
   ...publicRoutes,
+  ...platformRoutes,
   ...coreRoutes,
   ...facilityRoutes,
   ...expenseRoutes,

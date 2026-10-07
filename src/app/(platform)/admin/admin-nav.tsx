@@ -1,0 +1,28 @@
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Building2, MessageSquareWarning, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+
+const ITEMS = [
+  { href: "/admin", label: "Organisations", icon: Building2 },
+  { href: "/admin/feedback", label: "Feedback", icon: MessageSquareWarning },
+  { href: "/admin/admins", label: "Platform admins", icon: ShieldCheck },
+];
+
+export function AdminNav() {
+  const pathname = usePathname();
+  return (
+    <nav className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4" aria-label="Platform admin">
+      {ITEMS.map((i) => {
+        const active = i.href === "/admin" ? pathname === "/admin" : pathname.startsWith(i.href);
+        return (
+          <Link key={i.href} href={i.href} aria-current={active ? "page" : undefined}
+            className={cn("flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm", active ? "border-primary font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+            <i.icon className="size-4" /> {i.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

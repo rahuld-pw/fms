@@ -18,7 +18,7 @@ export async function getMe(ctx: RequestContext) {
     unwrap(
       await ctx.db
         .from("org_members")
-        .select("org_id, is_owner, title, organisation:organisations(id, name, slug, logo_path)")
+        .select("org_id, is_owner, title, organisation:organisations(id, name, slug, logo_path, kind)")
         .eq("user_id", ctx.userId)
         .eq("status", "active"),
     ),
@@ -68,6 +68,9 @@ export async function updateOrg(ctx: RequestContext, input: z.infer<typeof orgUp
 export async function setModule(ctx: RequestContext, module: Module, enabled: boolean, settings?: Record<string, unknown>) {
   await ctx.require("org:manage", {}, "strict");
   if (!MODULES.includes(module)) throw new ApiError("bad_request", "Unknown module");
+  if (enabled && !ctx.org.licensed_modules.includes(module)) {
+    throw new ApiError("forbidden", "This module is not included in your organisation's plan. Contact the platform administrator.");
+  }
   const row: { org_id: string; module: string; enabled: boolean; settings?: never } = { org_id: ctx.orgId, module, enabled };
   if (settings) row.settings = settings as never;
   unwrap(await ctx.db.from("org_modules").upsert(row));
@@ -81,7 +84,7 @@ export async function listMembers(ctx: RequestContext, q?: string) {
   let query = ctx.db
     .from("org_members")
     .select(
-      "id, user_id, status, is_owner, title, employee_code, campus_id, department_id, manager_id, joined_at, profile:profiles!org_members_user_id_fkey(id, email, full_name, phone, avatar_path)",
+      "id, user_id, status, is_owner, title, employee_code, campus_id, department_id, manager_id, module_access, joined_at, profile:profiles!org_members_user_id_fkey(id, email, full_name, phone, avatar_path)",
     )
     .eq("org_id", ctx.orgId)
     .order("joined_at");
@@ -106,6 +109,8 @@ export const memberUpdateSchema = z.object({
   campus_id: z.uuid().nullable().optional(),
   department_id: z.uuid().nullable().optional(),
   manager_id: z.uuid().nullable().optional(),
+  /** null = every module the organisation has enabled */
+  module_access: z.array(z.enum(MODULES)).nullable().optional(),
 });
 
 export async function updateMember(ctx: RequestContext, memberId: string, input: z.infer<typeof memberUpdateSchema>) {

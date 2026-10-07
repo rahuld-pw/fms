@@ -10,6 +10,7 @@
 --   hod.science@greenfield.test  Department Head (Science, Main)
 --   teacher@greenfield.test      Staff (reports to HOD Science)
 --   auditor@greenfield.test      Auditor (read-only)
+--   admin@platform.test          Platform super admin (no organisation)
 -- =============================================================================
 
 do $seed$
@@ -25,6 +26,7 @@ declare
   v_hod uuid := '00000000-0000-4000-8000-000000000106';
   v_teacher uuid := '00000000-0000-4000-8000-000000000107';
   v_auditor uuid := '00000000-0000-4000-8000-000000000108';
+  v_platform uuid := '00000000-0000-4000-8000-000000000109';
   d_admin uuid; d_sci uuid; d_sports uuid; d_it uuid; d_fac uuid; d_city_admin uuid;
   b_main uuid; b_lab uuid; f_g uuid; f_1 uuid; r_chem uuid; r_phy uuid; r_101 uuid; r_staff uuid; r_server uuid; a_ground uuid;
   b_city uuid; r_city_hall uuid;
@@ -44,6 +46,7 @@ declare
   u record;
 begin
   -- Users ------------------------------------------------------------------
+  insert into public.platform_admin_emails (email) values ('admin@platform.test') on conflict do nothing;
   for u in select * from (values
     (v_owner, 'owner@greenfield.test', 'Anita Sharma'),
     (v_fm, 'facilities@greenfield.test', 'Rakesh Verma'),
@@ -52,7 +55,8 @@ begin
     (v_proc, 'procurement@greenfield.test', 'Vikram Singh'),
     (v_hod, 'hod.science@greenfield.test', 'Dr. Kavita Rao'),
     (v_teacher, 'teacher@greenfield.test', 'Arjun Mehta'),
-    (v_auditor, 'auditor@greenfield.test', 'Priya Nair')
+    (v_auditor, 'auditor@greenfield.test', 'Priya Nair'),
+    (v_platform, 'admin@platform.test', 'Platform Admin')
   ) as x(id, email, name)
   loop
     insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,

@@ -1,14 +1,21 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NAV, SETTINGS_NAV, type NavItem } from "@/lib/nav";
+import { hasApprovals, NAV, SETTINGS_NAV, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils/cn";
 import { useCan, useSession } from "./session";
 
+// Settings that matter in a personal (Tasks-only) workspace
+const PERSONAL_SETTINGS = new Set(["/settings", "/settings/users"]);
+
 function useVisible() {
-  const { modules } = useSession();
+  const { modules, org } = useSession();
   const can = useCan();
-  return (item: NavItem) => (!item.module || modules.includes(item.module)) && (!item.anyOf || item.anyOf.some((p) => can(p)));
+  return (item: NavItem) =>
+    (!item.module || modules.includes(item.module)) &&
+    (!item.approvals || hasApprovals(modules)) &&
+    (!item.anyOf || item.anyOf.some((p) => can(p))) &&
+    (org.kind !== "personal" || !item.href.startsWith("/settings") || PERSONAL_SETTINGS.has(item.href));
 }
 
 function isActive(pathname: string, href: string) {

@@ -20,6 +20,8 @@ export interface OrgInfo {
   fy_start_month: number;
   logo_path: string | null;
   settings: Record<string, unknown>;
+  kind: "organisation" | "personal";
+  licensed_modules: Module[];
 }
 
 /**
@@ -62,12 +64,14 @@ export class RequestContext {
     return this.grantsPromise;
   }
 
+  /** Modules this caller can use: enabled by the org ∩ licensed ∩ the member's own module access. */
   modules(): Promise<Set<Module>> {
     this.modulesPromise ??= (async () => {
-      const rows = unwrap(
-        await this.admin().from("org_modules").select("module, enabled").eq("org_id", this.orgId),
-      );
-      return new Set(rows.filter((r) => r.enabled).map((r) => r.module as Module));
+      const list =
+        this.kind === "user"
+          ? unwrap(await this.db.rpc("member_modules", { p_org: this.orgId }))
+          : unwrap(await createAdminClient().rpc("member_modules", { p_org: this.orgId, p_user: this.userId }));
+      return new Set((list ?? []) as Module[]);
     })();
     return this.modulesPromise;
   }
@@ -92,9 +96,12 @@ export class RequestContext {
     }
   }
 
-  async requireModule(module: Module): Promise<void> {
-    if (!(await this.modules()).has(module)) {
-      throw new ApiError("module_disabled", `The ${module} module is not enabled for this organisation`);
+  /** Throws unless the module (or, for a list, any of them) is available to the caller. */
+  async requireModule(module: Module | Module[]): Promise<void> {
+    const wanted = Array.isArray(module) ? module : [module];
+    const have = await this.modules();
+    if (!wanted.some((m) => have.has(m))) {
+      throw new ApiError("module_disabled", `The ${wanted.join(" / ")} module is not available to you in this organisation`);
     }
   }
 
@@ -112,8 +119,9 @@ export function hashApiKey(key: string) {
 async function loadOrg(db: DB, orgId: string): Promise<OrgInfo | null> {
   const { data } = await db
     .from("organisations")
-    .select("id, name, slug, timezone, currency, locale, fy_start_month, logo_path, settings")
+    .select("id, name, slug, timezone, currency, locale, fy_start_month, logo_path, settings, kind, licensed_modules")
     .eq("id", orgId)
+    .eq("status", "active")
     .is("deleted_at", null)
     .maybeSingle();
   return (data as OrgInfo | null) ?? null;
@@ -128,8 +136,12 @@ async function resolveUserOrg(db: DB, userId: string, explicit?: string | null):
   const cookieOrg = (await cookies()).get(ORG_COOKIE)?.value;
   const { data: profile } = await db.from("profiles").select("default_org_id").eq("id", userId).maybeSingle();
   const candidates = [explicit, cookieOrg, profile?.default_org_id, memberships[0]];
-  for (const c of candidates) {
-    if (c && memberships.includes(c)) return loadOrg(db, c);
+  // suspended organisations are invisible through RLS, so fall through to the next candidate
+  for (const c of [...new Set([...candidates, ...memberships])]) {
+    if (c && memberships.includes(c)) {
+      const org = await loadOrg(db, c);
+      if (org) return org;
+    }
   }
   return null;
 }

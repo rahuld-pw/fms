@@ -2689,6 +2689,72 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          id: string
+          kind: string
+          title: string
+          description: string
+          page_url: string | null
+          user_agent: string | null
+          email: string | null
+          user_id: string | null
+          org_id: string | null
+          status: string
+          admin_notes: string | null
+          votes: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          title: string
+          description: string
+          page_url?: string | null
+          user_agent?: string | null
+          email?: string | null
+          user_id?: string | null
+          org_id?: string | null
+          status?: string
+          admin_notes?: string | null
+          votes?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          title?: string
+          description?: string
+          page_url?: string | null
+          user_agent?: string | null
+          email?: string | null
+          user_id?: string | null
+          org_id?: string | null
+          status?: string
+          admin_notes?: string | null
+          votes?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feedback_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fiscal_years: {
         Row: {
           id: string
@@ -3686,6 +3752,7 @@ export type Database = {
           joined_at: string
           created_at: string
           updated_at: string
+          module_access: string[] | null
         }
         Insert: {
           id?: string
@@ -3701,6 +3768,7 @@ export type Database = {
           joined_at?: string
           created_at?: string
           updated_at?: string
+          module_access?: string[] | null
         }
         Update: {
           id?: string
@@ -3716,6 +3784,7 @@ export type Database = {
           joined_at?: string
           created_at?: string
           updated_at?: string
+          module_access?: string[] | null
         }
         Relationships: [
           {
@@ -3804,6 +3873,11 @@ export type Database = {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          kind: string
+          status: string
+          licensed_modules: string[]
+          plan: string
+          notes: string | null
         }
         Insert: {
           id?: string
@@ -3821,6 +3895,11 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          kind?: string
+          status?: string
+          licensed_modules?: string[]
+          plan?: string
+          notes?: string | null
         }
         Update: {
           id?: string
@@ -3838,6 +3917,11 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          kind?: string
+          status?: string
+          licensed_modules?: string[]
+          plan?: string
+          notes?: string | null
         }
         Relationships: [
 
@@ -4103,6 +4187,56 @@ export type Database = {
             columns: ["receipt_attachment_id"]
             isOneToOne: false
             referencedRelation: "attachments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_admin_emails: {
+        Row: {
+          email: string
+          created_at: string
+        }
+        Insert: {
+          email: string
+          created_at?: string
+        }
+        Update: {
+          email?: string
+          created_at?: string
+        }
+        Relationships: [
+
+        ]
+      }
+      platform_admins: {
+        Row: {
+          user_id: string
+          created_by: string | null
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          created_by?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_admins_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -7348,6 +7482,22 @@ export type Database = {
     Functions: {
       accept_invitation:
         | { Args: { p_token: string }; Returns: string }
+      admin_add_platform_admin:
+        | { Args: { p_email: string }; Returns: undefined }
+      admin_create_organisation:
+        | { Args: { p_name: string; p_slug: string; p_admin_email: string; p_admin_name?: string; p_modules?: string[]; p_timezone?: string; p_currency?: string; p_campus_name?: string; p_campus_code?: string; p_plan?: string }; Returns: Json }
+      admin_invite_owner:
+        | { Args: { p_org: string; p_email: string; p_name?: string }; Returns: string }
+      admin_list_organisations:
+        | { Args: { p_kind?: string }; Returns: { id: string; name: string; slug: string; kind: string; status: string; plan: string; licensed_modules: string[]; enabled_modules: string[]; members: number; owners: string[]; pending_invites: number; created_at: string; notes: string }[] }
+      admin_list_platform_admins:
+        | { Args: never; Returns: { user_id: string; email: string; full_name: string; created_at: string; pending: boolean }[] }
+      admin_remove_platform_admin:
+        | { Args: { p_email: string }; Returns: undefined }
+      admin_update_organisation:
+        | { Args: { p_org: string; p_name?: string; p_status?: string; p_licensed_modules?: string[]; p_plan?: string; p_notes?: string }; Returns: undefined }
+      am_platform_admin:
+        | { Args: never; Returns: boolean }
       approval_act:
         | { Args: { p_request_id: string; p_action: string; p_comment?: string }; Returns: string }
       approval_cancel:
@@ -7378,6 +7528,10 @@ export type Database = {
         | { Args: { p_delivery_id: number; p_success: boolean; p_status_code?: number; p_error?: string; p_response_excerpt?: string }; Returns: undefined }
       create_organisation:
         | { Args: { p_name: string; p_slug: string; p_timezone?: string; p_currency?: string; p_campus_name?: string; p_campus_code?: string }; Returns: string }
+      create_personal_workspace:
+        | { Args: never; Returns: string }
+      dispatch_config:
+        | { Args: { p_token: string }; Returns: Json }
       expense_advance_disburse:
         | { Args: { p_advance_id: string; p_reference: string }; Returns: undefined }
       expense_advance_submit:
@@ -7414,6 +7568,10 @@ export type Database = {
         | { Args: { p_invoice_id: string }; Returns: Json }
       mark_notifications_read:
         | { Args: { p_ids?: string[] }; Returns: number }
+      member_modules:
+        | { Args: { p_org: string; p_user?: string }; Returns: string[] }
+      my_pending_invitations:
+        | { Args: never; Returns: { org_name: string; expires_at: string }[] }
       my_permissions:
         | { Args: { p_org: string }; Returns: { permission_key: string; scope_type: string; campus_id: string; department_id: string }[] }
       po_amend:

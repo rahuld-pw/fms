@@ -27,6 +27,10 @@ import {
   Wrench,
 } from "lucide-react";
 
+/** Modules whose documents go through approvals (Tasks has none). */
+export const APPROVAL_MODULES = ["facility", "expense", "po"];
+export const hasApprovals = (modules: string[]) => APPROVAL_MODULES.some((m) => modules.includes(m));
+
 export interface NavItem {
   label: string;
   href: string;
@@ -35,6 +39,8 @@ export interface NavItem {
   module?: "facility" | "expense" | "tasks" | "po";
   /** Shown only when the user holds ANY of these permissions (at any scope). */
   anyOf?: string[];
+  /** Shown only when a module that uses approvals is enabled. */
+  approvals?: boolean;
 }
 
 export interface NavSection {
@@ -47,7 +53,7 @@ export const NAV: NavSection[] = [
   {
     items: [
       { label: "Home", href: "/", icon: Home },
-      { label: "Approvals", href: "/approvals", icon: Inbox },
+      { label: "Approvals", href: "/approvals", icon: Inbox, approvals: true },
     ],
   },
   {
