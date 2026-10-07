@@ -3,7 +3,9 @@ import { z } from "zod";
 const serverSchema = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(20),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20),
+  // optional at start-up so sign-in works while it is being configured; the
+  // admin client (public endpoints, API keys, invitations) requires it
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(20).optional(),
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
   TURNSTILE_SECRET_KEY: z.string().optional(),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.string().optional(),

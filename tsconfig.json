@@ -38,6 +38,7 @@
   ],
   "exclude": [
     "node_modules",
-    "supabase/functions/dispatch-*"
+    "supabase/functions/dispatch-*",
+    "supabase/functions/_shared/auth.ts"
   ]
 }

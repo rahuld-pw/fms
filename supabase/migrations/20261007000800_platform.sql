@@ -671,7 +671,7 @@ grant execute on function public.budget_check(uuid, date, uuid, uuid, uuid, nume
 -- -----------------------------------------------------------------------------
 -- Scheduled jobs (only when pg_cron is available, i.e. on Supabase)
 -- Webhook/message dispatch is driven by pg_net calling the edge functions; it
--- needs two Vault secrets: project_url and service_role_key (see README).
+-- needs Vault secrets project_url and dispatch_token (see 20261007000900_dispatch_auth.sql).
 -- -----------------------------------------------------------------------------
 do $cron$
 begin

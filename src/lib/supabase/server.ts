@@ -33,6 +33,7 @@ export async function createUserClient(): Promise<DB> {
  */
 export function createAdminClient(actor?: { userId?: string | null; apiKeyId?: string | null }): DB {
   const env = serverEnv();
+  if (!env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set. Add it in your hosting environment (see .env.example).");
   const headers: Record<string, string> = {};
   if (actor?.userId) headers["x-actor-user-id"] = actor.userId;
   if (actor?.apiKeyId) headers["x-actor-api-key-id"] = actor.apiKeyId;

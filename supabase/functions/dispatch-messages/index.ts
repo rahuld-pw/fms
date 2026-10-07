@@ -4,10 +4,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { render, VENDOR_TEMPLATES, type OutboxMessage } from "../_shared/templates.ts";
 import { sha256Hex } from "../_shared/signature.ts";
+import { authorizeDispatch } from "../_shared/auth.ts";
 
 const env = (k: string) => Deno.env.get(k) ?? "";
 const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
-const APP_URL = env("APP_URL") || "http://localhost:3000";
+let APP_URL = env("APP_URL") || "http://localhost:3000";
 const MAX_ATTEMPTS = 5;
 
 interface Row extends OutboxMessage { id: number; org_id: string; recipient: string; attempts: number }
@@ -55,7 +56,9 @@ async function sendWhatsApp(to: string, tpl: { name: string; params: string[] } 
 }
 
 Deno.serve(async (req) => {
-  if ((req.headers.get("authorization") ?? "") !== `Bearer ${env("SUPABASE_SERVICE_ROLE_KEY")}`) return new Response("Unauthorized", { status: 401 });
+  const config = await authorizeDispatch(req, supabase);
+  if (!config) return new Response("Unauthorized", { status: 401 });
+  if (config.app_url) APP_URL = config.app_url.replace(/\/$/, "");
   const { data: due, error } = await supabase
     .from("message_outbox").select("*").eq("status", "pending").lte("send_after", new Date().toISOString()).order("id").limit(100);
   if (error) return Response.json({ error: error.message }, { status: 500 });

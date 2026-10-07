@@ -2,6 +2,7 @@
 // customer endpoints with HMAC signatures, retries and delivery logs.
 // Invoked every minute by pg_cron (see 20261007000800_platform.sql) or manually.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { authorizeDispatch } from "../_shared/auth.ts";
 import { signPayload } from "../_shared/signature.ts";
 
 const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
@@ -51,8 +52,7 @@ async function deliver(d: Claimed) {
 }
 
 Deno.serve(async (req) => {
-  const auth = req.headers.get("authorization") ?? "";
-  if (auth !== `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`) return new Response("Unauthorized", { status: 401 });
+  if (!(await authorizeDispatch(req, supabase))) return new Response("Unauthorized", { status: 401 });
   let sent = 0, failed = 0;
   for (let round = 0; round < 5; round++) {
     const { data, error } = await supabase.rpc("claim_webhook_deliveries", { p_limit: 50 });
