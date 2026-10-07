@@ -126,6 +126,7 @@ export const numberSeries: ResourceSpec = {
   updatePermission: "settings:manage",
   deletePermission: "settings:manage",
   strict: true,
+  select: "*, campus:campuses(id, code)",
   filters: { entity_type: "eq", campus_id: "eq" },
   sortable: ["entity_type", "updated_at"],
   defaultSort: "entity_type",
