@@ -243,12 +243,29 @@ The gateway prints email sign-in codes to its log and exposes them at `GET /__te
 
 ## Deployment
 
-1. Create a Supabase project. Link and push the schema: `supabase link --project-ref <ref>` then `supabase db push`. Optionally run `supabase/seed.sql` for a demo org.
-2. Enable the `pg_cron` and `pg_net` extensions (Database → Extensions) and create the two Vault secrets above. Re-run the platform migration section or `supabase db push` so the schedules are created.
-3. Set the Magic Link email template with `{{ .Token }}` and configure SMTP (Authentication → Emails).
-4. Deploy the Edge Functions and set their secrets.
-5. Import the repository in Vercel, set the environment variables from `.env.example`, deploy. Set `NEXT_PUBLIC_APP_URL` to the production URL so QR codes and email links are correct.
-6. Regenerate types after schema changes: `supabase gen types typescript --project-id <ref> --schema public > src/lib/supabase/database.types.ts`.
+Recommended regions for Indian institutions: Supabase **ap-south-1 (Mumbai)** and Vercel **bom1** (set in `vercel.json`).
+
+**1. Supabase.** Create a project at supabase.com, then run:
+
+```bash
+SUPABASE_ACCESS_TOKEN=… SUPABASE_PROJECT_REF=… SUPABASE_DB_PASSWORD=… \
+SUPABASE_SERVICE_ROLE_KEY=… APP_URL=https://campus-ops.vercel.app \
+SEED=1 scripts/deploy-supabase.sh        # SEED=1 loads the demo school; omit for an empty install
+```
+
+It links the project, pushes the migrations (which enable `pg_cron` and `pg_net` and create the schedules), stores the Vault secrets the schedules need, configures Auth (site URL, redirect URLs, the email-code template and 10-minute expiry), deploys both Edge Functions and sets their secrets (`RESEND_API_KEY`, `EMAIL_FROM`, `WHATSAPP_*` are picked up if exported). Before going live, configure custom SMTP under Authentication → Emails; the built-in mailer is heavily rate-limited.
+
+**2. Vercel.** Either import the GitHub repository in the Vercel dashboard and add the variables from `.env.example`, or run:
+
+```bash
+VERCEL_TOKEN=… NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co \
+NEXT_PUBLIC_SUPABASE_ANON_KEY=… SUPABASE_SERVICE_ROLE_KEY=… \
+NEXT_PUBLIC_APP_URL=https://campus-ops.vercel.app scripts/deploy-vercel.sh
+```
+
+If the final URL differs from the one you passed as `APP_URL`, re-run the Supabase script with the real URL (it only updates settings) and update `NEXT_PUBLIC_APP_URL` in Vercel, since QR codes, emails and auth redirects use it.
+
+**After schema changes**: `supabase db push`, then regenerate types with `supabase gen types typescript --project-id <ref> --schema public > src/lib/supabase/database.types.ts`.
 
 ## Mobile
 
