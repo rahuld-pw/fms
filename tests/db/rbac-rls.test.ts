@@ -84,7 +84,7 @@ describe("row level security", () => {
       const ownerA = await s.user("a@tenant.test");
       const ownerB = await s.user("b@tenant.test");
       const a = await s.org(ownerA);
-      const b = await s.org(ownerB);
+      await s.org(ownerB);
       await s.asAdmin();
       await s.q("insert into issues (org_id, campus_id, title, number, priority) values ($1, $2, 'Leaking tap', '', 'low')", [
         a.orgId,

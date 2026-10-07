@@ -13,7 +13,10 @@
     "db:start": "supabase start",
     "db:reset": "supabase db reset",
     "db:types": "supabase gen types typescript --local --schema public > src/lib/supabase/database.types.ts",
-    "openapi": "tsx scripts/generate-openapi.ts"
+    "test:e2e": "vitest run -c vitest.e2e.config.mts",
+    "test:smoke": "node tests/e2e/smoke.mjs",
+    "db:types:local": "tsx scripts/gen-db-types.ts",
+    "e2e:stack": "scripts/e2e-stack.sh"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

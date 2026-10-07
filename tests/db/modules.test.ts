@@ -372,13 +372,17 @@ describe("facility", () => {
          values ($1, $2, $3, 'Oil change every 250h', 'usage', 250)`,
         [o.orgId, o.campusA, asset],
       );
-      expect(await s.val("select app.generate_pm_work_orders()")).toBe(1);
-      expect(await s.val("select app.generate_pm_work_orders()")).toBe(0);
+      const woCount = () =>
+        s.val<number>("select count(*)::int from work_orders where asset_id = $1 and type = 'preventive'", [asset]);
+      await s.q("select app.generate_pm_work_orders()");
+      expect(await woCount()).toBe(1);
+      await s.q("select app.generate_pm_work_orders()");
+      expect(await woCount()).toBe(1);
       expect(
         await s.val("select next_due_date = (current_date + 2 + interval '1 month')::date from pm_schedules where trigger_type = 'time' and asset_id = $1", [asset]),
       ).toBe(true);
       await s.q("update assets set usage_meter = 260 where id = $1", [asset]);
-      expect(await s.val("select app.generate_pm_work_orders()")).toBe(1);
+      await s.q("select app.generate_pm_work_orders()");
       expect(await s.val("select count(*)::int from work_orders where asset_id = $1 and type = 'preventive'", [asset])).toBe(2);
     }));
 

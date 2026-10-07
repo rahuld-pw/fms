@@ -394,11 +394,11 @@ begin
   end if;
   -- status changes go through the RPCs below (system updates), except
   -- draft -> cancelled by the claimant.
-  if new.status <> old.status and not app.in_system_update() and auth.uid() is not null
+  if new.status <> old.status and not app.in_system_update() and app.actor_id() is not null
      and not (old.status in ('draft', 'rejected') and new.status = 'cancelled') then
     raise exception 'use the submit/approve/pay actions to change claim status' using errcode = '42501';
   end if;
-  if old.status not in ('draft', 'rejected') and not app.in_system_update() and auth.uid() is not null
+  if old.status not in ('draft', 'rejected') and not app.in_system_update() and app.actor_id() is not null
      and (new.title, new.description, new.campus_id, new.department_id, new.total_amount)
          is distinct from (old.title, old.description, old.campus_id, old.department_id, old.total_amount) then
     raise exception 'claim can only be edited while in draft' using errcode = '42501';
@@ -569,7 +569,7 @@ begin
   if tg_op = 'INSERT' then
     new.number := app.next_number(new.org_id, 'advance', new.campus_id);
     if not app.in_system_update() then new.status := 'draft'; end if;
-  elsif new.status <> old.status and not app.in_system_update() and auth.uid() is not null
+  elsif new.status <> old.status and not app.in_system_update() and app.actor_id() is not null
         and not (old.status = 'draft' and new.status = 'cancelled') then
     raise exception 'use the advance actions to change status' using errcode = '42501';
   end if;

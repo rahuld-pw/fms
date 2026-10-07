@@ -338,10 +338,10 @@ begin
     end if;
     return new;
   end if;
-  if new.status <> old.status and not app.in_system_update() and auth.uid() is not null then
+  if new.status <> old.status and not app.in_system_update() and app.actor_id() is not null then
     raise exception 'use the PO actions to change status' using errcode = '42501';
   end if;
-  if old.status not in ('draft', 'rejected') and not app.in_system_update() and auth.uid() is not null
+  if old.status not in ('draft', 'rejected') and not app.in_system_update() and app.actor_id() is not null
      and (new.vendor_id, new.campus_id, new.department_id, new.category_id, new.total, new.tax_type)
          is distinct from (old.vendor_id, old.campus_id, old.department_id, old.category_id, old.total, old.tax_type) then
     raise exception 'amend the PO to change it after submission' using errcode = '42501';
@@ -598,7 +598,7 @@ begin
   if tg_op = 'INSERT' then
     new.number := app.next_number(new.org_id, 'grn', new.campus_id, new.received_date);
     if not app.in_system_update() then new.status := 'draft'; end if;
-  elsif new.status <> old.status and not app.in_system_update() and auth.uid() is not null then
+  elsif new.status <> old.status and not app.in_system_update() and app.actor_id() is not null then
     raise exception 'use grn_post to post a GRN' using errcode = '42501';
   end if;
   return new;
@@ -771,7 +771,7 @@ begin
       new.status := 'received'; new.match_status := 'pending';
     end if;
   elsif (new.status <> old.status or new.match_status <> old.match_status) and not app.in_system_update()
-        and auth.uid() is not null then
+        and app.actor_id() is not null then
     raise exception 'use the invoice actions to change status' using errcode = '42501';
   end if;
   return new;
@@ -975,7 +975,7 @@ begin
   if tg_op = 'INSERT' then
     new.number := app.next_number(new.org_id, 'requisition', new.campus_id);
     if not app.in_system_update() then new.status := 'draft'; end if;
-  elsif new.status <> old.status and not app.in_system_update() and auth.uid() is not null
+  elsif new.status <> old.status and not app.in_system_update() and app.actor_id() is not null
         and not (old.status in ('draft', 'rejected') and new.status = 'cancelled') then
     raise exception 'use the requisition actions to change status' using errcode = '42501';
   end if;

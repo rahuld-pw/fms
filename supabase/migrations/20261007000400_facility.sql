@@ -823,7 +823,7 @@ create trigger issues_before_insert before insert on public.issues
 create or replace function app.issues_before_update() returns trigger
 language plpgsql security definer set search_path = public, app as $$
 declare
-  v_actor uuid := auth.uid();
+  v_actor uuid := app.actor_id();
   v_manager boolean;
   v_allowed text[];
   v_transitions jsonb := '{
@@ -1197,6 +1197,111 @@ begin
   get diagnostics v_count = row_count;
   return n + v_count;
 end $$;
+
+-- -----------------------------------------------------------------------------
+-- Vendor onboarding: invite > vendor self-fills > documents > verification >
+-- approval via the approval engine.
+-- -----------------------------------------------------------------------------
+create or replace function public.vendor_submit_for_approval(p_vendor_id uuid) returns jsonb
+language plpgsql security definer set search_path = public, app as $$
+declare
+  v public.vendors;
+  v_required text[];
+  v_missing text[];
+  v_request uuid;
+begin
+  select * into v from public.vendors where id = p_vendor_id for update;
+  if not found then raise exception 'vendor not found' using errcode = 'P0002'; end if;
+  if not app.has_permission_anywhere(app.actor_id(), 'vendor:update', v.org_id) then
+    raise exception 'missing permission vendor:update' using errcode = '42501';
+  end if;
+  if v.status not in ('draft', 'submitted', 'under_verification', 'rejected', 'invited') then
+    raise exception 'vendor is %', v.status using errcode = 'P0001';
+  end if;
+  select coalesce(nullif(array(select jsonb_array_elements_text(settings -> 'vendor_required_documents')), '{}'),
+                  array['pan_card', 'cancelled_cheque'])
+    into v_required
+  from public.org_modules where org_id = v.org_id and module = 'facility';
+  v_required := coalesce(v_required, array['pan_card', 'cancelled_cheque']);
+  select array_agg(r) into v_missing from unnest(v_required) r
+  where not exists (select 1 from public.vendor_documents d where d.vendor_id = v.id and d.doc_type = r
+                    and d.verification_status = 'verified');
+  if v_missing is not null then
+    raise exception 'verify these documents first: %', array_to_string(v_missing, ', ') using errcode = '23514';
+  end if;
+  if v.pan is null or v.bank_account_number is null or v.bank_ifsc is null then
+    raise exception 'PAN and bank details are required' using errcode = '23514';
+  end if;
+  perform app.begin_system_update();
+  update public.vendors set status = 'pending_approval', verified_by = app.actor_id(), verified_at = now() where id = v.id;
+  perform app.end_system_update();
+  v_request := app.approval_create(v.org_id, 'facility', 'vendor', v.id, null, null, null, '{}',
+    'Vendor onboarding: ' || v.name, app.actor_id());
+  update public.vendors set approval_request_id = v_request where id = v.id;
+  return jsonb_build_object('status', (select status from public.vendors where id = v.id), 'approval_request_id', v_request);
+end $$;
+
+create or replace function app.vendor_on_decision(p_request_id uuid, p_status text) returns void
+language plpgsql security definer set search_path = public, app as $$
+declare
+  v public.vendors;
+begin
+  select * into v from public.vendors where id = (select entity_id from public.approval_requests where id = p_request_id);
+  perform app.begin_system_update();
+  if p_status = 'approved' then
+    update public.vendors set status = 'approved',
+      vendor_code = coalesce(vendor_code, app.next_number(v.org_id, 'vendor', null)) where id = v.id;
+    perform app.queue_message(v.org_id, 'email', v.email, 'vendor_approved', 'You are now an approved vendor',
+      jsonb_build_object('vendor', v.name, 'vendor_id', v.id), 'vendor_approved:' || v.id);
+  elsif p_status = 'rejected' then
+    update public.vendors set status = 'rejected' where id = v.id;
+  else
+    update public.vendors set status = 'under_verification' where id = v.id;
+  end if;
+  perform app.end_system_update();
+end $$;
+
+insert into app.approval_handlers (entity_type, handler) values ('vendor', 'app.vendor_on_decision(uuid,text)');
+
+-- Status changes on vendors go through actions (submit, approval, blacklist).
+create or replace function app.vendors_guard() returns trigger
+language plpgsql security definer set search_path = public, app as $$
+begin
+  if new.status is distinct from old.status and not app.in_system_update() and app.actor_id() is not null then
+    if not (
+      (old.status in ('draft', 'invited', 'submitted') and new.status in ('under_verification', 'draft'))
+      or (new.status = 'blacklisted' and app.has_permission_anywhere(app.actor_id(), 'vendor:approve', new.org_id))
+      or (old.status = 'blacklisted' and new.status = 'approved' and app.has_permission_anywhere(app.actor_id(), 'vendor:approve', new.org_id))
+      or (old.status = 'approved' and new.status = 'inactive')
+      or (old.status = 'inactive' and new.status = 'approved' and app.has_permission_anywhere(app.actor_id(), 'vendor:approve', new.org_id))
+    ) then
+      raise exception 'cannot move vendor from % to %', old.status, new.status using errcode = '42501';
+    end if;
+  end if;
+  if new.status = 'blacklisted' and old.status <> 'blacklisted' then
+    new.blacklisted_at := now();
+    if new.blacklist_reason is null then raise exception 'blacklist reason required' using errcode = '23514'; end if;
+  elsif new.status <> 'blacklisted' then
+    new.blacklisted_at := null;
+  end if;
+  return new;
+end $$;
+create trigger vendors_guard before update on public.vendors for each row execute function app.vendors_guard();
+
+-- Vendor portal tokens (magic links). Service role only.
+create or replace function public.vendor_portal_resolve(p_token text)
+returns table (vendor_id uuid, org_id uuid, purpose text, vendor_status text)
+language plpgsql security definer set search_path = public, app as $$
+begin
+  if not app.is_service() then raise exception 'forbidden' using errcode = '42501'; end if;
+  return query
+  update public.vendor_portal_tokens t set last_used_at = now()
+  from public.vendors v
+  where t.token_hash = app.sha256(p_token) and t.revoked_at is null and t.expires_at > now()
+    and v.id = t.vendor_id and v.deleted_at is null and v.status <> 'blacklisted'
+  returning t.vendor_id, t.org_id, t.purpose, v.status;
+end $$;
+revoke execute on function public.vendor_portal_resolve(text) from public, anon, authenticated;
 
 -- -----------------------------------------------------------------------------
 -- RLS

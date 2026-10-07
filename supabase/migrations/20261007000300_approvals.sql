@@ -234,8 +234,8 @@ language sql stable security definer set search_path = public, app as $$
   select exists (
     select 1 from public.approval_request_steps s
     where s.request_id = p_request_id and s.status in ('pending', 'approved', 'rejected')
-      and app.step_acting_for(s.id, auth.uid()) is not null)
-  or exists (select 1 from public.approval_actions a where a.request_id = p_request_id and a.actor_id = auth.uid())
+      and app.step_acting_for(s.id, app.actor_id()) is not null)
+  or exists (select 1 from public.approval_actions a where a.request_id = p_request_id and a.actor_id = app.actor_id())
 $$;
 
 -- -----------------------------------------------------------------------------
@@ -503,12 +503,12 @@ declare
   r public.approval_requests;
 begin
   select * into r from public.approval_requests where id = p_request_id;
-  if not found or not (r.requested_by = auth.uid() or app.is_request_participant(r.id)
+  if not found or not (r.requested_by = app.actor_id() or app.is_request_participant(r.id)
                        or app.can_read_entity(r.entity_type, r.entity_id)) then
     raise exception 'not allowed' using errcode = '42501';
   end if;
   insert into public.approval_actions (org_id, request_id, actor_id, action, comment)
-  values (r.org_id, r.id, auth.uid(), 'comment', p_comment);
+  values (r.org_id, r.id, app.actor_id(), 'comment', p_comment);
 end $$;
 
 -- Requests the current user can act on right now.
@@ -518,9 +518,9 @@ language sql stable security definer set search_path = public, app as $$
   select r.* from public.approval_requests r
   join public.approval_request_steps s on s.request_id = r.id and s.status = 'pending'
   where r.org_id = p_org and r.status = 'pending'
-    and r.requested_by is distinct from auth.uid()
-    and app.step_acting_for(s.id, auth.uid()) is not null
-    and not exists (select 1 from public.approval_actions a where a.step_id = s.id and a.actor_id = auth.uid())
+    and r.requested_by is distinct from app.actor_id()
+    and app.step_acting_for(s.id, app.actor_id()) is not null
+    and not exists (select 1 from public.approval_actions a where a.step_id = s.id and a.actor_id = app.actor_id())
   order by r.submitted_at
 $$;
 

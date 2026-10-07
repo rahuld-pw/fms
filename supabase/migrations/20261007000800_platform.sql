@@ -620,6 +620,26 @@ create policy "org-public read" on storage.objects for select to anon, authentic
 create policy "org-public upload by org admins" on storage.objects for insert to authenticated
   with check (bucket_id = 'org-public' and app.can('org:manage', (storage.foldername(name))[1]::uuid, null, null, true));
 
+-- Permissions of any user (service role only; used to evaluate API keys
+-- against the permissions of the user who created them).
+create or replace function public.user_permissions(p_user uuid, p_org uuid)
+returns table (permission_key text, scope_type text, campus_id uuid, department_id uuid)
+language plpgsql stable security definer set search_path = public, app as $$
+begin
+  if not app.is_service() then raise exception 'forbidden' using errcode = '42501'; end if;
+  return query
+  select distinct p.key, a.scope_type, a.campus_id, a.department_id
+  from public.user_role_assignments a
+  join public.roles r on r.id = a.role_id
+  join public.org_members m on m.org_id = a.org_id and m.user_id = a.user_id and m.status = 'active'
+  join public.permissions p on r.is_superuser or exists (
+    select 1 from public.role_permissions rp where rp.role_id = r.id and rp.permission_key = p.key)
+  where a.user_id = p_user and a.org_id = p_org
+    and (a.expires_at is null or a.expires_at > now())
+    and app.module_enabled(p_org, p.module);
+end $$;
+revoke execute on function public.user_permissions(uuid, uuid) from public, anon, authenticated;
+
 -- -----------------------------------------------------------------------------
 -- Hardening: functions in public are exposed via PostgREST; anon gets nothing
 -- (public endpoints go through the API with the service role). Service-only

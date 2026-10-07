@@ -458,7 +458,7 @@ create or replace function public.mark_notifications_read(p_ids uuid[] default n
 returns int language sql security invoker as $$
   with u as (
     update public.notifications set read_at = now()
-    where user_id = auth.uid() and read_at is null and (p_ids is null or id = any (p_ids))
+    where user_id = app.actor_id() and read_at is null and (p_ids is null or id = any (p_ids))
     returning 1)
   select count(*)::int from u
 $$;
