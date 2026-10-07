@@ -706,3 +706,12 @@ begin
   end if;
 end
 $cron$;
+
+-- Realtime: in-app notifications and task boards update live.
+do $rt$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    alter publication supabase_realtime add table public.notifications, public.tasks, public.comments;
+  end if;
+end
+$rt$;

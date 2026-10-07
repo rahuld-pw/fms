@@ -55,6 +55,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
     "pg": "^8.23.1",
+    "playwright": "1.56",
     "supabase": "^2.120.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",

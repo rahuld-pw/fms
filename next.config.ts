@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Every screen is per-user and permission-aware, so pages render dynamically
   // per request; Cache Components / Partial Prerendering are left off.
   poweredByHeader: false,
+  turbopack: {
+    rules: {
+      "*.css": { loaders: ["@tailwindcss/turbopack"], as: "*.css" },
+    },
+  },
   serverExternalPackages: ["pdf-lib", "qrcode"],
   async headers() {
     return [

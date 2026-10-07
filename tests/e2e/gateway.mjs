@@ -42,6 +42,14 @@ async function session(user) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
+  res.setHeader("access-control-allow-origin", req.headers.origin ?? "*");
+  res.setHeader("access-control-allow-credentials", "true");
+  res.setHeader("access-control-allow-headers", req.headers["access-control-request-headers"] ?? "*");
+  res.setHeader("access-control-allow-methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    return res.end();
+  }
   try {
     if (url.pathname.startsWith("/rest/v1")) {
       const target = PGRST + url.pathname.replace("/rest/v1", "") + url.search;
@@ -53,6 +61,7 @@ const server = http.createServer(async (req, res) => {
       const out = Buffer.from(await r.arrayBuffer());
       const h = Object.fromEntries(r.headers);
       delete h["content-encoding"]; delete h["transfer-encoding"]; delete h["content-length"];
+      delete h["access-control-allow-origin"];
       res.writeHead(r.status, h);
       return res.end(out);
     }
