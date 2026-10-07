@@ -1,3 +1,5 @@
+// Drives receive goods -> assets -> invoice (3-way match) -> approve -> pay on a seeded PO.
+// Usage: node tests/ui/flows/po-flow.mjs <po-id> <out-dir>   (SKIP_RECEIVE=1 to start at invoicing)
 import { chromium } from "playwright";
 const BASE = "http://localhost:3000", PO = process.argv[2], OUT = process.argv[3];
 const browser = await chromium.launch();

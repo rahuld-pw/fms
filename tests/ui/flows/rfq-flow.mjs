@@ -1,3 +1,5 @@
+// Drives approve requisition -> RFQ -> two quotes -> comparison -> award.
+// Usage: node tests/ui/flows/rfq-flow.mjs <requisition-id> <out-dir>   (RFQ=<id> to start from an existing RFQ)
 import { chromium } from "playwright";
 const BASE = "http://localhost:3000", REQ = process.argv[2], OUT = process.argv[3];
 const browser = await chromium.launch();
