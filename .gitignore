@@ -45,3 +45,6 @@ next-env.d.ts
 # supabase
 supabase/.branches
 supabase/.temp
+
+# example env file is committed
+!.env.example

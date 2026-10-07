@@ -40,7 +40,7 @@ export function ApiKeysSettings() {
         title="API keys"
         description="Keys authenticate integrations against /api/v1 with the Authorization: Bearer header. Keys are stored hashed and shown once."
         actions={<>
-          <Button variant="outline" asChild><a href="/api/v1/openapi.json" target="_blank" rel="noreferrer"><BookOpen /> OpenAPI</a></Button>
+          <Button variant="outline" asChild><a href="/docs" target="_blank" rel="noreferrer"><BookOpen /> API docs</a></Button>
           <Button onClick={() => setOpen(true)}><Plus /> New key</Button>
         </>}
       />
