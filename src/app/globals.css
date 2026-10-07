@@ -183,3 +183,15 @@
 @utility scrollbar-thin {
   scrollbar-width: thin;
 }
+
+/* Invisible 8px hit-area extension for small controls (switches, checkboxes,
+   breadcrumbs, sort headers) so they meet touch-target guidance without
+   making the dense desktop layout bigger. */
+@utility hit-area {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+}

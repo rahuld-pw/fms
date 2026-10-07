@@ -15,7 +15,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ActivityFeed, ApprovalPanel, Attachments, Comments } from "@/components/shared/collaboration";
+import { ApprovalPanel, Attachments, Comments } from "@/components/shared/collaboration";
 import { DateTime, Money } from "@/components/shared/format";
 import { UserChip } from "@/components/shared/fields";
 import { DetailGrid, EmptyState, PageHeader } from "@/components/shared/page-header";

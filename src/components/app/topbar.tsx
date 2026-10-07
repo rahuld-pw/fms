@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Building2, Check, LogOut, Menu, Monitor, Moon, Plus, Search, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -25,6 +26,7 @@ export function Topbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const router = useRouter();
+  const qc = useQueryClient();
   const { user, org, orgs, modules } = useSession();
   const can = useCan();
   const { theme, setTheme } = useTheme();
@@ -43,7 +45,9 @@ export function Topbar() {
   const switchOrg = async (id: string) => {
     try {
       await api("/me/org", { body: { org_id: id } });
-      window.location.href = "/";
+      qc.clear(); // cached data belongs to the previous org
+      router.replace("/");
+      router.refresh();
     } catch (e) {
       toast.error(errorMessage(e));
     }

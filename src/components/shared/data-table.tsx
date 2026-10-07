@@ -87,12 +87,18 @@ export function DataTable<T extends Row>(props: Props<T>) {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(`dt:${id}:hidden`);
+      // restoring a per-browser preference after hydration (localStorage is unavailable during SSR)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (saved) setHidden(new Set(JSON.parse(saved)));
     } catch {
       /* storage unavailable */
     }
   }, [id]);
-  useEffect(() => setSearch(q), [q]);
+  const [syncedQ, setSyncedQ] = useState(q);
+  if (q !== syncedQ) {
+    setSyncedQ(q);
+    setSearch(q);
+  }
 
   const setParams = (patch: Record<string, string | null>, resetPage = true) => {
     const next = new URLSearchParams(params.toString());
@@ -263,7 +269,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
                 return (
                   <TH key={c.key} className={cn(c.align === "right" && "text-right", c.className)} aria-sort={dir === "asc" ? "ascending" : dir === "desc" ? "descending" : undefined}>
                     {c.sortable ? (
-                      <button onClick={() => toggleSort(c)} className={cn("inline-flex items-center gap-1 hover:text-foreground", dir && "text-foreground")}>
+                      <button onClick={() => toggleSort(c)} className={cn("hit-area inline-flex items-center gap-1 hover:text-foreground", dir && "text-foreground")}>
                         {c.header}
                         {dir === "asc" ? <ArrowUp className="size-3" /> : dir === "desc" ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-40" />}
                       </button>

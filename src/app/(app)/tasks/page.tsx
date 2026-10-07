@@ -1,4 +1,5 @@
 "use client";
+import { useNow } from "@/lib/client/use-now";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { CheckSquare } from "lucide-react";
@@ -12,9 +13,10 @@ import { QuickAdd, TaskRow, type Task } from "./shared";
 export default function MyTasksPage() {
   const { user } = useSession();
   const { data, isLoading } = useQuery({ queryKey: ["tasks", "mine"], queryFn: () => apiList<Task>("/tasks/mine?limit=200&sort=due_date") });
+  const now = useNow();
   const groups = useMemo(() => {
-    const today = new Date().toISOString().slice(0, 10);
-    const week = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    const today = new Date(now).toISOString().slice(0, 10);
+    const week = new Date(now + 7 * 86400000).toISOString().slice(0, 10);
     const g: Record<string, Task[]> = { Overdue: [], Today: [], "Next 7 days": [], Later: [], "No due date": [] };
     for (const t of data?.data ?? []) {
       if (!t.due_date) g["No due date"].push(t);
@@ -24,7 +26,7 @@ export default function MyTasksPage() {
       else g.Later.push(t);
     }
     return g;
-  }, [data]);
+  }, [data, now]);
   return (
     <div className="mx-auto max-w-4xl">
       <PageHeader title="My tasks" description="Everything assigned to you across projects." />

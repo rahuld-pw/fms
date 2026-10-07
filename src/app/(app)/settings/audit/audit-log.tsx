@@ -52,7 +52,7 @@ function Entry({ r }: { r: any }) {
   return (
     <li className="px-4 py-2.5 text-sm">
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <button type="button" className="text-muted-foreground disabled:opacity-0" disabled={!changes.length} onClick={() => setOpen(!open)} aria-label="Show changes" aria-expanded={open}>
+        <button type="button" className="hit-area text-muted-foreground disabled:opacity-0" disabled={!changes.length} onClick={() => setOpen(!open)} aria-label="Show changes" aria-expanded={open}>
           {open ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
         </button>
         <UserChip name={r.actor?.full_name ?? (r.actor_type === "api_key" ? "API key" : "System")} />

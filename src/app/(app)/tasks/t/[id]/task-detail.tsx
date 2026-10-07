@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CheckCircle2, Circle, Link2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/components/app/session";
@@ -27,12 +27,12 @@ export function TaskDetail({ id }: { id: string }) {
   const { data: t, isLoading, error } = useQuery({ queryKey: key, queryFn: () => api<any>(`/tasks/${id}`) });
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  useEffect(() => {
-    if (t) {
-      setTitle(t.title);
-      setDesc(t.description ?? "");
-    }
-  }, [t]);
+  const [syncedFrom, setSyncedFrom] = useState<typeof t>(undefined);
+  if (t && t !== syncedFrom) {
+    setSyncedFrom(t);
+    setTitle(t.title);
+    setDesc(t.description ?? "");
+  }
   const refresh = () => qc.invalidateQueries({ queryKey: ["tasks"] });
   const patch = useMutation({
     mutationFn: (body: Record<string, unknown>) => api(`/tasks/${id}`, { method: "PATCH", body }),
@@ -73,7 +73,7 @@ export function TaskDetail({ id }: { id: string }) {
         {t.parent && <> › <Link href={`/tasks/t/${t.parent.id}`} className="hover:text-foreground">{t.parent.title}</Link></>}
       </nav>
       <div className="mb-4 flex items-start gap-3">
-        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} className="mt-1.5" aria-label={done ? "Mark incomplete" : "Mark complete"}>
+        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} className="hit-area mt-1.5" aria-label={done ? "Mark incomplete" : "Mark complete"}>
           {done ? <CheckCircle2 className="size-6 text-primary" /> : <Circle className="size-6 text-muted-foreground hover:text-primary" />}
         </button>
         <input
@@ -95,7 +95,7 @@ export function TaskDetail({ id }: { id: string }) {
             <div className="border-t">
               {(t.subtasks ?? []).sort((a: any, b: any) => a.position - b.position).map((s: any) => (
                 <div key={s.id} className="flex items-center gap-2 border-b px-4 py-2 text-sm">
-                  <button onClick={() => api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } }).then(refresh)} aria-label="Toggle subtask">
+                  <button onClick={() => api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } }).then(refresh)} aria-label="Toggle subtask" className="hit-area">
                     {s.status === "done" ? <CheckCircle2 className="size-4 text-primary" /> : <Circle className="size-4 text-muted-foreground" />}
                   </button>
                   <Link href={`/tasks/t/${s.id}`} className={cn("flex-1 hover:underline", s.status === "done" && "text-muted-foreground line-through")}>{s.title}</Link>

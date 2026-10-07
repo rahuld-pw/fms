@@ -38,7 +38,9 @@ export async function api<T = unknown>(
   const json = await res.json().catch(() => null);
   if (!res.ok) {
     if (res.status === 401 && typeof window !== "undefined") {
-      window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
+      // session expired: outside React, so a hard navigation is the only option here
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+      window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
     }
     throw new ApiClientError(res.status, json?.error?.code ?? "error", json?.error?.message ?? res.statusText, json?.error?.details);
   }

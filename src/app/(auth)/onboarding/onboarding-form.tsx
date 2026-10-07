@@ -1,4 +1,5 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ import { supabaseBrowser } from "@/lib/supabase/browser";
 const slugify = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
 
 export function OnboardingForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [campus, setCampus] = useState("Main Campus");
@@ -28,7 +30,8 @@ export function OnboardingForm() {
     });
     setLoading(false);
     if (error) return toast.error(error.message.includes("duplicate") ? "That URL name is taken" : error.message);
-    window.location.href = "/";
+    router.replace("/");
+    router.refresh();
   };
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">

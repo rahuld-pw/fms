@@ -5,7 +5,7 @@ import { Ban, Check, FileCheck2, Link2, Pencil, Plus, Send, ShieldCheck, Star, X
 import { toast } from "sonner";
 import { useCan } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";

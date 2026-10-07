@@ -64,7 +64,7 @@ export function TaskRow({ task, showProject, onOpen }: { task: Task; showProject
   const subtasks = task.subtask_count?.[0]?.count ?? 0;
   return (
     <div className="group flex items-center gap-2.5 border-b px-3 py-2 text-sm last:border-0 hover:bg-muted/40">
-      <button onClick={() => toggle.mutate(task)} aria-label={done ? "Mark incomplete" : "Mark complete"} className="shrink-0">
+      <button onClick={() => toggle.mutate(task)} aria-label={done ? "Mark incomplete" : "Mark complete"} className="hit-area shrink-0">
         {done ? <CheckCircle2 className="size-[18px] text-primary" /> : <Circle className="size-[18px] text-muted-foreground hover:text-primary" />}
       </button>
       <Link href={`/tasks/t/${task.id}`} onClick={(e) => { if (onOpen) { e.preventDefault(); onOpen(task); } }} className={cn("min-w-0 flex-1 truncate", done && "text-muted-foreground line-through")}>

@@ -98,6 +98,7 @@ export function AsyncSelect<T>({
   const values = multiple ? ((value as string[] | null) ?? []) : value ? [value as string] : [];
   const labelOf = (v: string) => labels[v] ?? options.find((o) => o.value === v)?.label ?? (values.length === 1 && initialLabel ? initialLabel : "Selected");
 
+  const listId = useId();
   const pick = (o: Option) => {
     setLabels((l) => ({ ...l, [o.value]: o.label }));
     if (multiple) {
@@ -119,6 +120,7 @@ export function AsyncSelect<T>({
           type="button"
           role="combobox"
           aria-expanded={open}
+          aria-controls={listId}
           aria-haspopup="listbox"
           disabled={disabled}
           className="flex min-h-9 w-full items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1 text-left text-sm shadow-xs focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none disabled:opacity-50"
@@ -156,7 +158,7 @@ export function AsyncSelect<T>({
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-0">
         <Command shouldFilter={false}>
           <CommandInput placeholder="Search…" value={q} onValueChange={setQ} />
-          <CommandList>
+          <CommandList id={listId}>
             <CommandEmpty>{isFetching ? "Loading…" : "No matches."}</CommandEmpty>
             {options.map((o) => (
               <CommandItem key={o.value} value={o.value} onSelect={() => pick(o)}>

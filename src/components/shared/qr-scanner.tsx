@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Camera, CameraOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,16 +18,20 @@ interface Detector {
  * Camera QR scanner using the browser BarcodeDetector API (Android Chrome,
  * Safari 17+). Falls back to typing/pasting the code where unsupported.
  */
+const noop = () => () => {};
+
 export function QrScanner({ onScan, paused }: { onScan: (token: string) => void; paused?: boolean }) {
   const video = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(false);
-  const [supported, setSupported] = useState(true);
+  const [cameraFailed, setCameraFailed] = useState(false);
+  const detectable = useSyncExternalStore(
+    noop,
+    () => "BarcodeDetector" in window && !!navigator.mediaDevices,
+    () => true,
+  );
+  const supported = detectable && !cameraFailed;
   const [manual, setManual] = useState("");
   const last = useRef<{ v: string; t: number }>({ v: "", t: 0 });
-
-  useEffect(() => {
-    setSupported(typeof window !== "undefined" && "BarcodeDetector" in window && !!navigator.mediaDevices);
-  }, []);
 
   useEffect(() => {
     if (!active || paused) return;
@@ -60,7 +64,7 @@ export function QrScanner({ onScan, paused }: { onScan: (token: string) => void;
         tick();
       } catch {
         setActive(false);
-        setSupported(false);
+        setCameraFailed(true);
       }
     })();
     return () => {

@@ -1,4 +1,5 @@
 "use client";
+import { useNow } from "@/lib/client/use-now";
 import { useSession } from "@/components/app/session";
 import { Tooltip } from "@/components/ui/tooltip";
 import { formatDate, formatDateTime, formatMoney, relativeTime } from "@/lib/utils/format";
@@ -38,9 +39,9 @@ export function DateTime({ value, relative, dateOnly }: { value: string | null |
 /** Due date with overdue / due-soon emphasis. */
 export function DueDate({ value, done }: { value: string | null | undefined; done?: boolean }) {
   const { org } = useSession();
+  const now = useNow();
   if (!value) return <span className="text-muted-foreground">—</span>;
   const due = new Date(value.length === 10 ? `${value}T23:59:59` : value).getTime();
-  const now = Date.now();
   const overdue = !done && due < now;
   const soon = !done && !overdue && due - now < 2 * 86400_000;
   return (

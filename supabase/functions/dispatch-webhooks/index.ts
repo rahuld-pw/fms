@@ -61,7 +61,10 @@ Deno.serve(async (req) => {
     if (!batch.length) break;
     for (let i = 0; i < batch.length; i += CONCURRENCY) {
       const results = await Promise.all(batch.slice(i, i + CONCURRENCY).map(deliver));
-      for (const ok of results) ok ? sent++ : failed++;
+      for (const ok of results) {
+        if (ok) sent++;
+        else failed++;
+      }
     }
   }
   return Response.json({ sent, failed });

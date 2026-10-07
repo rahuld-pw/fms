@@ -26,7 +26,7 @@ export function PageHeader({
               <span key={i} className="flex items-center gap-1">
                 {i > 0 && <ChevronRight className="size-3" />}
                 {b.href ? (
-                  <Link href={b.href} className="hover:text-foreground">
+                  <Link href={b.href} className="hit-area hover:text-foreground">
                     {b.label}
                   </Link>
                 ) : (

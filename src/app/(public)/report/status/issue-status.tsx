@@ -1,6 +1,7 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { CheckCircle2, Circle, MapPin, RotateCcw, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,18 +23,18 @@ export function IssueStatus() {
   const router = useRouter();
   const token = params.get("token");
   const [input, setInput] = useState("");
-  const [data, setData] = useState<Status | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(!!token);
-  const load = useCallback(async () => {
-    if (!token) return;
-    const r = await fetch(`/api/v1/public/issues/status?token=${encodeURIComponent(token)}`);
-    const j = await r.json().catch(() => null);
-    if (!r.ok) setError(j?.error?.message ?? "Not found");
-    else { setData(j.data); setError(null); }
-    setLoading(false);
-  }, [token]);
-  useEffect(() => { void load(); }, [load]);
+  const { data, error, isLoading: loading, refetch } = useQuery({
+    queryKey: ["public-issue", token],
+    enabled: !!token,
+    retry: false,
+    queryFn: async () => {
+      const r = await fetch(`/api/v1/public/issues/status?token=${encodeURIComponent(token!)}`);
+      const j = await r.json().catch(() => null);
+      if (!r.ok) throw new Error(j?.error?.message ?? "Not found");
+      return j.data as Status;
+    },
+  });
+  const load = () => void refetch();
 
   if (!token) {
     return (
@@ -50,7 +51,7 @@ export function IssueStatus() {
     );
   }
   if (loading) return <Skeleton className="h-80" />;
-  if (error || !data) return <Card><CardContent className="py-10 text-center text-sm">{error ?? "Not found"}</CardContent></Card>;
+  if (error || !data) return <Card><CardContent className="py-10 text-center text-sm">{error?.message ?? "Not found"}</CardContent></Card>;
 
   const idx = data.status === "reopened" ? 0 : STEPS.indexOf(data.status === "acknowledged" ? "open" : data.status === "on_hold" ? "in_progress" : data.status);
   return (

@@ -1,7 +1,7 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CalendarCheck, CheckCircle2, Pause, Pencil, Play, ShieldCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useCan, useSession } from "@/components/app/session";
@@ -33,13 +33,13 @@ export function WorkOrderDetail({ id }: { id: string }) {
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [notes, setNotes] = useState("");
   const [costs, setCosts] = useState({ labour_cost: "", material_cost: "" });
-  useEffect(() => {
-    if (wo) {
-      setChecklist(wo.checklist ?? []);
-      setNotes(wo.completion_notes ?? "");
-      setCosts({ labour_cost: wo.labour_cost ?? "", material_cost: wo.material_cost ?? "" });
-    }
-  }, [wo]);
+  const [syncedFrom, setSyncedFrom] = useState<typeof wo>(undefined);
+  if (wo && wo !== syncedFrom) {
+    setSyncedFrom(wo);
+    setChecklist(wo.checklist ?? []);
+    setNotes(wo.completion_notes ?? "");
+    setCosts({ labour_cost: wo.labour_cost ?? "", material_cost: wo.material_cost ?? "" });
+  }
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ["work-order", id] });
     qc.invalidateQueries({ queryKey: ["activity", "work_order", id] });

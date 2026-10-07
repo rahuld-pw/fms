@@ -180,6 +180,7 @@ interface Cal {
 
 function MaintenanceCalendar() {
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
+  const [picked, setPicked] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const router = useRouter();
   const from = startOfWeek(month, { weekStartsOn: 1 });
   const to = addDays(startOfWeek(endOfMonth(month), { weekStartsOn: 1 }), 6);
@@ -224,13 +225,17 @@ function MaintenanceCalendar() {
             const inMonth = d.getMonth() === month.getMonth();
             const isToday = k === format(new Date(), "yyyy-MM-dd");
             return (
-              <div key={k} className={cn("min-h-20 border-r border-b p-1 text-xs [&:nth-child(7n)]:border-r-0 sm:min-h-24", !inMonth && "bg-muted/30 text-muted-foreground")}>
+              <div key={k} onClick={() => setPicked(k)} className={cn("min-h-14 cursor-pointer border-r border-b p-1 text-xs [&:nth-child(7n)]:border-r-0 sm:min-h-24 sm:cursor-default", !inMonth && "bg-muted/30 text-muted-foreground", picked === k && "ring-2 ring-primary/40 ring-inset sm:ring-0")}>
                 <div className={cn("mb-0.5 inline-flex size-5 items-center justify-center rounded-full", isToday && "bg-primary font-semibold text-primary-foreground")}>{d.getDate()}</div>
-                <div className="flex flex-col gap-0.5">
+                {/* phones: dots only; tap the day for the agenda below */}
+                <div className="flex flex-wrap gap-0.5 sm:hidden">
+                  {items.slice(0, 6).map((e, i) => <span key={i} className="size-1.5 rounded-full" style={{ background: e.kind === "wo" ? "var(--chart-1)" : e.kind === "pm" ? "var(--chart-2)" : "var(--chart-3)" }} />)}
+                </div>
+                <div className="hidden flex-col gap-0.5 sm:flex">
                   {items.slice(0, 3).map((e, i) => (
                     <button key={i} onClick={() => router.push(e.href)} className={cn("flex items-center gap-1 truncate rounded px-1 text-left hover:bg-muted", e.overdue && "font-medium text-destructive")} title={e.label}>
                       <span className="size-1.5 shrink-0 rounded-full" style={{ background: e.kind === "wo" ? "var(--chart-1)" : e.kind === "pm" ? "var(--chart-2)" : "var(--chart-3)" }} />
-                      <span className="hidden truncate sm:inline">{e.label}</span>
+                      <span className="truncate">{e.label}</span>
                     </button>
                   ))}
                   {items.length > 3 && <span className="px-1 text-muted-foreground">+{items.length - 3}</span>}
@@ -239,6 +244,20 @@ function MaintenanceCalendar() {
             );
           })}
         </div>
+      </Card>
+      <Card className="sm:hidden">
+        <div className="border-b px-4 py-2 text-sm font-medium">{format(new Date(`${picked}T12:00:00`), "EEEE, d MMMM")}</div>
+        <ul className="divide-y">
+          {(byDay.get(picked) ?? []).map((e, i) => (
+            <li key={i}>
+              <button onClick={() => router.push(e.href)} className={cn("flex min-h-11 w-full items-center gap-2 px-4 text-left text-sm active:bg-muted", e.overdue && "font-medium text-destructive")}>
+                <span className="size-2 shrink-0 rounded-full" style={{ background: e.kind === "wo" ? "var(--chart-1)" : e.kind === "pm" ? "var(--chart-2)" : "var(--chart-3)" }} />
+                <span className="truncate">{e.label}</span>
+              </button>
+            </li>
+          ))}
+          {!(byDay.get(picked) ?? []).length && <li className="px-4 py-3 text-sm text-muted-foreground">Nothing scheduled.</li>}
+        </ul>
       </Card>
     </div>
   );

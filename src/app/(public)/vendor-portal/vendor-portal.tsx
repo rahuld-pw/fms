@@ -1,6 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { CalendarCheck, CheckCircle2, FileUp, MapPin, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -20,16 +21,11 @@ const DOC_TYPES = ["gst_certificate", "pan_card", "cancelled_cheque", "msme_cert
 
 export function VendorPortal() {
   const token = useSearchParams().get("token");
-  const [data, setData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const load = useCallback(async () => {
-    if (!token) return;
-    try { setData(await portal(token, "/me")); } catch (e) { setError((e as Error).message); }
-  }, [token]);
-  useEffect(() => { void load(); }, [load]);
+  const { data, error, refetch } = useQuery({ queryKey: ["vendor-portal", token], enabled: !!token, retry: false, queryFn: () => portal<any>(token!, "/me") });
+  const load = () => void refetch();
 
   if (!token) return <PortalLogin />;
-  if (error) return <div className="flex flex-col gap-4"><Card><CardContent className="py-8 text-center text-sm">{error}</CardContent></Card><PortalLogin /></div>;
+  if (error) return <div className="flex flex-col gap-4"><Card><CardContent className="py-8 text-center text-sm">{error.message}</CardContent></Card><PortalLogin /></div>;
   if (!data) return <Skeleton className="h-96" />;
 
   const money = (v: number) => new Intl.NumberFormat(data.organisation.locale ?? "en-IN", { style: "currency", currency: data.organisation.currency ?? "INR" }).format(Number(v));

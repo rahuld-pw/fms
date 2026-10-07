@@ -1,6 +1,8 @@
 // Minimal Supabase-compatible gateway for local/CI end-to-end tests without
 // Docker: proxies /rest/v1 to PostgREST and emulates the small subset of the
-// Auth and Storage APIs the app uses (password sign-in, getUser, signed URLs).
+// Auth and Storage APIs the app uses (password and email-code sign-in,
+// getUser, signed URLs). Email codes are printed to the log and exposed at
+// GET /__test/otp?email=... instead of being emailed.
 // NOT for production.
 import http from "node:http";
 import crypto from "node:crypto";
@@ -39,6 +41,8 @@ async function session(user) {
     user: { id: user.id, aud: "authenticated", role: "authenticated", email: user.email, app_metadata: { provider: "email" }, user_metadata: user.raw_user_meta_data ?? {}, created_at: user.created_at },
   };
 }
+
+const otps = new Map(); // email -> { code, exp }
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${PORT}`);
@@ -81,6 +85,27 @@ const server = http.createServer(async (req, res) => {
       }
       return send(res, 200, await session(user));
     }
+    if (url.pathname === "/auth/v1/otp") {
+      const b = JSON.parse((await body(req)).toString() || "{}");
+      const email = String(b.email ?? "").toLowerCase();
+      const { rows } = await pool.query("select id from auth.users where lower(email) = $1", [email]);
+      // like Supabase with shouldCreateUser=false: unknown emails get an error
+      if (!rows[0] && b.create_user === false) return send(res, 422, { code: "otp_disabled", msg: "Signups not allowed for otp" });
+      const code = String(crypto.randomInt(0, 1_000_000)).padStart(6, "0");
+      otps.set(email, { code, exp: Date.now() + 600_000 });
+      console.log(`[otp] ${email}: ${code}`);
+      return send(res, 200, {});
+    }
+    if (url.pathname === "/auth/v1/verify") {
+      const b = JSON.parse((await body(req)).toString() || "{}");
+      const email = String(b.email ?? "").toLowerCase();
+      const entry = otps.get(email);
+      if (!entry || entry.exp < Date.now() || entry.code !== String(b.token)) return send(res, 403, { code: "otp_expired", msg: "Token has expired or is invalid" });
+      otps.delete(email);
+      const user = (await pool.query("select * from auth.users where lower(email) = $1", [email])).rows[0];
+      return send(res, 200, await session(user));
+    }
+    if (url.pathname === "/__test/otp") return send(res, 200, { code: otps.get(String(url.searchParams.get("email")).toLowerCase())?.code ?? null });
     if (url.pathname === "/auth/v1/user") {
       const claims = verify((req.headers.authorization ?? "").replace(/^Bearer /, ""));
       if (!claims?.sub) return send(res, 401, { code: 401, msg: "invalid JWT" });

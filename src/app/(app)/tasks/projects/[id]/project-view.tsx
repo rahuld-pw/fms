@@ -1,4 +1,5 @@
 "use client";
+import { useNow } from "@/lib/client/use-now";
 import { DndContext, DragOverlay, PointerSensor, TouchSensor, closestCorners, useDroppable, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from "@dnd-kit/core";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -60,7 +61,7 @@ export function ProjectView({ id }: { id: string }) {
         actions={
           <div className="flex rounded-md border p-0.5">
             {VIEWS.map((v) => (
-              <button key={v.key} onClick={() => router.replace(`?view=${v.key}`)} className={cn("flex items-center gap-1.5 rounded px-2.5 py-1 text-sm", view === v.key ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")} aria-pressed={view === v.key}>
+              <button key={v.key} onClick={() => router.replace(`?view=${v.key}`)} className={cn("flex min-h-8 items-center gap-1.5 rounded px-2.5 py-1 text-sm", view === v.key ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")} aria-pressed={view === v.key}>
                 <v.icon className="size-4" /> <span className="hidden sm:inline">{v.label}</span>
               </button>
             ))}
@@ -252,10 +253,11 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
 }
 
 function TimelineView({ tasks }: { tasks: Task[] }) {
+  const now = useNow();
   const dated = tasks.filter((t) => t.due_date).sort((a, b) => (a.start_date ?? a.due_date!).localeCompare(b.start_date ?? b.due_date!));
   if (dated.length === 0) return <p className="text-sm text-muted-foreground">Add start and due dates to see tasks on the timeline.</p>;
-  const start = new Date(Math.min(...dated.map((t) => new Date(t.start_date ?? t.due_date!).getTime()), Date.now()));
-  const end = new Date(Math.max(...dated.map((t) => new Date(t.due_date!).getTime()), Date.now() + 7 * 86400000));
+  const start = new Date(Math.min(...dated.map((t) => new Date(t.start_date ?? t.due_date!).getTime()), now));
+  const end = new Date(Math.max(...dated.map((t) => new Date(t.due_date!).getTime()), now + 7 * 86400000));
   const total = Math.max(1, differenceInCalendarDays(end, start) + 1);
   const pct = (d: Date) => (differenceInCalendarDays(d, start) / total) * 100;
   const weeks = Array.from({ length: Math.ceil(total / 7) }, (_, i) => addDays(startOfWeek(start, { weekStartsOn: 1 }), i * 7));
