@@ -81,6 +81,7 @@ export function fromPgError(err: PgError): ApiError {
     case "23503":
       return new ApiError("unprocessable", "A referenced record does not exist or is still in use", err.details ?? undefined);
     default:
+      console.error("[db]", err.code, msg, err.details ?? "", err.hint ?? "");
       return new ApiError("internal_error", "Unexpected database error", process.env.NODE_ENV === "production" ? undefined : msg);
   }
 }

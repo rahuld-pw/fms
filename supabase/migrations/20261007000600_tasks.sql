@@ -484,22 +484,33 @@ $$;
 -- -----------------------------------------------------------------------------
 -- RLS
 -- -----------------------------------------------------------------------------
+create or replace function app.is_team_lead(p_team uuid) returns boolean
+language sql stable security definer set search_path = public, app as $$
+  select exists (select 1 from public.team_members where team_id = p_team and user_id = auth.uid() and role = 'lead')
+$$;
+
 alter table public.teams enable row level security;
 create policy teams_select on public.teams for select to authenticated
   using (org_id in (select app.my_org_ids()) and app.module_enabled(org_id, 'tasks'));
-create policy teams_write on public.teams for all to authenticated
-  using (app.can('team:manage', org_id) or exists (select 1 from public.team_members m
-         where m.team_id = teams.id and m.user_id = (select auth.uid()) and m.role = 'lead'))
-  with check (app.can('team:manage', org_id) or exists (select 1 from public.team_members m
-         where m.team_id = teams.id and m.user_id = (select auth.uid()) and m.role = 'lead'));
+create policy teams_insert on public.teams for insert to authenticated
+  with check (app.can('team:manage', org_id));
+create policy teams_update on public.teams for update to authenticated
+  using (app.can('team:manage', org_id) or app.is_team_lead(id))
+  with check (app.can('team:manage', org_id) or app.is_team_lead(id));
+create policy teams_delete on public.teams for delete to authenticated
+  using (app.can('team:manage', org_id));
 
+-- (policies call security definer helpers so they never query team_members
+-- under its own RLS, which would recurse)
 alter table public.team_members enable row level security;
 create policy tm_select on public.team_members for select to authenticated using (org_id in (select app.my_org_ids()));
-create policy tm_write on public.team_members for all to authenticated
-  using (app.can('team:manage', org_id) or exists (select 1 from public.team_members m
-         where m.team_id = team_members.team_id and m.user_id = (select auth.uid()) and m.role = 'lead'))
-  with check (app.can('team:manage', org_id) or exists (select 1 from public.team_members m
-         where m.team_id = team_members.team_id and m.user_id = (select auth.uid()) and m.role = 'lead'));
+create policy tm_insert on public.team_members for insert to authenticated
+  with check (app.can('team:manage', org_id) or app.is_team_lead(team_id));
+create policy tm_update on public.team_members for update to authenticated
+  using (app.can('team:manage', org_id) or app.is_team_lead(team_id))
+  with check (app.can('team:manage', org_id) or app.is_team_lead(team_id));
+create policy tm_delete on public.team_members for delete to authenticated
+  using (app.can('team:manage', org_id) or app.is_team_lead(team_id));
 
 alter table public.projects enable row level security;
 create policy projects_select on public.projects for select to authenticated

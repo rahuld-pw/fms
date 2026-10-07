@@ -477,6 +477,27 @@ describe("tasks", () => {
     }));
 });
 
+describe("teams", () => {
+  it("team membership is readable without RLS recursion and leads can manage members", () =>
+    withSession(async (s) => {
+      const owner = await s.user(`owner-${Math.random()}@tm.test`);
+      const lead = await s.user(`lead-${Math.random()}@tm.test`);
+      const member = await s.user(`member-${Math.random()}@tm.test`);
+      const o = await s.org(owner);
+      await s.member(o.orgId, lead, "staff");
+      await s.member(o.orgId, member, "staff");
+      await s.asAdmin();
+      const team = await s.val<string>("insert into teams (org_id, name) values ($1, 'Ops') returning id", [o.orgId]);
+      await s.q("insert into team_members (team_id, user_id, org_id, role) values ($1, $2, $3, 'lead')", [team, lead, o.orgId]);
+      await s.as(member);
+      expect(await s.q("select * from team_members where team_id = $1", [team])).toHaveLength(1);
+      expect(await s.error("insert into team_members (team_id, user_id, org_id) values ($1, $2, $3)", [team, member, o.orgId])).toMatch(/row-level security/);
+      await s.as(lead);
+      expect(await s.error("insert into team_members (team_id, user_id, org_id) values ($1, $2, $3)", [team, member, o.orgId])).toBeNull();
+      expect(await s.q("select t.*, m.user_id from teams t join team_members m on m.team_id = t.id")).toHaveLength(2);
+    }));
+});
+
 describe("platform", () => {
   it("number series per campus and financial year", () =>
     withSession(async (s) => {

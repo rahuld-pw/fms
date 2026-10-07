@@ -7,7 +7,7 @@ let failures = 0;
 let count = 0;
 const get = async (path) => {
   count++;
-  const res = await fetch(`${BASE}${path}`, { headers: { authorization: `Bearer ${KEY}` } });
+  const res = await fetch(`${BASE}${path}`, { headers: process.env.COOKIE ? { cookie: process.env.COOKIE } : { authorization: `Bearer ${KEY}` } });
   const ok = res.status < 500;
   const text = await res.text();
   if (!ok || process.env.VERBOSE) console.log(`${ok ? "  " : "✗ "}${res.status} GET ${path} ${ok ? "" : text.slice(0, 300)}`);
