@@ -119,7 +119,7 @@ export const rfqs: ResourceSpec = {
   departmentColumn: "department_id",
   select: "*, requisition:requisitions(id, number, title), vendors:rfq_vendors(vendor_id, responded_at, declined, vendor:vendors(id, name))",
   detailSelect:
-    "*, requisition:requisitions(id, number, title, lines:requisition_lines(*)), vendors:rfq_vendors(vendor_id, invited_at, responded_at, declined, vendor:vendors(id, name, email, rating_avg)), quotes(*, vendor:vendors(id, name), lines:quote_lines(*))",
+    "*, requisition:requisitions(id, number, title, lines:requisition_lines(*)), vendors:rfq_vendors(vendor_id, invited_at, responded_at, declined, vendor:vendors(id, name, email, rating_avg)), quotes:quotes!quotes_rfq_id_fkey(*, vendor:vendors(id, name), lines:quote_lines(*))",
   filters: { status: "in", campus_id: "eq", requisition_id: "eq" },
   sortable: ["created_at", "due_date", "number"],
   defaultSort: "-created_at",

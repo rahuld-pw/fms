@@ -264,7 +264,12 @@ export async function createResource(ctx: RequestContext, spec: ResourceSpec, bo
   }
   const row = unwrap(await table(ctx.db, spec.table).insert(input).select(spec.detailSelect ?? spec.select ?? "*").single()) as Row;
   if (custom && spec.customFields) await writeCustomFields(ctx, spec.entityType, row.id, custom);
-  if (spec.afterCreate) await spec.afterCreate(ctx, row, parsed);
+  if (spec.afterCreate) {
+    await spec.afterCreate(ctx, row, parsed);
+    // Child rows / triggers may have changed totals and statuses: return the fresh row.
+    const fresh = await table(ctx.db, spec.table).select(spec.detailSelect ?? spec.select ?? "*").eq("id", row.id).maybeSingle();
+    if (fresh.data) return fresh.data as unknown as Row;
+  }
   return row;
 }
 

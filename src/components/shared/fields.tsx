@@ -1,6 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useState } from "react";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useSession } from "@/components/app/session";
 import { Avatar } from "@/components/ui/avatar";
@@ -28,9 +28,16 @@ export function Field({
   className?: string;
   children: React.ReactNode;
 }) {
+  // Associate the label with a single child control when no id was given.
+  const autoId = useId();
+  let id = htmlFor;
+  if (!id && isValidElement<{ id?: string }>(children) && typeof children.type !== "symbol") {
+    id = children.props.id ?? autoId;
+    if (!children.props.id) children = cloneElement(children, { id });
+  }
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <Label htmlFor={htmlFor}>
+      <Label htmlFor={id}>
         {label}
         {required && <span className="text-destructive"> *</span>}
       </Label>
@@ -110,6 +117,9 @@ export function AsyncSelect<T>({
         <button
           id={id}
           type="button"
+          role="combobox"
+          aria-expanded={open}
+          aria-haspopup="listbox"
           disabled={disabled}
           className="flex min-h-9 w-full items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1 text-left text-sm shadow-xs focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none disabled:opacity-50"
         >
