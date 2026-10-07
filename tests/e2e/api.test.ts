@@ -278,6 +278,46 @@ describe.runIf(process.env.E2E === "1")("API end-to-end", () => {
     expect(Buffer.from(await pdf.arrayBuffer()).subarray(0, 4).toString()).toBe("%PDF");
   });
 
+  it("sourcing: requisition > approval > RFQ > quotes > comparison > award > draft PO", async () => {
+    const sci = (await api("owner", "GET", "/departments?q=Science")).json.data[0];
+    const req = await api("teacher", "POST", "/requisitions", {
+      campus_id: MAIN, department_id: sci.id, title: "Digital thermometers",
+      lines: [{ description: "Digital thermometer", quantity: 10, estimated_unit_price: 400 }, { description: "Spare probes", quantity: 20, estimated_unit_price: 50 }],
+    });
+    expect(req.status).toBe(201);
+    expect(Number(req.json.data.estimated_total)).toBe(5000); // fresh row after lines were added
+    expect((await api("teacher", "POST", `/requisitions/${req.json.data.id}/submit`)).json.data.status).toBe("pending_approval");
+    let decided = false;
+    for (const who of ["hod", "fin", "owner"]) {
+      const r = (await api(who, "GET", "/approvals/inbox")).json.data.find((x: { entity_id: string }) => x.entity_id === req.json.data.id);
+      if (r) { await api(who, "POST", `/approvals/${r.id}/act`, { action: "approve" }); decided = true; break; }
+    }
+    expect(decided).toBe(true);
+
+    const vendors = (await api("proc", "GET", "/vendors?status=approved")).json.data.slice(0, 2);
+    const rfq = await api("proc", "POST", `/requisitions/${req.json.data.id}/rfq`, { vendor_ids: vendors.map((v: { id: string }) => v.id) });
+    expect(rfq.status).toBe(201);
+    const detail = await api("proc", "GET", `/rfqs/${rfq.json.data.id}`);
+    expect(detail.status).toBe(200); // regression: ambiguous quotes embed
+    const reqLines = detail.json.data.requisition.lines;
+    for (const [i, v] of vendors.entries()) {
+      const q = await api("proc", "POST", `/rfqs/${rfq.json.data.id}/quotes`, {
+        vendor_id: v.id, delivery_days: 5 + i,
+        lines: reqLines.map((l: { id: string; description: string; quantity: number }) => ({ requisition_line_id: l.id, description: l.description, quantity: Number(l.quantity), unit_price: i === 0 ? 380 : 350, tax_rate: 18 })),
+      });
+      expect(q.status).toBe(201);
+    }
+    const comp = (await api("proc", "GET", `/rfqs/${rfq.json.data.id}/comparison`)).json.data;
+    const lowest = comp.find((c: { is_lowest_total: boolean }) => c.is_lowest_total);
+    expect(lowest.vendor_id).toBe(vendors[1].id);
+    const award = await api("proc", "POST", `/quotes/${lowest.quote_id}/award`, {});
+    expect(award.status).toBe(201);
+    expect(award.json.data.status).toBe("draft");
+    expect(award.json.data.vendor_id).toBe(vendors[1].id);
+    expect(award.json.data.lines.map((l: { unit_price: string }) => Number(l.unit_price))).toEqual([350, 350]);
+    expect((await api("proc", "GET", `/rfqs/${rfq.json.data.id}`)).json.data.status).toBe("awarded");
+  });
+
   it("disabled modules return 403 module_disabled", async () => {
     await pool.query("update org_modules set enabled = false where org_id = $1 and module = 'tasks'", [ORG]);
     try {
