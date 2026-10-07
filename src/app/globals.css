@@ -40,11 +40,13 @@
   --sidebar-active: oklch(0.95 0.035 152);
   --sidebar-active-foreground: oklch(0.36 0.1 152);
 
-  --chart-1: oklch(0.56 0.14 152);
-  --chart-2: oklch(0.6 0.13 250);
-  --chart-3: oklch(0.72 0.16 70);
-  --chart-4: oklch(0.6 0.2 25);
-  --chart-5: oklch(0.55 0.15 300);
+  /* Categorical chart slots (validated: CVD-safe adjacent order, see dataviz palette) */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-track: #f0efec;
 }
 
 :root[data-accent="blue"] {
@@ -54,7 +56,6 @@
   --accent-foreground: oklch(0.35 0.12 255);
   --sidebar-active: oklch(0.95 0.03 255);
   --sidebar-active-foreground: oklch(0.38 0.14 255);
-  --chart-1: oklch(0.55 0.17 255);
 }
 
 :root[data-accent="violet"] {
@@ -64,7 +65,6 @@
   --accent-foreground: oklch(0.38 0.16 293);
   --sidebar-active: oklch(0.95 0.035 293);
   --sidebar-active-foreground: oklch(0.4 0.17 293);
-  --chart-1: oklch(0.54 0.2 293);
 }
 
 .dark {
@@ -97,6 +97,13 @@
   --sidebar-foreground: oklch(0.85 0.005 286);
   --sidebar-active: oklch(0.27 0.04 152);
   --sidebar-active-foreground: oklch(0.88 0.1 152);
+
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-track: #383835;
 }
 
 @theme inline {
@@ -134,6 +141,7 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-chart-track: var(--chart-track);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
