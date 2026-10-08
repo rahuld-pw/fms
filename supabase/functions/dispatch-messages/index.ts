@@ -1,6 +1,8 @@
 // Sends queued email / WhatsApp messages from message_outbox.
-// Providers: Resend (email) and Meta WhatsApp Cloud API. Channels without a
-// configured provider are marked "skipped" so the queue never backs up.
+// Providers: Resend (email) and Meta WhatsApp Cloud API. Without a Resend key,
+// email is relayed to the app (POST /api/v1/internal/email), which sends it
+// through its own SMTP settings (e.g. Gmail). Channels without a configured
+// provider are marked "skipped" so the queue never backs up.
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { render, VENDOR_TEMPLATES, type OutboxMessage } from "../_shared/templates.ts";
 import { sha256Hex } from "../_shared/signature.ts";
@@ -9,6 +11,7 @@ import { authorizeDispatch } from "../_shared/auth.ts";
 const env = (k: string) => Deno.env.get(k) ?? "";
 const supabase = createClient(env("SUPABASE_URL"), env("SUPABASE_SERVICE_ROLE_KEY"), { auth: { persistSession: false } });
 let APP_URL = env("APP_URL") || "http://localhost:3000";
+let DISPATCH_TOKEN = "";
 const MAX_ATTEMPTS = 5;
 
 interface Row extends OutboxMessage { id: number; org_id: string; recipient: string; attempts: number }
@@ -27,9 +30,20 @@ async function vendorPortalLink(row: Row): Promise<string | undefined> {
   return error ? undefined : `${APP_URL}/vendor-portal?token=${token}`;
 }
 
+async function relayEmail(to: string, subject: string, html: string, text: string) {
+  const res = await fetch(`${APP_URL}/api/v1/internal/email`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${DISPATCH_TOKEN}`, "content-type": "application/json" },
+    body: JSON.stringify({ to, subject, html, text }),
+  });
+  if (!res.ok) throw new Error(`Email relay ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const { data } = (await res.json()) as { data?: { result?: "sent" | "skipped" } };
+  return data?.result === "sent" ? ("sent" as const) : ("skipped" as const);
+}
+
 async function sendEmail(to: string, subject: string, html: string, text: string) {
   const key = env("RESEND_API_KEY");
-  if (!key) return "skipped" as const;
+  if (!key) return relayEmail(to, subject, html, text);
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
@@ -58,6 +72,7 @@ async function sendWhatsApp(to: string, tpl: { name: string; params: string[] } 
 Deno.serve(async (req) => {
   const config = await authorizeDispatch(req, supabase);
   if (!config) return new Response("Unauthorized", { status: 401 });
+  DISPATCH_TOKEN = (req.headers.get("authorization") ?? "").replace(/^Bearer\s+/i, "");
   if (config.app_url) APP_URL = config.app_url.replace(/\/$/, "");
   const { data: due, error } = await supabase
     .from("message_outbox").select("*").eq("status", "pending").lte("send_after", new Date().toISOString()).order("id").limit(100);

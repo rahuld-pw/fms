@@ -311,6 +311,23 @@ E2E=1 npm run test:e2e
 
 The gateway prints email sign-in codes to its log and exposes them at `GET /__test/otp?email=…` so the code flow can be tested.
 
+## Email without a domain (Gmail)
+
+Two kinds of email go out:
+
+| Email | Sent by | Configure |
+|---|---|---|
+| Sign-in codes, sign-up confirmation, password reset | Supabase Auth | **Authentication → Emails → SMTP Settings** |
+| Invitations, notifications, reminders | `dispatch-messages` Edge Function (every minute) | Resend secrets, or SMTP in the app (below) |
+
+Without a domain, use a Gmail account for both:
+
+1. Turn on 2-Step Verification for the Google account, then create an **App password** (Google Account → Security → App passwords). Use it instead of the Gmail password.
+2. Supabase → Authentication → Emails → SMTP Settings: host `smtp.gmail.com`, port `465`, username = the Gmail address, password = the app password, sender email = the Gmail address, sender name `Campus Ops`. Raise the email rate limit under Authentication → Rate Limits.
+3. Vercel → Project → Settings → Environment Variables (Production): `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER`, `SMTP_PASS` (app password, mark Sensitive) and optionally `EMAIL_FROM="Campus Ops <you@gmail.com>"`; redeploy.
+
+With no `RESEND_API_KEY`, the dispatcher posts each email to `POST /api/v1/internal/email` (authenticated with the dispatcher's Vault token) and the app sends it over SMTP. Gmail allows roughly 500 emails a day.
+
 ## Deployment
 
 Recommended regions for Indian institutions: Supabase **ap-south-1 (Mumbai)** and Vercel **bom1** (set in `vercel.json`).

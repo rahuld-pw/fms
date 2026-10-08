@@ -8,6 +8,7 @@ import { poRoutes } from "./po";
 import { publicRoutes } from "./public";
 import { platformRoutes } from "./platform";
 import { surveyRoutes } from "./surveys";
+import { internalRoutes } from "./internal";
 import { buildOpenApi } from "@/lib/api/openapi";
 import { publicRoute } from "@/lib/api/router";
 
@@ -42,6 +43,7 @@ export const allRoutes: RouteDef[] = [
   ...taskRoutes,
   ...poRoutes,
   ...surveyRoutes,
+  ...internalRoutes,
 ];
 
 export const router = new Router(allRoutes);
