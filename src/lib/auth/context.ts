@@ -127,21 +127,24 @@ async function loadOrg(db: DB, orgId: string): Promise<OrgInfo | null> {
   return (data as OrgInfo | null) ?? null;
 }
 
+const ORG_FIELDS = "id, name, slug, timezone, currency, locale, fy_start_month, logo_path, settings, kind, licensed_modules, status, deleted_at";
+
 /** Org selection for signed-in users: explicit header > cookie > default org > first membership. */
 async function resolveUserOrg(db: DB, userId: string, explicit?: string | null): Promise<OrgInfo | null> {
-  const memberships = unwrap(
-    await db.from("org_members").select("org_id").eq("user_id", userId).eq("status", "active"),
-  ).map((m) => m.org_id);
-  if (memberships.length === 0) return null;
-  const cookieOrg = (await cookies()).get(ORG_COOKIE)?.value;
-  const { data: profile } = await db.from("profiles").select("default_org_id").eq("id", userId).maybeSingle();
-  const candidates = [explicit, cookieOrg, profile?.default_org_id, memberships[0]];
-  // suspended organisations are invisible through RLS, so fall through to the next candidate
-  for (const c of [...new Set([...candidates, ...memberships])]) {
-    if (c && memberships.includes(c)) {
-      const org = await loadOrg(db, c);
-      if (org) return org;
-    }
+  // one round trip for memberships + their organisations, in parallel with the profile
+  const [members, { data: profile }, cookieStore] = await Promise.all([
+    db.from("org_members").select(`org_id, organisation:organisations(${ORG_FIELDS})`).eq("user_id", userId).eq("status", "active"),
+    db.from("profiles").select("default_org_id").eq("id", userId).maybeSingle(),
+    cookies(),
+  ]);
+  const rows = unwrap(members) as unknown as { org_id: string; organisation: (OrgInfo & { status: string; deleted_at: string | null }) | null }[];
+  if (rows.length === 0) return null;
+  // suspended organisations are invisible through RLS (or not active), so fall through to the next candidate
+  const usable = new Map(rows.flatMap((r) => (r.organisation && r.organisation.status === "active" && !r.organisation.deleted_at ? [[r.org_id, r.organisation] as const] : [])));
+  const candidates = [explicit, cookieStore.get(ORG_COOKIE)?.value, profile?.default_org_id, ...rows.map((r) => r.org_id)];
+  for (const c of candidates) {
+    const org = c ? usable.get(c) : undefined;
+    if (org) return org;
   }
   return null;
 }
@@ -153,11 +156,18 @@ export interface SessionUser {
   locale?: string | null;
 }
 
-/** The signed-in user, or null. */
+/**
+ * The signed-in user, or null. Uses the verified JWT claims (checked locally
+ * against the project's signing keys) instead of a round trip to Supabase Auth
+ * on every render; RLS validates the same token on each query.
+ */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const db = await createUserClient();
-  const { data } = await db.auth.getUser();
-  return data.user ? { id: data.user.id, email: data.user.email ?? null, locale: (data.user.user_metadata?.locale as string | undefined) ?? null } : null;
+  const { data } = await db.auth.getClaims();
+  const c = data?.claims;
+  if (!c?.sub) return null;
+  const meta = (c.user_metadata ?? {}) as Record<string, unknown>;
+  return { id: c.sub, email: (c.email as string | undefined) ?? null, locale: (meta.locale as string | undefined) ?? null };
 });
 
 /**

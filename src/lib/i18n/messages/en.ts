@@ -103,6 +103,7 @@ const en = {
     verify: "Verify and sign in",
     emailMeCode: "Email me a code",
     codeSent: "We emailed you a sign-in code",
+    sendingCode: "Sending your code…",
     newHere: "New to Campus Ops?",
     createFree: "Create a free account",
     signupTitle: "Create your free account",
@@ -119,7 +120,7 @@ const en = {
   features: {
     eyebrow: "For schools and institutes",
     headline: "Run your campus — facilities, money, tasks and purchasing — in one place.",
-    lead: "Four modules that share people, budgets and approvals, so a broken projector, the PO to replace it and the follow-up task all stay connected.",
+    lead: "Five modules that share people, budgets and approvals, so a broken projector, the PO to replace it and the follow-up task all stay connected.",
     facility1: "Issue reporting by QR — no login needed",
     facility2: "SLA timers, escalations and work orders",
     facility3: "Asset register, PM schedules, AMC and compliance",

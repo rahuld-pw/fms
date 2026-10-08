@@ -1,6 +1,7 @@
 // Urdu translations of ./en.ts. Missing keys fall back to English.
 const surveysArea_ur = {
   modules: { surveys: "فیڈبیک اور NPS" },
+  features: { surveys1: "عملے، والدین اور مہمانوں کے لیے NPS اور اطمینان سروے", surveys2: "عوامی لنک اور QR کوڈ — لاگ اِن کی ضرورت نہیں", surveys3: "حل شدہ مسائل پر ریٹنگ، حل کرنے والے فرد کے لحاظ سے" },
   nav: { "/surveys": "سروے اور NPS", "/facility/feedback": "حل پر فیڈبیک" },
   settings: { org: { modules: { surveys: "فیڈبیک اور NPS", surveysDescription: "عملے، والدین اور مہمانوں کے لیے سروے، NPS کے ساتھ" } } },
   analytics: {

@@ -1,4 +1,5 @@
 import { PageHeader, Stat } from "@/components/shared/page-header";
+import { getSessionContext } from "@/lib/auth/context";
 import { requireSession } from "@/lib/auth/session-data";
 import { unwrap } from "@/lib/api/errors";
 import { hasApprovals } from "@/lib/nav";
@@ -16,8 +17,10 @@ function firstName(full: string | null | undefined) {
 export const metadata = { title: "Home" };
 
 export default async function HomePage() {
-  const { ctx, data } = await requireSession();
-  const stats = unwrap(await ctx.db.rpc("home_dashboard", { p_org: ctx.orgId })) as Record<string, number>;
+  // the dashboard numbers load alongside the app shell's data, not after it
+  const early = await getSessionContext();
+  const [{ ctx, data }, dash] = await Promise.all([requireSession(), early ? early.db.rpc("home_dashboard", { p_org: early.orgId }) : null]);
+  const stats = (dash ? unwrap(dash) : unwrap(await ctx.db.rpc("home_dashboard", { p_org: ctx.orgId }))) as Record<string, number>;
   const hour = Number(new Intl.DateTimeFormat("en-GB", { hour: "numeric", hourCycle: "h23", timeZone: ctx.org.timezone }).format(new Date()));
   const { t } = await getT();
   const greeting = hour < 12 ? "home.morning" : hour < 17 ? "home.afternoon" : "home.evening";

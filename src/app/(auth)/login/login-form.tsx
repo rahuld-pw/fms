@@ -28,6 +28,8 @@ export function LoginForm() {
   const [codeSent, setCodeSent] = useState(false);
   // "resend" only spins the resend link; both block the form while in flight
   const [pending, setPending] = useState<"submit" | "resend" | null>(null);
+  // the first code is sent in the background: the code box shows at once
+  const [sending, setSending] = useState(false);
   const loading = pending !== null;
   const { t } = useT();
 
@@ -37,11 +39,20 @@ export function LoginForm() {
   };
 
   const sendCode = async (resend = false) => {
-    setPending(resend ? "resend" : "submit");
+    if (sending) return;
+    if (resend) setPending("resend");
+    else {
+      // sending the email takes a few seconds; let the user get ready to type the code meanwhile
+      setCodeSent(true);
+      setSending(true);
+    }
     const { error } = await supabaseBrowser().auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
     setPending(null);
-    if (error) return toast.error(error.message);
-    setCodeSent(true);
+    setSending(false);
+    if (error) {
+      if (!resend) setCodeSent(false);
+      return toast.error(error.message);
+    }
     toast.success(t("auth.codeSent"));
   };
 
@@ -97,9 +108,12 @@ export function LoginForm() {
           <Label htmlFor="code">{t("auth.codeFromEmail")}</Label>
           <Input id="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" maxLength={10} required autoFocus
             className="text-center font-mono text-lg tracking-[0.4em]" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
+          {sending && (
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground" role="status"><Spinner />{t("auth.sendingCode")}</p>
+          )}
           <div className="flex justify-between text-xs">
-            <button type="button" className="text-muted-foreground hover:underline disabled:opacity-50" disabled={loading} onClick={() => { setCodeSent(false); setCode(""); }}>{t("auth.changeEmail")}</button>
-            <button type="button" className="inline-flex items-center gap-1.5 text-primary hover:underline disabled:opacity-50" disabled={loading} aria-busy={pending === "resend" || undefined} onClick={() => sendCode(true)}>{pending === "resend" && <Spinner />}{t("auth.resendCode")}</button>
+            <button type="button" className="text-muted-foreground hover:underline disabled:opacity-50" disabled={loading || sending} onClick={() => { setCodeSent(false); setCode(""); }}>{t("auth.changeEmail")}</button>
+            <button type="button" className="inline-flex items-center gap-1.5 text-primary hover:underline disabled:opacity-50" disabled={loading || sending} aria-busy={pending === "resend" || undefined} onClick={() => sendCode(true)}>{pending === "resend" && <Spinner />}{t("auth.resendCode")}</button>
           </div>
         </div>
       )}

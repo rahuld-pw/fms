@@ -1,6 +1,7 @@
 // Hindi translations of ./en.ts. Missing keys fall back to English.
 const surveys_hi = {
   modules: { surveys: "फ़ीडबैक और NPS" },
+  features: { surveys1: "स्टाफ़, अभिभावकों और आगंतुकों के लिए NPS और संतुष्टि सर्वे", surveys2: "सार्वजनिक लिंक और QR कोड — लॉगिन की ज़रूरत नहीं", surveys3: "हल हुई समस्याओं पर रेटिंग, हल करने वाले व्यक्ति के अनुसार" },
   nav: { "/surveys": "सर्वे और NPS", "/facility/feedback": "समाधान पर फ़ीडबैक" },
   settings: { org: { modules: { surveys: "फ़ीडबैक और NPS", surveysDescription: "स्टाफ़, अभिभावकों और आगंतुकों के लिए सर्वे, NPS के साथ" } } },
   analytics: {

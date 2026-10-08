@@ -1,4 +1,4 @@
-import { BadgeCheck, ClipboardList, KeyRound, Languages, ListChecks, QrCode, ShieldCheck, ShoppingCart, Smartphone, Wallet } from "lucide-react";
+import { BadgeCheck, ClipboardList, KeyRound, Languages, ListChecks, MessageSquareHeart, QrCode, ShieldCheck, ShoppingCart, Smartphone, Wallet } from "lucide-react";
 import { getT } from "@/lib/i18n/server";
 
 const MODULES = [
@@ -6,6 +6,7 @@ const MODULES = [
   { key: "expense", icon: Wallet },
   { key: "tasks", icon: ListChecks },
   { key: "po", icon: ShoppingCart },
+  { key: "surveys", icon: MessageSquareHeart },
 ] as const;
 
 const HIGHLIGHTS = [
@@ -30,7 +31,7 @@ export async function FeatureShowcase() {
         <p className="mt-3 text-sm text-muted-foreground sm:text-base">{t("features.lead")}</p>
         <div className="mt-8 grid gap-3 sm:grid-cols-2">
           {MODULES.map((m) => (
-            <div key={m.key} className="rounded-xl border bg-card p-4">
+            <div key={m.key} className={`rounded-xl border bg-card p-4 ${m.key === "surveys" ? "sm:col-span-2" : ""}`}>
               <div className="flex items-center gap-2">
                 <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary"><m.icon className="size-4" /></span>
                 <h3 className="font-semibold">{t(`modules.${m.key}`)}</h3>

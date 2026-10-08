@@ -1,6 +1,7 @@
 // Tamil translations of ./en.ts. Missing keys fall back to English.
 const surveysArea_ta = {
   modules: { surveys: "கருத்து & NPS" },
+  features: { surveys1: "பணியாளர்கள், பெற்றோர், பார்வையாளர்களுக்கான NPS மற்றும் திருப்தி கணக்கெடுப்புகள்", surveys2: "பொது இணைப்பு மற்றும் QR குறியீடு — உள்நுழைவு தேவையில்லை", surveys3: "தீர்க்கப்பட்ட சிக்கல்களுக்கான மதிப்பீடுகள், தீர்த்தவர் வாரியாக" },
   nav: { "/surveys": "கருத்துக்கணிப்புகள் & NPS", "/facility/feedback": "தீர்வு குறித்த கருத்து" },
   settings: { org: { modules: { surveys: "கருத்து & NPS", surveysDescription: "ஊழியர், பெற்றோர், பார்வையாளர்களுக்கான கருத்துக்கணிப்புகள், NPS உடன்" } } },
   analytics: {

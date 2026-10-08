@@ -1,6 +1,7 @@
 // Gujarati translations of ./en.ts. Missing keys fall back to English.
 const surveysArea_gu = {
   modules: { surveys: "પ્રતિસાદ અને NPS" },
+  features: { surveys1: "સ્ટાફ, વાલીઓ અને મુલાકાતીઓ માટે NPS અને સંતોષ સર્વે", surveys2: "જાહેર લિંક અને QR કોડ — લૉગિનની જરૂર નથી", surveys3: "ઉકેલાયેલી સમસ્યાઓ પર રેટિંગ, ઉકેલનાર વ્યક્તિ મુજબ" },
   nav: { "/surveys": "સર્વે અને NPS", "/facility/feedback": "ઉકેલ પર પ્રતિસાદ" },
   settings: { org: { modules: { surveys: "પ્રતિસાદ અને NPS", surveysDescription: "સ્ટાફ, વાલીઓ અને મુલાકાતીઓ માટે સર્વે, NPS સાથે" } } },
   analytics: {

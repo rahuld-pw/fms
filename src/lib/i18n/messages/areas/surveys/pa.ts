@@ -1,6 +1,7 @@
 // Punjabi (Gurmukhi) translations of ./en.ts. Missing keys fall back to English.
 const surveys_pa = {
   modules: { surveys: "ਫੀਡਬੈਕ ਅਤੇ NPS" },
+  features: { surveys1: "ਸਟਾਫ਼, ਮਾਪਿਆਂ ਅਤੇ ਮਹਿਮਾਨਾਂ ਲਈ NPS ਅਤੇ ਸੰਤੁਸ਼ਟੀ ਸਰਵੇਖਣ", surveys2: "ਪਬਲਿਕ ਲਿੰਕ ਅਤੇ QR ਕੋਡ — ਲੌਗਇਨ ਦੀ ਲੋੜ ਨਹੀਂ", surveys3: "ਹੱਲ ਹੋਈਆਂ ਸਮੱਸਿਆਵਾਂ ਦੀ ਰੇਟਿੰਗ, ਹੱਲ ਕਰਨ ਵਾਲੇ ਵਿਅਕਤੀ ਅਨੁਸਾਰ" },
   nav: { "/surveys": "ਸਰਵੇਖਣ ਅਤੇ NPS", "/facility/feedback": "ਹੱਲ ਬਾਰੇ ਫੀਡਬੈਕ" },
   settings: { org: { modules: { surveys: "ਫੀਡਬੈਕ ਅਤੇ NPS", surveysDescription: "ਸਟਾਫ਼, ਮਾਪਿਆਂ ਅਤੇ ਮਹਿਮਾਨਾਂ ਲਈ ਸਰਵੇਖਣ, NPS ਸਮੇਤ" } } },
   analytics: {

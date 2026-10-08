@@ -1,6 +1,7 @@
 // Bengali translations of ./en.ts. Missing keys fall back to English.
 const surveys_bn = {
   modules: { surveys: "মতামত ও NPS" },
+  features: { surveys1: "কর্মী, অভিভাবক ও দর্শনার্থীদের জন্য NPS ও সন্তুষ্টি সমীক্ষা", surveys2: "পাবলিক লিংক ও QR কোড — লগইন লাগবে না", surveys3: "সমাধান হওয়া সমস্যার রেটিং, সমাধানকারী অনুযায়ী" },
   nav: { "/surveys": "সার্ভে ও NPS", "/facility/feedback": "সমাধানের মতামত" },
   settings: { org: { modules: { surveys: "মতামত ও NPS", surveysDescription: "কর্মী, অভিভাবক ও অতিথিদের জন্য সার্ভে, NPS সহ" } } },
   analytics: {

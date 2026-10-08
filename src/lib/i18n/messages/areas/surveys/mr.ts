@@ -1,6 +1,7 @@
 // Marathi translations of ./en.ts. Missing keys fall back to English.
 const surveys_mr = {
   modules: { surveys: "अभिप्राय आणि NPS" },
+  features: { surveys1: "कर्मचारी, पालक आणि अभ्यागतांसाठी NPS आणि समाधान सर्वेक्षण", surveys2: "सार्वजनिक लिंक आणि QR कोड — लॉगिनची गरज नाही", surveys3: "सोडवलेल्या समस्यांवर रेटिंग, सोडवणाऱ्या व्यक्तीनुसार" },
   nav: { "/surveys": "सर्वेक्षण आणि NPS", "/facility/feedback": "निराकरणावरील अभिप्राय" },
   settings: { org: { modules: { surveys: "अभिप्राय आणि NPS", surveysDescription: "कर्मचारी, पालक आणि भेट देणाऱ्यांसाठी सर्वेक्षण, NPS सह" } } },
   analytics: {

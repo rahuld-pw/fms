@@ -1,6 +1,7 @@
 // Kannada translations of ./en.ts. Missing keys fall back to English.
 const surveysArea_kn = {
   modules: { surveys: "ಪ್ರತಿಕ್ರಿಯೆ & NPS" },
+  features: { surveys1: "ಸಿಬ್ಬಂದಿ, ಪೋಷಕರು ಮತ್ತು ಸಂದರ್ಶಕರಿಗೆ NPS ಮತ್ತು ತೃಪ್ತಿ ಸಮೀಕ್ಷೆಗಳು", surveys2: "ಸಾರ್ವಜನಿಕ ಲಿಂಕ್ ಮತ್ತು QR ಕೋಡ್ — ಲಾಗಿನ್ ಅಗತ್ಯವಿಲ್ಲ", surveys3: "ಪರಿಹರಿಸಿದ ಸಮಸ್ಯೆಗಳ ರೇಟಿಂಗ್, ಪರಿಹರಿಸಿದ ವ್ಯಕ್ತಿವಾರು" },
   nav: { "/surveys": "ಸಮೀಕ್ಷೆಗಳು & NPS", "/facility/feedback": "ಪರಿಹಾರದ ಪ್ರತಿಕ್ರಿಯೆ" },
   settings: { org: { modules: { surveys: "ಪ್ರತಿಕ್ರಿಯೆ & NPS", surveysDescription: "ಸಿಬ್ಬಂದಿ, ಪೋಷಕರು ಮತ್ತು ಸಂದರ್ಶಕರಿಗೆ ಸಮೀಕ್ಷೆಗಳು, NPS ಸಹಿತ" } } },
   analytics: {

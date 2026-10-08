@@ -1,6 +1,7 @@
 // Malayalam translations of ./en.ts. Missing keys fall back to English.
 const surveys_ml = {
   modules: { surveys: "ഫീഡ്ബാക്കും NPS-ഉം" },
+  features: { surveys1: "ജീവനക്കാർ, രക്ഷിതാക്കൾ, സന്ദർശകർ എന്നിവർക്കായി NPS, സംതൃപ്തി സർവേകൾ", surveys2: "പബ്ലിക് ലിങ്കും QR കോഡും — ലോഗിൻ ആവശ്യമില്ല", surveys3: "പരിഹരിച്ച പ്രശ്നങ്ങൾക്കുള്ള റേറ്റിംഗ്, പരിഹരിച്ച വ്യക്തി തിരിച്ച്" },
   nav: { "/surveys": "സർവേകളും NPS-ഉം", "/facility/feedback": "പരിഹാര ഫീഡ്ബാക്ക്" },
   settings: { org: { modules: { surveys: "ഫീഡ്ബാക്കും NPS-ഉം", surveysDescription: "ജീവനക്കാർ, രക്ഷിതാക്കൾ, സന്ദർശകർ എന്നിവർക്കുള്ള സർവേകൾ, NPS സഹിതം" } } },
   analytics: {

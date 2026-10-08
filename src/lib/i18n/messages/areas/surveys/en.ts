@@ -1,6 +1,7 @@
 // Feedback & NPS module, resolution feedback and related analytics: English source strings.
 const surveysArea = {
   modules: { surveys: "Feedback & NPS" },
+  features: { surveys1: "NPS and satisfaction surveys for staff, parents and visitors", surveys2: "Public link and QR code — no login needed", surveys3: "Ratings on resolved issues, per person who fixed them" },
   nav: { "/surveys": "Surveys & NPS", "/facility/feedback": "Resolution feedback" },
   settings: { org: { modules: { surveys: "Feedback & NPS", surveysDescription: "Surveys for staff, parents and visitors, with NPS" } } },
   analytics: {

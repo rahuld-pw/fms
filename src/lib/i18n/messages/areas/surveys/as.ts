@@ -1,6 +1,7 @@
 // Assamese translations of ./en.ts. Missing keys fall back to English.
 const surveys_as = {
   modules: { surveys: "মতামত আৰু NPS" },
+  features: { surveys1: "কৰ্মচাৰী, অভিভাৱক আৰু দৰ্শনাৰ্থীৰ বাবে NPS আৰু সন্তুষ্টি জৰীপ", surveys2: "ৰাজহুৱা লিংক আৰু QR ক'ড — লগইনৰ প্ৰয়োজন নাই", surveys3: "সমাধান হোৱা সমস্যাৰ ৰেটিং, সমাধানকাৰী অনুসৰি" },
   nav: { "/surveys": "জৰীপ আৰু NPS", "/facility/feedback": "সমাধানৰ মতামত" },
   settings: { org: { modules: { surveys: "মতামত আৰু NPS", surveysDescription: "কৰ্মচাৰী, অভিভাৱক আৰু আগন্তুকৰ বাবে জৰীপ, NPS সহ" } } },
   analytics: {

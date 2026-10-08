@@ -1,6 +1,7 @@
 // Odia translations of ./en.ts. Missing keys fall back to English.
 const surveys_or = {
   modules: { surveys: "ମତାମତ ଓ NPS" },
+  features: { surveys1: "କର୍ମଚାରୀ, ଅଭିଭାବକ ଓ ପରିଦର୍ଶକଙ୍କ ପାଇଁ NPS ଓ ସନ୍ତୁଷ୍ଟି ସର୍ଭେ", surveys2: "ସାର୍ବଜନୀନ ଲିଙ୍କ ଓ QR କୋଡ୍ — ଲଗଇନ୍ ଆବଶ୍ୟକ ନାହିଁ", surveys3: "ସମାଧାନ ହୋଇଥିବା ସମସ୍ୟା ଉପରେ ରେଟିଂ, ସମାଧାନକାରୀ ଅନୁଯାୟୀ" },
   nav: { "/surveys": "ସର୍ଭେ ଓ NPS", "/facility/feedback": "ସମାଧାନ ମତାମତ" },
   settings: { org: { modules: { surveys: "ମତାମତ ଓ NPS", surveysDescription: "କର୍ମଚାରୀ, ଅଭିଭାବକ ଓ ଆଗନ୍ତୁକଙ୍କ ପାଇଁ ସର୍ଭେ, NPS ସହିତ" } } },
   analytics: {

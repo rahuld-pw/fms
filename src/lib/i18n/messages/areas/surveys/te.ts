@@ -1,6 +1,7 @@
 // Telugu translations of ./en.ts. Missing keys fall back to English.
 const surveys_te = {
   modules: { surveys: "అభిప్రాయం & NPS" },
+  features: { surveys1: "సిబ్బంది, తల్లిదండ్రులు, సందర్శకుల కోసం NPS, సంతృప్తి సర్వేలు", surveys2: "పబ్లిక్ లింక్, QR కోడ్ — లాగిన్ అవసరం లేదు", surveys3: "పరిష్కరించిన సమస్యలపై రేటింగ్‌లు, పరిష్కరించిన వ్యక్తి వారీగా" },
   nav: { "/surveys": "సర్వేలు & NPS", "/facility/feedback": "పరిష్కారంపై అభిప్రాయం" },
   settings: { org: { modules: { surveys: "అభిప్రాయం & NPS", surveysDescription: "సిబ్బంది, తల్లిదండ్రులు, సందర్శకుల కోసం సర్వేలు, NPS తో" } } },
   analytics: {
