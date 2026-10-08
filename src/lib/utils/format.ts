@@ -20,20 +20,31 @@ export function formatNumber(value: number | string | null | undefined, locale =
   return new Intl.NumberFormat(locale).format(Number(value));
 }
 
+// Non-English interface languages format dates with Intl (month names in
+// that language); English keeps the fixed "08 Oct 2026, 14:30" style.
+const isEnglish = (locale?: string) => !locale || locale.startsWith("en");
+function intlDate(value: Date, timeZone: string, locale: string, opts: Intl.DateTimeFormatOptions) {
+  return new Intl.DateTimeFormat(locale, { timeZone, day: "2-digit", month: "short", ...opts }).format(value);
+}
+
 /** Timestamps are stored in UTC and displayed in the organisation's timezone. */
-export function formatDateTime(value: string | Date | null | undefined, timeZone = "Asia/Kolkata", pattern = "dd MMM yyyy, HH:mm") {
+export function formatDateTime(value: string | Date | null | undefined, timeZone = "Asia/Kolkata", pattern = "dd MMM yyyy, HH:mm", locale?: string) {
   if (!value) return "—";
+  if (!isEnglish(locale)) {
+    return intlDate(new Date(value), timeZone, locale!, { ...(pattern.includes("yyyy") ? { year: "numeric" } : {}), hour: "2-digit", minute: "2-digit", hourCycle: "h23" });
+  }
   return formatInTimeZone(value, timeZone, pattern);
 }
 
-export function formatDate(value: string | Date | null | undefined, timeZone = "Asia/Kolkata") {
+export function formatDate(value: string | Date | null | undefined, timeZone = "Asia/Kolkata", locale?: string) {
   if (!value) return "—";
   // plain dates (YYYY-MM-DD) have no timezone: format as-is
   if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
     const [y, m, d] = value.split("-").map(Number);
-    return formatInTimeZone(new Date(Date.UTC(y, m - 1, d, 12)), "UTC", "dd MMM yyyy");
+    const noon = new Date(Date.UTC(y, m - 1, d, 12));
+    return isEnglish(locale) ? formatInTimeZone(noon, "UTC", "dd MMM yyyy") : intlDate(noon, "UTC", locale!, { year: "numeric" });
   }
-  return formatInTimeZone(value, timeZone, "dd MMM yyyy");
+  return isEnglish(locale) ? formatInTimeZone(value, timeZone, "dd MMM yyyy") : intlDate(new Date(value), timeZone, locale!, { year: "numeric" });
 }
 
 const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [["year", 31536000], ["month", 2592000], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60], ["second", 1]];

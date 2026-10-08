@@ -27,7 +27,7 @@ interface Dash {
 }
 
 export function FacilityDashboard() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const { campuses } = useSession();
   const [campus, setCampus] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
@@ -73,7 +73,7 @@ export function FacilityDashboard() {
                     { key: "opened", label: t("facility.dashboard.opened"), color: "var(--chart-1)" },
                     { key: "resolved", label: t("facility.dashboard.resolved"), color: "var(--chart-2)" },
                   ]}
-                  formatX={(d) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
+                  formatX={(d) => new Date(d).toLocaleDateString(locale, { day: "numeric", month: "short" })}
                 />
               </CardContent>
             </Card>

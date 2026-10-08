@@ -183,7 +183,7 @@ interface Cal {
 }
 
 function MaintenanceCalendar() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [picked, setPicked] = useState(() => format(new Date(), "yyyy-MM-dd"));
   const router = useRouter();
@@ -211,7 +211,7 @@ function MaintenanceCalendar() {
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(month, -1)))} aria-label={t("facility.maintenance.cal.prevMonth")}><ChevronLeft /></Button>
-        <span className="w-36 text-center text-sm font-medium">{format(month, "MMMM yyyy")}</span>
+        <span className="w-36 text-center text-sm font-medium">{new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(month)}</span>
         <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(endOfMonth(month), 1)))} aria-label={t("facility.maintenance.cal.nextMonth")}><ChevronRight /></Button>
         <div className="ml-auto flex gap-3 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-[var(--chart-1)]" /> {t("facility.workOrders.colWorkOrder")}</span>
@@ -251,7 +251,7 @@ function MaintenanceCalendar() {
         </div>
       </Card>
       <Card className="sm:hidden">
-        <div className="border-b px-4 py-2 text-sm font-medium">{format(new Date(`${picked}T12:00:00`), "EEEE, d MMMM")}</div>
+        <div className="border-b px-4 py-2 text-sm font-medium">{new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${picked}T12:00:00`))}</div>
         <ul className="divide-y">
           {(byDay.get(picked) ?? []).map((e, i) => (
             <li key={i}>

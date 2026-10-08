@@ -161,8 +161,11 @@ Every viewer gets "My performance" (tasks completed and on time, issues reported
 The interface is available in English and 12 Indian languages: Hindi, Bengali, Telugu, Marathi, Tamil, Urdu, Gujarati, Kannada, Odia, Malayalam, Punjabi and Assamese. Pick one from the account menu, the sign-in page or the platform console header.
 
 - The choice is stored in a `locale` cookie (this device) and in the user's auth metadata (follows them to other devices). First-time visitors get their browser language if supported.
-- Strings live in `src/lib/i18n/messages/<code>.ts`; `en.ts` is the source. Missing keys fall back to English, and `tests/unit/i18n.test.ts` fails if a language is missing a key or a `{placeholder}`.
-- Translated so far: navigation, top bar and menus, home dashboard, sign-in/sign-up and the product overview, analytics, statuses and priorities. Deeper module screens (forms, tables) are still English. Dates, numbers and relative times use the language's Intl formatting.
+- Strings live in `src/lib/i18n/messages/` — `<code>.ts` for the shell, home, sign-in and analytics, and `areas/<area>/<code>.ts` for each module (`facility`, `expense`, `po`, `tasks`, `settings`, `shared` components, `platform` console, `public` pages) plus shared `ui` words and `enums` (statuses, priorities, types). `en.ts` files are the source; missing keys fall back to English.
+- After adding an area language file, run `npx tsx scripts/gen-i18n-areas.ts` to regenerate the lazy loaders. `tests/unit/i18n.test.ts` fails if any language is missing a key or a `{placeholder}`.
+- Everything a user sees in the app is translated: navigation, every module screen, forms, tables, dialogs, toasts, the platform console and the public QR/vendor/feedback pages. Not translated: data people type, server error messages, and some technical names (permission keys, API scopes, audit field names).
+- Dates, month names and relative times use the language's Intl formatting; numbers keep Indian digit grouping.
+- On phones the language picker shows as an icon; tapping it opens the phone's language list.
 - Translations were drafted for review: have native speakers check them before rolling out to a school.
 - Use client components' `useT()` (`t(key, vars?)`) and server components' `getT()`.
 

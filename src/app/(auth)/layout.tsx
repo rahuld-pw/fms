@@ -14,7 +14,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           <span className="text-lg font-semibold tracking-tight">Campus Ops</span>
         </Link>
         <div className="w-full max-w-sm rounded-xl border bg-card p-6 shadow-sm">{children}</div>
-        <LanguageSelect className="mt-4 w-full max-w-sm" />
+        <LanguageSelect className="mt-4 sm:w-full sm:max-w-sm" />
         <p className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <Link href="/feedback?type=bug" className="hover:text-foreground hover:underline">{t("account.reportBug")}</Link>
           <Link href="/feedback?type=feature" className="hover:text-foreground hover:underline">{t("account.suggestFeature")}</Link>

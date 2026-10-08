@@ -39,12 +39,20 @@ export function clientIp(req: Request): string {
 
 /** Fixed-window rate limiting backed by Postgres (works on serverless). */
 export async function rateLimit(bucket: string, limit: number, windowSeconds = 60) {
-  const { data, error } = await createAdminClient().rpc("rate_limit_hit", {
-    p_bucket: bucket,
-    p_limit: limit,
-    p_window_seconds: windowSeconds,
-  });
-  if (error) return; // fail open: rate limiting must not take the API down
+  let res;
+  try {
+    res = await createAdminClient().rpc("rate_limit_hit", {
+      p_bucket: bucket,
+      p_limit: limit,
+      p_window_seconds: windowSeconds,
+    });
+  } catch (e) {
+    // e.g. SUPABASE_SERVICE_ROLE_KEY missing: log it, but rate limiting must not take the API down
+    console.error("rate limit unavailable:", e instanceof Error ? e.message : e);
+    return;
+  }
+  const { data, error } = res;
+  if (error) return; // fail open
   const row = data?.[0];
   if (row && !row.allowed) {
     const retry = Math.max(1, Math.ceil((new Date(row.reset_at).getTime() - Date.now()) / 1000));

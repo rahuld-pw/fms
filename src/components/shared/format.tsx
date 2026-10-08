@@ -28,7 +28,7 @@ export function DateTime({ value, relative, dateOnly }: { value: string | null |
   const { locale } = useT();
   const org = useOrgFormat();
   if (!value) return <span className="text-muted-foreground">—</span>;
-  const full = formatDateTime(value, org.timezone);
+  const full = formatDateTime(value, org.timezone, undefined, locale);
   if (relative)
     return (
       <Tooltip content={full}>
@@ -39,13 +39,14 @@ export function DateTime({ value, relative, dateOnly }: { value: string | null |
     );
   return (
     <time dateTime={value} className="whitespace-nowrap">
-      {dateOnly ? formatDate(value, org.timezone) : full}
+      {dateOnly ? formatDate(value, org.timezone, locale) : full}
     </time>
   );
 }
 
 /** Due date with overdue / due-soon emphasis. */
 export function DueDate({ value, done }: { value: string | null | undefined; done?: boolean }) {
+  const { locale } = useT();
   const org = useOrgFormat();
   const now = useNow();
   if (!value) return <span className="text-muted-foreground">—</span>;
@@ -54,7 +55,7 @@ export function DueDate({ value, done }: { value: string | null | undefined; don
   const soon = !done && !overdue && due - now < 2 * 86400_000;
   return (
     <span className={cn("whitespace-nowrap", overdue && "font-medium text-destructive", soon && "text-amber-600 dark:text-amber-400")}>
-      {value.length === 10 ? formatDate(value) : formatDateTime(value, org.timezone, "dd MMM, HH:mm")}
+      {value.length === 10 ? formatDate(value, undefined, locale) : formatDateTime(value, org.timezone, "dd MMM, HH:mm", locale)}
     </span>
   );
 }
