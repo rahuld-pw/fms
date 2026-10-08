@@ -8,7 +8,7 @@ import { BreakdownBars, ColumnChart } from "@/components/shared/charts";
 import { CampusSelect } from "@/components/shared/fields";
 import { Stat } from "@/components/shared/page-header";
 import { api } from "@/lib/client/api";
-import { humanize } from "@/lib/utils/format";
+import { useT } from "@/lib/i18n/client";
 
 interface Dash {
   issues_by_status: Record<string, number>;
@@ -27,6 +27,7 @@ interface Dash {
 }
 
 export function FacilityDashboard() {
+  const { t } = useT();
   const { campuses } = useSession();
   const [campus, setCampus] = useState<string | null>(null);
   const { data, isLoading } = useQuery({
@@ -46,31 +47,31 @@ export function FacilityDashboard() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat label="Open issues" value={open} href="/facility/issues?status=open,acknowledged,assigned,in_progress,on_hold,reopened" />
-            <Stat label="SLA breached (open)" value={data.sla_breached} tone={data.sla_breached ? "danger" : "good"} href="/facility/issues?escalation_level=2" />
-            <Stat label="SLA met (30 days)" value={data.sla_met_pct_30d === null ? "—" : `${data.sla_met_pct_30d}%`} hint={data.avg_resolution_hours_30d ? `avg ${data.avg_resolution_hours_30d} h to resolve` : undefined} />
-            <Stat label="Reporter rating (90 days)" value={data.avg_rating_90d ? `${data.avg_rating_90d} / 5` : "—"} />
-            <Stat label="Open work orders" value={data.work_orders_open} hint={`${data.work_orders_overdue} overdue`} tone={data.work_orders_overdue ? "warning" : "default"} href="/facility/work-orders" />
-            <Stat label="PM completed on time (90 days)" value={data.pm_completion_pct_90d === null ? "—" : `${data.pm_completion_pct_90d}%`} href="/facility/maintenance" />
-            <Stat label="Compliance due in 30 days" value={data.compliance_due_30d} hint={`${data.compliance_overdue} overdue`} tone={data.compliance_overdue ? "danger" : "default"} href="/facility/maintenance?tab=compliance" />
-            <Stat label="Assets in use" value={data.assets_by_status.in_use ?? 0} hint={`${data.assets_by_status.under_repair ?? 0} under repair`} href="/facility/assets" />
+            <Stat label={t("facility.dashboard.openIssues")} value={open} href="/facility/issues?status=open,acknowledged,assigned,in_progress,on_hold,reopened" />
+            <Stat label={t("facility.dashboard.slaBreached")} value={data.sla_breached} tone={data.sla_breached ? "danger" : "good"} href="/facility/issues?escalation_level=2" />
+            <Stat label={t("facility.dashboard.slaMet")} value={data.sla_met_pct_30d === null ? "—" : `${data.sla_met_pct_30d}%`} hint={data.avg_resolution_hours_30d ? t("facility.dashboard.avgResolve", { h: data.avg_resolution_hours_30d }) : undefined} />
+            <Stat label={t("facility.dashboard.rating")} value={data.avg_rating_90d ? `${data.avg_rating_90d} / 5` : "—"} />
+            <Stat label={t("facility.dashboard.openWorkOrders")} value={data.work_orders_open} hint={t("facility.dashboard.overdue", { n: data.work_orders_overdue })} tone={data.work_orders_overdue ? "warning" : "default"} href="/facility/work-orders" />
+            <Stat label={t("facility.dashboard.pmOnTime")} value={data.pm_completion_pct_90d === null ? "—" : `${data.pm_completion_pct_90d}%`} href="/facility/maintenance" />
+            <Stat label={t("facility.dashboard.complianceDue")} value={data.compliance_due_30d} hint={t("facility.dashboard.overdue", { n: data.compliance_overdue })} tone={data.compliance_overdue ? "danger" : "default"} href="/facility/maintenance?tab=compliance" />
+            <Stat label={t("facility.dashboard.assetsInUse")} value={data.assets_by_status.in_use ?? 0} hint={t("facility.dashboard.underRepair", { n: data.assets_by_status.under_repair ?? 0 })} href="/facility/assets" />
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
             <Card className="lg:col-span-2">
               <CardHeader>
                 <div>
-                  <CardTitle>Issues opened vs resolved</CardTitle>
-                  <CardDescription>Last 30 days</CardDescription>
+                  <CardTitle>{t("facility.dashboard.trendTitle")}</CardTitle>
+                  <CardDescription>{t("facility.dashboard.last30")}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <ColumnChart
-                  ariaLabel="Issues opened and resolved per day over the last 30 days"
+                  ariaLabel={t("facility.dashboard.trendAria")}
                   data={data.issues_trend}
                   x="day"
                   series={[
-                    { key: "opened", label: "Opened", color: "var(--chart-1)" },
-                    { key: "resolved", label: "Resolved", color: "var(--chart-2)" },
+                    { key: "opened", label: t("facility.dashboard.opened"), color: "var(--chart-1)" },
+                    { key: "resolved", label: t("facility.dashboard.resolved"), color: "var(--chart-2)" },
                   ]}
                   formatX={(d) => new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
                 />
@@ -79,12 +80,12 @@ export function FacilityDashboard() {
             <Card>
               <CardHeader>
                 <div>
-                  <CardTitle>Open issues by priority</CardTitle>
+                  <CardTitle>{t("facility.dashboard.byPriority")}</CardTitle>
                 </div>
               </CardHeader>
               <CardContent>
                 <BreakdownBars
-                  rows={["critical", "high", "medium", "low"].map((p) => ({ label: humanize(p), value: data.open_by_priority[p] ?? 0 }))}
+                  rows={["critical", "high", "medium", "low"].map((p) => ({ label: t(`priority.${p}`), value: data.open_by_priority[p] ?? 0 }))}
                 />
               </CardContent>
             </Card>

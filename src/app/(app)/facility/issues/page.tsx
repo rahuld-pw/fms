@@ -3,20 +3,25 @@ import { Suspense } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/page-header";
+import { getT } from "@/lib/i18n/server";
 import { IssuesTable } from "./issues-table";
 
-export const metadata = { title: "Issues" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t("facility.issues.title") };
+}
 
-export default function IssuesPage() {
+export default async function IssuesPage() {
+  const { t } = await getT();
   return (
     <div>
       <PageHeader
-        title="Issues"
-        description="Reported problems across campuses, with SLA tracking."
+        title={t("facility.issues.title")}
+        description={t("facility.issues.description")}
         actions={
           <Button asChild>
             <Link href="/facility/issues/new">
-              <Plus /> Report issue
+              <Plus /> {t("facility.issues.report")}
             </Link>
           </Button>
         }

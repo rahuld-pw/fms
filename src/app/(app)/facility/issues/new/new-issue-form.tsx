@@ -10,11 +10,13 @@ import { Card } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { CampusSelect, Field, ResourcePicker } from "@/components/shared/fields";
 import { api, errorMessage, uploadToSigned } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 interface Category { id: string; name: string; default_priority: string }
 
 export function NewIssueForm() {
+  const { t } = useT();
   const router = useRouter();
   const params = useSearchParams();
   const { campuses } = useSession();
@@ -32,7 +34,7 @@ export function NewIssueForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!campusId && !locationId) return toast.error("Choose a campus or location");
+    if (!campusId && !locationId) return toast.error(t("facility.issues.new.chooseCampus"));
     setBusy(true);
     try {
       const issue = await api<{ id: string; number: string }>("/issues", {
@@ -48,7 +50,7 @@ export function NewIssueForm() {
         });
         await uploadToSigned(up.upload.url, p);
       }
-      toast.success(`Issue ${issue.number} reported`);
+      toast.success(t("facility.issues.new.reported", { number: issue.number }));
       router.push(`/facility/issues/${issue.id}`);
     } catch (err) {
       toast.error(errorMessage(err));
@@ -60,20 +62,20 @@ export function NewIssueForm() {
     <form onSubmit={submit} className="flex flex-col gap-5">
       <Card className="flex flex-col gap-4 p-4">
         {campuses.length > 1 && (
-          <Field label="Campus" required={!locationId}>
+          <Field label={t("ui.campus")} required={!locationId}>
             <CampusSelect value={campusId} onChange={(v) => { setCampusId(v); setLocationId(null); }} />
           </Field>
         )}
-        <Field label="Where is it?" hint="Building, floor or room">
+        <Field label={t("facility.issues.new.where")} hint={t("facility.issues.new.whereHint")}>
           <ResourcePicker
             endpoint="/locations"
             extraParams={campusId ? `&campus_id=${campusId}` : ""}
             value={locationId}
             onChange={(v) => setLocationId(v as string | null)}
-            placeholder="Search locations…"
+            placeholder={t("facility.issues.new.searchLocations")}
           />
         </Field>
-        <Field label="What kind of problem?">
+        <Field label={t("facility.issues.new.kind")}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {categories.map((c) => (
               <button
@@ -90,15 +92,15 @@ export function NewIssueForm() {
             ))}
           </div>
         </Field>
-        <Field label="Short title" required htmlFor="title">
-          <Input id="title" required minLength={3} maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Tap leaking in washroom" />
+        <Field label={t("facility.issues.new.shortTitle")} required htmlFor="title">
+          <Input id="title" required minLength={3} maxLength={200} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("facility.issues.new.titlePlaceholder")} />
         </Field>
-        <Field label="Details" htmlFor="desc">
-          <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Anything that helps the team fix it faster" />
+        <Field label={t("facility.issues.new.details")} htmlFor="desc">
+          <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder={t("facility.issues.new.detailsPlaceholder")} />
         </Field>
-        <Field label="Urgency" hint="Leave as default to use the category's priority">
+        <Field label={t("facility.issues.new.urgency")} hint={t("facility.issues.new.urgencyHint")}>
           <div className="flex flex-wrap gap-2">
-            {[["", "Default"], ["low", "Low"], ["medium", "Medium"], ["high", "High"], ["critical", "Critical"]].map(([v, l]) => (
+            {[["", t("facility.issues.new.default")], ["low", t("priority.low")], ["medium", t("priority.medium")], ["high", t("priority.high")], ["critical", t("priority.critical")]].map(([v, l]) => (
               <button
                 type="button"
                 key={v}
@@ -110,20 +112,20 @@ export function NewIssueForm() {
             ))}
           </div>
         </Field>
-        <Field label="Photos" hint="Up to 3">
+        <Field label={t("ui.photos")} hint={t("facility.issues.new.upTo3")}>
           <div className="flex flex-wrap gap-2">
             {photos.map((p, i) => (
               <span key={i} className="relative size-20 overflow-hidden rounded-md border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={URL.createObjectURL(p)} alt="" className="size-full object-cover" />
-                <button type="button" onClick={() => setPhotos(photos.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 rounded-full bg-black/60 p-0.5 text-white" aria-label="Remove photo">
+                <button type="button" onClick={() => setPhotos(photos.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 rounded-full bg-black/60 p-0.5 text-white" aria-label={t("facility.issues.new.removePhoto")}>
                   <X className="size-3" />
                 </button>
               </span>
             ))}
             {photos.length < 3 && (
               <button type="button" onClick={() => file.current?.click()} className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-muted">
-                <Camera className="size-5" /> Add
+                <Camera className="size-5" /> {t("ui.add")}
               </button>
             )}
           </div>
@@ -131,7 +133,7 @@ export function NewIssueForm() {
         </Field>
       </Card>
       <Button type="submit" size="lg" loading={busy} className="w-full sm:w-auto sm:self-end">
-        Submit issue
+        {t("facility.issues.new.submit")}
       </Button>
     </form>
   );

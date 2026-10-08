@@ -10,19 +10,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/checkbox";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { Field } from "@/components/shared/fields";
+import { LanguageSelect } from "@/components/shared/language-select";
 import { PageHeader } from "@/components/shared/page-header";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const GROUPS: { label: string; types: { type: string; label: string }[] }[] = [
-  { label: "Approvals", types: [{ type: "approval.requested", label: "Something needs my approval" }, { type: "approval.approved", label: "My request was approved" }, { type: "approval.rejected", label: "My request was rejected" }, { type: "reminder.approval_overdue", label: "Approval overdue reminders" }] },
-  { label: "Facilities", types: [{ type: "issue.assigned", label: "Issue assigned to me" }, { type: "issue.status_changed", label: "Status of an issue I reported" }, { type: "issue.escalated", label: "Escalations" }, { type: "work_order.assigned", label: "Work order assigned to me" }] },
-  { label: "Tasks", types: [{ type: "task.assigned", label: "Task assigned to me" }, { type: "task.completed", label: "Task I follow completed" }, { type: "reminder.task_due", label: "Due date reminders" }, { type: "comment.mentioned", label: "Someone @mentions me" }] },
-  { label: "Money", types: [{ type: "expense.paid", label: "My claim was reimbursed" }, { type: "expense.advance_disbursed", label: "Advance disbursed" }, { type: "grn.posted", label: "Goods received on my PO" }, { type: "po.acknowledged", label: "Vendor acknowledged my PO" }, { type: "petty_cash.low_balance", label: "Petty cash running low" }] },
+const GROUPS: { key: string; types: { type: string; key: string }[] }[] = [
+  { key: "approvals", types: [{ type: "approval.requested", key: "approvalRequested" }, { type: "approval.approved", key: "approvalApproved" }, { type: "approval.rejected", key: "approvalRejected" }, { type: "reminder.approval_overdue", key: "approvalOverdue" }] },
+  { key: "facilities", types: [{ type: "issue.assigned", key: "issueAssigned" }, { type: "issue.status_changed", key: "issueStatusChanged" }, { type: "issue.escalated", key: "issueEscalated" }, { type: "work_order.assigned", key: "workOrderAssigned" }] },
+  { key: "tasks", types: [{ type: "task.assigned", key: "taskAssigned" }, { type: "task.completed", key: "taskCompleted" }, { type: "reminder.task_due", key: "taskDue" }, { type: "comment.mentioned", key: "mentioned" }] },
+  { key: "money", types: [{ type: "expense.paid", key: "expensePaid" }, { type: "expense.advance_disbursed", key: "advanceDisbursed" }, { type: "grn.posted", key: "grnPosted" }, { type: "po.acknowledged", key: "poAcknowledged" }, { type: "petty_cash.low_balance", key: "pettyCashLow" }] },
 ];
 
 export function ProfileSettings() {
+  const { t } = useT();
   const { user } = useSession();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
@@ -34,25 +37,28 @@ export function ProfileSettings() {
     setSaving(true);
     try {
       await api("/me", { method: "PATCH", body: { full_name: name ?? me?.user?.full_name ?? user.full_name, phone: (phone ?? me?.user?.phone) || null } });
-      toast.success("Profile saved");
+      toast.success(t("settings.profile.saved"));
       setName(null); setPhone(null);
       router.refresh();
     } catch (e) { toast.error(errorMessage(e)); } finally { setSaving(false); }
   };
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="My profile" description={user.email ?? undefined} />
+      <PageHeader title={t("settings.profile.title")} description={user.email ?? undefined} />
       <Card>
-        <CardHeader><CardTitle>Details</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("settings.profile.details")}</CardTitle></CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <Field label="Full name"><Input value={name ?? me?.user?.full_name ?? user.full_name ?? ""} onChange={(e) => setName(e.target.value)} autoComplete="name" /></Field>
-          <Field label="Mobile" hint="For WhatsApp/SMS alerts where enabled"><Input type="tel" inputMode="tel" autoComplete="tel" value={phone ?? me?.user?.phone ?? ""} onChange={(e) => setPhone(e.target.value)} /></Field>
-          <Field label="Appearance">
+          <Field label={t("settings.profile.fullName")}><Input value={name ?? me?.user?.full_name ?? user.full_name ?? ""} onChange={(e) => setName(e.target.value)} autoComplete="name" /></Field>
+          <Field label={t("settings.profile.mobile")} hint={t("settings.profile.mobileHint")}><Input type="tel" inputMode="tel" autoComplete="tel" value={phone ?? me?.user?.phone ?? ""} onChange={(e) => setPhone(e.target.value)} /></Field>
+          <Field label={t("settings.profile.appearance")}>
             <NativeSelect value={theme ?? "system"} onChange={(e) => setTheme(e.target.value)}>
-              <option value="system">Match device</option><option value="light">Light</option><option value="dark">Dark</option>
+              <option value="system">{t("settings.profile.themeSystem")}</option><option value="light">{t("settings.profile.themeLight")}</option><option value="dark">{t("settings.profile.themeDark")}</option>
             </NativeSelect>
           </Field>
-          <div className="flex items-end justify-end"><Button onClick={save} loading={saving} disabled={name === null && phone === null}>Save</Button></div>
+          <Field label={t("settings.profile.language")} hint={t("settings.profile.languageHint")}>
+            <LanguageSelect compact className="[&_select]:w-full [&_select]:flex-1" />
+          </Field>
+          <div className="flex items-end justify-end sm:col-span-2"><Button onClick={save} loading={saving} disabled={name === null && phone === null}>{t("ui.save")}</Button></div>
         </CardContent>
       </Card>
       <PasswordCard />
@@ -62,6 +68,7 @@ export function ProfileSettings() {
 }
 
 function PasswordCard() {
+  const { t } = useT();
   const [pw, setPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -70,22 +77,23 @@ function PasswordCard() {
     const { error } = await supabaseBrowser().auth.updateUser({ password: pw });
     setBusy(false);
     if (error) return toast.error(error.message);
-    toast.success("Password updated");
+    toast.success(t("settings.profile.password.updated"));
     setPw(""); setConfirm("");
   };
   return (
     <Card>
-      <CardHeader><div><CardTitle>Password</CardTitle><p className="mt-0.5 text-xs text-muted-foreground">You can always sign in with an emailed code instead. Set a password to sign in without email.</p></div></CardHeader>
+      <CardHeader><div><CardTitle>{t("settings.profile.password.title")}</CardTitle><p className="mt-0.5 text-xs text-muted-foreground">{t("settings.profile.password.description")}</p></div></CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-        <Field label="New password"><Input type="password" autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} /></Field>
-        <Field label="Confirm"><Input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
-        <Button variant="outline" onClick={save} loading={busy} disabled={pw.length < 8 || pw !== confirm}>Update password</Button>
+        <Field label={t("settings.profile.password.newPassword")}><Input type="password" autoComplete="new-password" minLength={8} value={pw} onChange={(e) => setPw(e.target.value)} /></Field>
+        <Field label={t("settings.profile.password.confirm")}><Input type="password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} /></Field>
+        <Button variant="outline" onClick={save} loading={busy} disabled={pw.length < 8 || pw !== confirm}>{t("settings.profile.password.update")}</Button>
       </CardContent>
     </Card>
   );
 }
 
 function Preferences() {
+  const { t } = useT();
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["notification-preferences"], queryFn: () => api<{ type: string; in_app: boolean; email: boolean }[]>("/notifications/preferences") });
   const pref = (type: string) => data?.find((p) => p.type === type) ?? data?.find((p) => p.type === "*") ?? { type, in_app: true, email: true };
@@ -98,19 +106,22 @@ function Preferences() {
   };
   return (
     <Card>
-      <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t("settings.profile.notifications.title")}</CardTitle></CardHeader>
       <CardContent className="flex flex-col gap-4">
         <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-2 text-sm">
           <span />
-          <span className="text-xs font-medium text-muted-foreground">In app</span>
-          <span className="text-xs font-medium text-muted-foreground">Email</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("settings.profile.notifications.inApp")}</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("settings.profile.notifications.email")}</span>
           {GROUPS.map((g) => [
-            <span key={g.label} className="col-span-3 mt-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{g.label}</span>,
-            ...g.types.flatMap((t) => [
-              <span key={`${t.type}-l`}>{t.label}</span>,
-              <Switch key={`${t.type}-a`} checked={pref(t.type).in_app} onCheckedChange={(c) => update(t.type, { in_app: c })} aria-label={`${t.label} in app`} />,
-              <Switch key={`${t.type}-e`} checked={pref(t.type).email} onCheckedChange={(c) => update(t.type, { email: c })} aria-label={`${t.label} by email`} />,
-            ]),
+            <span key={g.key} className="col-span-3 mt-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t(`settings.profile.notifications.groups.${g.key}`)}</span>,
+            ...g.types.flatMap((n) => {
+              const label = t(`settings.profile.notifications.types.${n.key}`);
+              return [
+                <span key={`${n.type}-l`}>{label}</span>,
+                <Switch key={`${n.type}-a`} checked={pref(n.type).in_app} onCheckedChange={(c) => update(n.type, { in_app: c })} aria-label={t("settings.profile.notifications.inAppAria", { label })} />,
+                <Switch key={`${n.type}-e`} checked={pref(n.type).email} onCheckedChange={(c) => update(n.type, { email: c })} aria-label={t("settings.profile.notifications.emailAria", { label })} />,
+              ];
+            }),
           ])}
         </div>
       </CardContent>

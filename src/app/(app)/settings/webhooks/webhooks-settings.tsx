@@ -16,12 +16,14 @@ import { Field } from "@/components/shared/fields";
 import { EmptyState, PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status";
 import { api, apiList, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const SUGGESTED = ["*", "issue.*", "issue.created", "issue.updated", "issue.escalated", "work_order.*", "asset.*", "expense_claim.*", "purchase_order.*", "grn.posted", "payment.recorded", "approval.*", "task.*", "vendor.*"];
 
 export function WebhooksSettings() {
+  const { t } = useT();
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["/webhooks"], queryFn: () => apiList<any>("/webhooks?limit=100") });
   const [editing, setEditing] = useState<any>(null);
@@ -34,12 +36,12 @@ export function WebhooksSettings() {
   return (
     <div className="flex flex-col gap-4">
       <PageHeader
-        title="Webhooks"
-        description="Events are POSTed as JSON, signed with HMAC-SHA256 (X-CampusOps-Signature: t=…,v1=…). Failed deliveries retry with exponential backoff."
-        actions={<Button onClick={() => setEditing({ url: "", description: "", events: ["*"], active: true })}><Plus /> New endpoint</Button>}
+        title={t("nav./settings/webhooks")}
+        description={t("settings.webhooks.description")}
+        actions={<Button onClick={() => setEditing({ url: "", description: "", events: ["*"], active: true })}><Plus /> {t("settings.webhooks.newEndpoint")}</Button>}
       />
       {isLoading ? <Skeleton className="h-32" /> : !data?.data.length ? (
-        <Card><CardContent className="pt-4"><EmptyState icon={Webhook} title="No endpoints" description="Send events to your systems when issues, POs, payments and approvals change." /></CardContent></Card>
+        <Card><CardContent className="pt-4"><EmptyState icon={Webhook} title={t("settings.webhooks.emptyTitle")} description={t("settings.webhooks.emptyDescription")} /></CardContent></Card>
       ) : (
         <Card>
           <ul className="divide-y">
@@ -49,15 +51,15 @@ export function WebhooksSettings() {
                   <span className="block truncate font-mono text-xs">{w.url}</span>
                   <span className="block text-xs text-muted-foreground">{w.description ? `${w.description} · ` : ""}{w.events.join(", ")}</span>
                 </button>
-                {!w.active ? <Badge>{w.disabled_reason ? "Disabled" : "Paused"}</Badge> : w.consecutive_failures > 0 ? <Badge tone="amber">{w.consecutive_failures} failures</Badge> : <Badge tone="green">Active</Badge>}
+                {!w.active ? <Badge>{w.disabled_reason ? t("ui.disabled") : t("settings.webhooks.paused")}</Badge> : w.consecutive_failures > 0 ? <Badge tone="amber">{t(w.consecutive_failures === 1 ? "settings.webhooks.failuresOne" : "settings.webhooks.failuresOther", { n: w.consecutive_failures })}</Badge> : <Badge tone="green">{t("ui.active")}</Badge>}
                 <div className="flex gap-1">
-                  <Button size="xs" variant="ghost" onClick={() => act(() => api(`/webhooks/${w.id}/test`, { body: {} }), "Test event queued")}><Send /> Test</Button>
-                  <Button size="xs" variant="ghost" onClick={() => setEditing(w)}>Edit</Button>
+                  <Button size="xs" variant="ghost" onClick={() => act(() => api(`/webhooks/${w.id}/test`, { body: {} }), t("settings.webhooks.testQueued"))}><Send /> {t("settings.webhooks.test")}</Button>
+                  <Button size="xs" variant="ghost" onClick={() => setEditing(w)}>{t("ui.edit")}</Button>
                   <Button size="xs" variant="ghost" onClick={async () => {
-                    if (!confirm("Rotate the signing secret? Update your receiver right away.")) return;
+                    if (!confirm(t("settings.webhooks.confirmRotate"))) return;
                     try { const r = await api<{ secret: string }>(`/webhooks/${w.id}/rotate-secret`, { body: {} }); setSecret(r.secret); } catch (e) { toast.error(errorMessage(e)); }
-                  }}><RotateCcw /> Secret</Button>
-                  <Button size="icon-sm" variant="ghost" aria-label="Delete endpoint" onClick={() => confirm("Delete this endpoint?") && act(() => api(`/webhooks/${w.id}`, { method: "DELETE" }), "Endpoint deleted")}><Trash2 /></Button>
+                  }}><RotateCcw /> {t("settings.webhooks.secret")}</Button>
+                  <Button size="icon-sm" variant="ghost" aria-label={t("settings.webhooks.deleteEndpoint")} onClick={() => confirm(t("settings.webhooks.confirmDelete")) && act(() => api(`/webhooks/${w.id}`, { method: "DELETE" }), t("settings.webhooks.deleted"))}><Trash2 /></Button>
                 </div>
               </li>
             ))}
@@ -68,9 +70,9 @@ export function WebhooksSettings() {
       {editing && <EndpointDialog endpoint={editing} onClose={() => setEditing(null)} onSecret={setSecret} />}
       <Dialog open={!!secret} onOpenChange={(o) => !o && setSecret(null)}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Signing secret</DialogTitle><DialogDescription>Use it to verify the X-CampusOps-Signature header. It is not shown again.</DialogDescription></DialogHeader>
-          <div className="flex gap-2"><Input readOnly value={secret ?? ""} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label="Copy secret" onClick={() => { navigator.clipboard.writeText(secret ?? ""); toast.success("Copied"); }}><Copy /></Button></div>
-          <DialogFooter><Button onClick={() => setSecret(null)}>Done</Button></DialogFooter>
+          <DialogHeader><DialogTitle>{t("settings.webhooks.secretTitle")}</DialogTitle><DialogDescription>{t("settings.webhooks.secretDescription")}</DialogDescription></DialogHeader>
+          <div className="flex gap-2"><Input readOnly value={secret ?? ""} className="font-mono text-xs" /><Button size="icon" variant="outline" aria-label={t("settings.webhooks.copySecret")} onClick={() => { navigator.clipboard.writeText(secret ?? ""); toast.success(t("ui.copied")); }}><Copy /></Button></div>
+          <DialogFooter><Button onClick={() => setSecret(null)}>{t("ui.done")}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
@@ -78,6 +80,7 @@ export function WebhooksSettings() {
 }
 
 function EndpointDialog({ endpoint, onClose, onSecret }: { endpoint: any; onClose: () => void; onSecret: (s: string) => void }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const [url, setUrl] = useState(endpoint.url);
   const [description, setDescription] = useState(endpoint.description ?? "");
@@ -96,7 +99,7 @@ function EndpointDialog({ endpoint, onClose, onSecret }: { endpoint: any; onClos
         const full = await api<{ secret: string }>(`/webhooks/${r.id}`);
         onSecret(full.secret);
       }
-      toast.success("Endpoint saved");
+      toast.success(t("settings.webhooks.saved"));
       qc.invalidateQueries({ queryKey: ["/webhooks"] });
       onClose();
     } catch (e) { toast.error(errorMessage(e)); } finally { setBusy(false); }
@@ -104,10 +107,10 @@ function EndpointDialog({ endpoint, onClose, onSecret }: { endpoint: any; onClos
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
-        <DialogHeader><DialogTitle>{endpoint.id ? "Edit endpoint" : "New endpoint"}</DialogTitle><DialogDescription>HTTPS endpoint that accepts POST requests and replies 2xx within 10 seconds.</DialogDescription></DialogHeader>
-        <Field label="URL" required><Input type="url" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/hooks/campus-ops" /></Field>
-        <Field label="Description"><Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
-        <Field label="Events">
+        <DialogHeader><DialogTitle>{endpoint.id ? t("settings.webhooks.editTitle") : t("settings.webhooks.newEndpoint")}</DialogTitle><DialogDescription>{t("settings.webhooks.dialogDescription")}</DialogDescription></DialogHeader>
+        <Field label={t("settings.webhooks.url")} required><Input type="url" inputMode="url" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://example.com/hooks/campus-ops" /></Field>
+        <Field label={t("ui.description")}><Textarea rows={2} value={description} onChange={(e) => setDescription(e.target.value)} /></Field>
+        <Field label={t("settings.webhooks.events")}>
           <div className="flex flex-wrap gap-1.5">
             {[...new Set([...SUGGESTED, ...events])].map((e) => (
               <button key={e} type="button" onClick={() => toggle(e)} aria-pressed={events.includes(e)}
@@ -116,28 +119,29 @@ function EndpointDialog({ endpoint, onClose, onSecret }: { endpoint: any; onClos
           </div>
         </Field>
         <div className="flex gap-2">
-          <Input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Other event, e.g. budget.updated" className="font-mono text-xs" />
-          <Button variant="outline" size="sm" disabled={!/^[a-z_]+\.(\*|[a-z_]+)$/.test(custom)} onClick={() => { setEvents([...events, custom]); setCustom(""); }}>Add</Button>
+          <Input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder={t("settings.webhooks.otherEvent")} className="font-mono text-xs" />
+          <Button variant="outline" size="sm" disabled={!/^[a-z_]+\.(\*|[a-z_]+)$/.test(custom)} onClick={() => { setEvents([...events, custom]); setCustom(""); }}>{t("ui.add")}</Button>
         </div>
-        <label className="flex items-center gap-2 text-sm"><Switch checked={active} onCheckedChange={setActive} /> Active</label>
-        <DialogFooter><Button disabled={!url.startsWith("http") || !events.length} loading={busy} onClick={save}>Save</Button></DialogFooter>
+        <label className="flex items-center gap-2 text-sm"><Switch checked={active} onCheckedChange={setActive} /> {t("ui.active")}</label>
+        <DialogFooter><Button disabled={!url.startsWith("http") || !events.length} loading={busy} onClick={save}>{t("ui.save")}</Button></DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
 
 function Deliveries({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const { data, isLoading, refetch, isFetching } = useQuery({ queryKey: ["/webhooks", id, "deliveries"], queryFn: () => api<any[]>(`/webhooks/${id}/deliveries`) });
   const retry = async (d: any) => {
-    try { await api(`/webhooks/deliveries/${d.id}/retry`, { body: {} }); toast.success("Retry queued"); qc.invalidateQueries({ queryKey: ["/webhooks", id, "deliveries"] }); } catch (e) { toast.error(errorMessage(e)); }
+    try { await api(`/webhooks/deliveries/${d.id}/retry`, { body: {} }); toast.success(t("settings.webhooks.retryQueued")); qc.invalidateQueries({ queryKey: ["/webhooks", id, "deliveries"] }); } catch (e) { toast.error(errorMessage(e)); }
   };
   return (
     <Card>
-      <CardHeader><CardTitle>Recent deliveries</CardTitle><Button size="icon-sm" variant="ghost" aria-label="Refresh" onClick={() => refetch()} disabled={isFetching}><RefreshCw className={cn(isFetching && "animate-spin")} /></Button></CardHeader>
-      {isLoading ? <div className="p-4"><Skeleton className="h-24" /></div> : !data?.length ? <CardContent className="text-sm text-muted-foreground">No deliveries yet. Send a test event.</CardContent> : (
+      <CardHeader><CardTitle>{t("settings.webhooks.recentDeliveries")}</CardTitle><Button size="icon-sm" variant="ghost" aria-label={t("ui.refresh")} onClick={() => refetch()} disabled={isFetching}><RefreshCw className={cn(isFetching && "animate-spin")} /></Button></CardHeader>
+      {isLoading ? <div className="p-4"><Skeleton className="h-24" /></div> : !data?.length ? <CardContent className="text-sm text-muted-foreground">{t("settings.webhooks.noDeliveries")}</CardContent> : (
         <Table>
-          <THead><TR><TH>Event</TH><TH>Status</TH><TH className="hidden sm:table-cell">Attempts</TH><TH className="hidden sm:table-cell">Response</TH><TH>When</TH><TH /></TR></THead>
+          <THead><TR><TH>{t("settings.webhooks.event")}</TH><TH>{t("ui.status")}</TH><TH className="hidden sm:table-cell">{t("settings.webhooks.attempts")}</TH><TH className="hidden sm:table-cell">{t("settings.webhooks.response")}</TH><TH>{t("settings.webhooks.when")}</TH><TH /></TR></THead>
           <TBody>
             {data.map((d) => (
               <TR key={d.id}>
@@ -146,7 +150,7 @@ function Deliveries({ id }: { id: string }) {
                 <TD className="hidden tabular sm:table-cell">{d.attempt_count}/{d.max_attempts}</TD>
                 <TD className="hidden max-w-56 truncate text-xs text-muted-foreground sm:table-cell" title={d.last_error ?? ""}>{d.last_status_code ?? "—"}{d.last_error && ` · ${d.last_error}`}</TD>
                 <TD className="whitespace-nowrap text-xs"><DateTime value={d.delivered_at ?? d.created_at} relative /></TD>
-                <TD>{["failed", "dead"].includes(d.status) && <Button size="xs" variant="ghost" onClick={() => retry(d)}>Retry</Button>}</TD>
+                <TD>{["failed", "dead"].includes(d.status) && <Button size="xs" variant="ghost" onClick={() => retry(d)}>{t("ui.retry")}</Button>}</TD>
               </TR>
             ))}
           </TBody>

@@ -1,13 +1,18 @@
 import { Suspense } from "react";
 import { PageHeader } from "@/components/shared/page-header";
+import { getT } from "@/lib/i18n/server";
 import { MaintenanceTabs } from "./maintenance-tabs";
 
-export const metadata = { title: "Maintenance" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t("facility.maintenance.title") };
+}
 
-export default function MaintenancePage() {
+export default async function MaintenancePage() {
+  const { t } = await getT();
   return (
     <div>
-      <PageHeader title="Maintenance" description="Preventive maintenance schedules, AMC contracts and the statutory compliance calendar." />
+      <PageHeader title={t("facility.maintenance.title")} description={t("facility.maintenance.description")} />
       <Suspense>
         <MaintenanceTabs />
       </Suspense>

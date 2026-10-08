@@ -1,6 +1,10 @@
 import { SettingsNav } from "@/components/app/sidebar";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: { template: "%s · Settings", default: "Settings" } };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: { template: t("settings.layout.titleTemplate"), default: t("nav./settings") } };
+}
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   return (

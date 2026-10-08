@@ -12,21 +12,24 @@ import { QrScanner } from "@/components/shared/qr-scanner";
 import { useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
+import { humanize } from "@/lib/utils/format";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function AuditDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const audit = useQuery({ queryKey: ["audit", id], queryFn: () => api<any>(`/asset-audits/${id}`) });
   const items = useQuery({ queryKey: ["audit-items", id], queryFn: () => api<any[]>(`/asset-audits/${id}/items`) });
   const [filter, setFilter] = useState<string>("pending");
   const refresh = () => qc.invalidateQueries({ queryKey: ["audit-items", id] });
   const mark = useAction({ onSuccess: refresh });
-  const complete = useAction({ success: "Audit completed", onSuccess: () => qc.invalidateQueries({ queryKey: ["audit", id] }) });
+  const complete = useAction({ success: t("facility.assets.audits.detail.completed"), onSuccess: () => qc.invalidateQueries({ queryKey: ["audit", id] }) });
   const onScan = useCallback(
     async (token: string) => {
       try {
         const r = await api<any>(`/asset-audits/${id}/verify`, { body: { qr_token: token, result: "found" } });
-        toast.success(`Found: ${r.asset?.asset_tag} ${r.asset?.name}`);
+        toast.success(t("facility.assets.audits.detail.found", { tag: r.asset?.asset_tag, name: r.asset?.name }));
         refresh();
       } catch (e) {
         toast.error(errorMessage(e));
@@ -46,28 +49,28 @@ export function AuditDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        breadcrumbs={[{ label: "Audits", href: "/facility/assets/audits" }, { label: audit.data.name }]}
+        breadcrumbs={[{ label: t("facility.assets.auditsLabel"), href: "/facility/assets/audits" }, { label: audit.data.name }]}
         title={audit.data.name}
         meta={<StatusBadge status={audit.data.status} />}
         actions={
           audit.data.status !== "completed" && (
             <Button size="sm" onClick={() => complete.mutate({ path: `/asset-audits/${id}`, method: "PATCH", body: { status: "completed" } })} disabled={counts.pending > 0}>
-              Complete audit
+              {t("facility.assets.audits.detail.complete")}
             </Button>
           )
         }
       />
       <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Verified" value={`${done} / ${total}`} hint={<Progress value={total ? (done / total) * 100 : 0} className="mt-1" />} />
-        <Stat label="Found" value={counts.found} tone="good" />
-        <Stat label="Missing" value={counts.missing} tone={counts.missing ? "danger" : "default"} />
-        <Stat label="Damaged / relocated" value={counts.damaged + counts.relocated} />
+        <Stat label={t("facility.assets.audits.detail.verified")} value={`${done} / ${total}`} hint={<Progress value={total ? (done / total) * 100 : 0} className="mt-1" />} />
+        <Stat label={t("facility.assets.audits.detail.statFound")} value={counts.found} tone="good" />
+        <Stat label={t("facility.assets.audits.detail.statMissing")} value={counts.missing} tone={counts.missing ? "danger" : "default"} />
+        <Stat label={t("facility.assets.audits.detail.statDamaged")} value={counts.damaged + counts.relocated} />
       </div>
       <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
         {audit.data.status !== "completed" && (
           <Card className="h-fit">
             <CardHeader>
-              <CardTitle>Scan asset tags</CardTitle>
+              <CardTitle>{t("facility.assets.audits.detail.scan")}</CardTitle>
             </CardHeader>
             <CardContent>
               <QrScanner onScan={onScan} />
@@ -79,7 +82,7 @@ export function AuditDetail({ id }: { id: string }) {
             <TabsList>
               {["pending", "found", "missing", "damaged", "relocated"].map((k) => (
                 <TabsTrigger key={k} value={k} className="capitalize">
-                  {k} <span className="text-xs text-muted-foreground">{counts[k]}</span>
+                  {t(`enum.auditResult.${k}`, undefined, humanize(k))} <span className="text-xs text-muted-foreground">{counts[k]}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -96,14 +99,14 @@ export function AuditDetail({ id }: { id: string }) {
                         <div className="flex gap-1">
                           {["found", "missing", "damaged"].filter((r) => r !== i.result).map((r) => (
                             <Button key={r} size="xs" variant={r === "found" ? "default" : "outline"} onClick={() => mark.mutate({ path: `/asset-audits/${id}/verify`, body: { asset_id: i.asset_id, result: r } })}>
-                              {r}
+                              {t(`enum.auditResult.${r}`, undefined, r)}
                             </Button>
                           ))}
                         </div>
                       )}
                     </div>
                   ))}
-                {(items.data ?? []).filter((i) => i.result === filter).length === 0 && <p className="p-4 text-sm text-muted-foreground">None.</p>}
+                {(items.data ?? []).filter((i) => i.result === filter).length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("facility.assets.audits.detail.none")}</p>}
               </Card>
             </TabsContent>
           </Tabs>

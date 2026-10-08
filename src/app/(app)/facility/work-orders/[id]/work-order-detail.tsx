@@ -18,6 +18,7 @@ import { DetailGrid, PageHeader } from "@/components/shared/page-header";
 import { ResourceFormDialog, useAction } from "@/components/shared/resource-form";
 import { PriorityLabel, StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 import { workOrderFields } from "../work-orders-table";
 
@@ -25,6 +26,7 @@ import { workOrderFields } from "../work-orders-table";
 interface ChecklistItem { key: string; label: string; type: "check" | "number" | "text" | "photo"; required?: boolean; result?: any; note?: string | null }
 
 export function WorkOrderDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const can = useCan();
   const { user } = useSession();
@@ -47,12 +49,12 @@ export function WorkOrderDetail({ id }: { id: string }) {
   const patch = useMutation({
     mutationFn: (body: Record<string, unknown>) => api(`/work-orders/${id}`, { method: "PATCH", body }),
     onSuccess: () => {
-      toast.success("Saved");
+      toast.success(t("ui.saved"));
       refresh();
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
-  const booking = useAction({ success: "Booking updated", onSuccess: refresh });
+  const booking = useAction({ success: t("facility.workOrders.detail.bookingUpdated"), onSuccess: refresh });
   if (isLoading || !wo) return <Skeleton className="h-96" />;
 
   const manager = can("work_order:update", { campusId: wo.campus_id }, "auto");
@@ -71,13 +73,13 @@ export function WorkOrderDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
-        breadcrumbs={[{ label: "Work orders", href: "/facility/work-orders" }, { label: wo.number }]}
+        breadcrumbs={[{ label: t("facility.workOrders.title"), href: "/facility/work-orders" }, { label: wo.number }]}
         title={wo.title}
         meta={
           <>
             <StatusBadge status={wo.status} />
             <PriorityLabel priority={wo.priority} />
-            <span className="text-xs text-muted-foreground">{humanize(wo.type)}</span>
+            <span className="text-xs text-muted-foreground">{t(`enum.workOrderType.${wo.type}`, undefined, humanize(wo.type))}</span>
           </>
         }
         actions={
@@ -85,32 +87,32 @@ export function WorkOrderDetail({ id }: { id: string }) {
             <>
               {["open", "scheduled", "on_hold"].includes(wo.status) && (
                 <Button size="sm" onClick={() => patch.mutate({ status: "in_progress" })}>
-                  <Play /> Start
+                  <Play /> {t("facility.workOrders.detail.start")}
                 </Button>
               )}
               {wo.status === "in_progress" && (
                 <>
                   <Button size="sm" onClick={() => saveWork("completed")} loading={patch.isPending}>
-                    <CheckCircle2 /> Complete
+                    <CheckCircle2 /> {t("facility.workOrders.detail.complete")}
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => patch.mutate({ status: "on_hold" })}>
-                    <Pause /> Hold
+                    <Pause /> {t("facility.workOrders.detail.hold")}
                   </Button>
                 </>
               )}
               {wo.status === "completed" && manager && (
                 <Button size="sm" onClick={() => patch.mutate({ status: "verified" })}>
-                  <ShieldCheck /> Verify
+                  <ShieldCheck /> {t("facility.workOrders.detail.verify")}
                 </Button>
               )}
               {manager && (
                 <Button size="sm" variant="outline" onClick={() => setEdit(true)}>
-                  <Pencil /> Edit
+                  <Pencil /> {t("ui.edit")}
                 </Button>
               )}
               {manager && !["completed"].includes(wo.status) && (
                 <Button size="sm" variant="ghost" onClick={() => patch.mutate({ status: "cancelled" })}>
-                  <XCircle /> Cancel
+                  <XCircle /> {t("ui.cancel")}
                 </Button>
               )}
             </>
@@ -126,13 +128,13 @@ export function WorkOrderDetail({ id }: { id: string }) {
           )}
           <Card>
             <CardHeader>
-              <CardTitle>Checklist</CardTitle>
+              <CardTitle>{t("facility.workOrders.checklist")}</CardTitle>
               <span className="text-xs text-muted-foreground">
-                {checklist.filter((c) => c.result !== undefined && c.result !== null && c.result !== "").length}/{checklist.length} done
+                {t("facility.workOrders.detail.doneCount", { done: checklist.filter((c) => c.result !== undefined && c.result !== null && c.result !== "").length, total: checklist.length })}
               </span>
             </CardHeader>
             <CardContent className="flex flex-col gap-3">
-              {checklist.length === 0 && <p className="text-sm text-muted-foreground">No checklist for this work order.</p>}
+              {checklist.length === 0 && <p className="text-sm text-muted-foreground">{t("facility.workOrders.detail.noChecklist")}</p>}
               {checklist.map((c, i) => (
                 <div key={c.key} className="flex flex-wrap items-center gap-3 border-b pb-3 text-sm last:border-0 last:pb-0">
                   {c.type === "check" ? (
@@ -163,17 +165,17 @@ export function WorkOrderDetail({ id }: { id: string }) {
               ))}
               {editable && (
                 <div className="grid gap-3 border-t pt-3 sm:grid-cols-2">
-                  <Field label="Completion notes" className="sm:col-span-2">
+                  <Field label={t("facility.workOrders.detail.completionNotes")} className="sm:col-span-2">
                     <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
                   </Field>
-                  <Field label="Labour cost">
+                  <Field label={t("facility.workOrders.detail.labourCost")}>
                     <Input type="number" inputMode="decimal" value={costs.labour_cost} onChange={(e) => setCosts({ ...costs, labour_cost: e.target.value })} />
                   </Field>
-                  <Field label="Material cost">
+                  <Field label={t("facility.workOrders.detail.materialCost")}>
                     <Input type="number" inputMode="decimal" value={costs.material_cost} onChange={(e) => setCosts({ ...costs, material_cost: e.target.value })} />
                   </Field>
                   <Button variant="outline" className="sm:col-span-2 sm:justify-self-start" onClick={() => saveWork()} loading={patch.isPending}>
-                    Save progress
+                    {t("facility.workOrders.detail.saveProgress")}
                   </Button>
                 </div>
               )}
@@ -181,9 +183,9 @@ export function WorkOrderDetail({ id }: { id: string }) {
           </Card>
           <Tabs defaultValue="comments">
             <TabsList>
-              <TabsTrigger value="comments">Updates</TabsTrigger>
-              <TabsTrigger value="files">Files & reports</TabsTrigger>
-              <TabsTrigger value="activity">History</TabsTrigger>
+              <TabsTrigger value="comments">{t("facility.issues.detail.tabUpdates")}</TabsTrigger>
+              <TabsTrigger value="files">{t("facility.workOrders.detail.tabFiles")}</TabsTrigger>
+              <TabsTrigger value="activity">{t("ui.history")}</TabsTrigger>
             </TabsList>
             <TabsContent value="comments">
               <Comments entityType="work_order" entityId={id} allowInternal />
@@ -200,7 +202,7 @@ export function WorkOrderDetail({ id }: { id: string }) {
           {wo.vendor && (
             <Card>
               <CardHeader>
-                <CardTitle>Vendor booking</CardTitle>
+                <CardTitle>{t("facility.workOrders.detail.vendorBooking")}</CardTitle>
                 <StatusBadge status={wo.vendor_booking_status} />
               </CardHeader>
               <CardContent className="flex flex-col gap-2 text-sm">
@@ -211,15 +213,15 @@ export function WorkOrderDetail({ id }: { id: string }) {
                 {manager && (
                   <div className="flex flex-wrap gap-2">
                     {wo.vendor_booking_status === "not_required" && (
-                      <Button size="xs" variant="outline" onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "requested" } })}>Request visit</Button>
+                      <Button size="xs" variant="outline" onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "requested" } })}>{t("facility.workOrders.detail.requestVisit")}</Button>
                     )}
                     {["requested", "rescheduled"].includes(wo.vendor_booking_status) && (
                       <Button size="xs" variant="outline" onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "confirmed" } })}>
-                        <CalendarCheck /> Mark confirmed
+                        <CalendarCheck /> {t("facility.workOrders.detail.markConfirmed")}
                       </Button>
                     )}
                     <Button size="xs" variant="ghost" asChild>
-                      <Link href={`/facility/vendors/${wo.vendor.id}`}>Send portal link</Link>
+                      <Link href={`/facility/vendors/${wo.vendor.id}`}>{t("facility.workOrders.detail.sendPortalLink")}</Link>
                     </Button>
                   </div>
                 )}
@@ -230,18 +232,18 @@ export function WorkOrderDetail({ id }: { id: string }) {
             <CardContent className="pt-4">
               <DetailGrid
                 items={[
-                  { label: "Campus", value: wo.campus?.name },
-                  { label: "Assignee", value: <UserChip name={wo.assignee?.full_name} /> },
-                  { label: "Asset", value: wo.asset ? <Link className="text-primary hover:underline" href={`/facility/assets/${wo.asset.id}`}>{wo.asset.asset_tag}</Link> : null },
-                  { label: "Location", value: wo.location?.name },
-                  { label: "Scheduled", value: <DateTime value={wo.scheduled_for} /> },
-                  { label: "Due", value: <DueDate value={wo.due_at} done={["completed", "verified"].includes(wo.status)} /> },
-                  { label: "Started", value: <DateTime value={wo.started_at} /> },
-                  { label: "Completed", value: <DateTime value={wo.completed_at} /> },
-                  { label: "Issue", value: wo.issue_id ? <Link className="text-primary hover:underline" href={`/facility/issues/${wo.issue_id}`}>View issue</Link> : null },
-                  { label: "PM schedule", value: wo.pm_schedule_id ? "Preventive (auto-generated)" : null },
-                  { label: "Labour", value: wo.labour_cost ? <Money value={wo.labour_cost} /> : null },
-                  { label: "Material", value: wo.material_cost ? <Money value={wo.material_cost} /> : null },
+                  { label: t("ui.campus"), value: wo.campus?.name },
+                  { label: t("ui.assignee"), value: <UserChip name={wo.assignee?.full_name} /> },
+                  { label: t("ui.asset"), value: wo.asset ? <Link className="text-primary hover:underline" href={`/facility/assets/${wo.asset.id}`}>{wo.asset.asset_tag}</Link> : null },
+                  { label: t("ui.location"), value: wo.location?.name },
+                  { label: t("facility.workOrders.scheduled"), value: <DateTime value={wo.scheduled_for} /> },
+                  { label: t("ui.due"), value: <DueDate value={wo.due_at} done={["completed", "verified"].includes(wo.status)} /> },
+                  { label: t("facility.workOrders.detail.started"), value: <DateTime value={wo.started_at} /> },
+                  { label: t("facility.workOrders.detail.completed"), value: <DateTime value={wo.completed_at} /> },
+                  { label: t("facility.issues.colIssue"), value: wo.issue_id ? <Link className="text-primary hover:underline" href={`/facility/issues/${wo.issue_id}`}>{t("facility.workOrders.detail.viewIssue")}</Link> : null },
+                  { label: t("facility.workOrders.detail.pmSchedule"), value: wo.pm_schedule_id ? t("facility.workOrders.detail.pmAuto") : null },
+                  { label: t("facility.workOrders.detail.labour"), value: wo.labour_cost ? <Money value={wo.labour_cost} /> : null },
+                  { label: t("facility.workOrders.detail.material"), value: wo.material_cost ? <Money value={wo.material_cost} /> : null },
                 ]}
               />
             </CardContent>
@@ -251,10 +253,10 @@ export function WorkOrderDetail({ id }: { id: string }) {
       <ResourceFormDialog
         open={edit}
         onOpenChange={setEdit}
-        title="Edit work order"
+        title={t("facility.workOrders.detail.editTitle")}
         endpoint={`/work-orders/${id}`}
         method="PATCH"
-        fields={workOrderFields.filter((f) => f.name !== "campus_id")}
+        fields={workOrderFields(t).filter((f) => f.name !== "campus_id")}
         defaultValues={{
           ...wo,
           scheduled_for: wo.scheduled_for?.slice(0, 16) ?? "",

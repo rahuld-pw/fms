@@ -16,6 +16,7 @@ import { DetailGrid, PageHeader, Stat } from "@/components/shared/page-header";
 import { ResourceFormDialog, useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 import { vendorFields } from "../vendor-fields";
 
@@ -23,6 +24,7 @@ import { vendorFields } from "../vendor-fields";
 const STEPS = ["invited", "draft", "submitted", "under_verification", "pending_approval", "approved"];
 
 export function VendorDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const can = useCan();
   const { data: v, isLoading } = useQuery({ queryKey: ["vendor", id], queryFn: () => api<any>(`/vendors/${id}`) });
@@ -34,11 +36,11 @@ export function VendorDetail({ id }: { id: string }) {
     for (const k of ["vendor", "vendor-docs", "vendor-agreements", "vendor-perf"]) qc.invalidateQueries({ queryKey: [k, id] });
     qc.invalidateQueries({ queryKey: ["approvals", "vendor", id] });
   };
-  const act = useAction({ success: "Done", onSuccess: refresh });
+  const act = useAction({ success: t("ui.done"), onSuccess: refresh });
   const link = useAction<{ link: string; email: string }>({
     onSuccess: (r) => {
       navigator.clipboard?.writeText(r.link).catch(() => undefined);
-      toast.success(`Link emailed to ${r.email} (also copied to clipboard)`);
+      toast.success(t("facility.vendors.detail.linkEmailed", { email: r.email }));
     },
   });
   if (isLoading || !v) return <Skeleton className="h-96" />;
@@ -47,7 +49,7 @@ export function VendorDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
-        breadcrumbs={[{ label: "Vendors", href: "/facility/vendors" }, { label: v.vendor_code ?? v.name }]}
+        breadcrumbs={[{ label: t("facility.vendors.title"), href: "/facility/vendors" }, { label: v.vendor_code ?? v.name }]}
         title={v.name}
         meta={
           <>
@@ -65,26 +67,26 @@ export function VendorDetail({ id }: { id: string }) {
             <>
               {["submitted", "draft", "invited"].includes(v.status) && (
                 <Button size="sm" variant="outline" onClick={() => act.mutate({ path: `/vendors/${id}/start-verification` })}>
-                  <FileCheck2 /> Start verification
+                  <FileCheck2 /> {t("facility.vendors.detail.startVerification")}
                 </Button>
               )}
               {["under_verification", "submitted", "rejected"].includes(v.status) && (
                 <Button size="sm" onClick={() => act.mutate({ path: `/vendors/${id}/submit-for-approval` })}>
-                  <Send /> Send for approval
+                  <Send /> {t("facility.vendors.detail.sendForApproval")}
                 </Button>
               )}
               <Button size="sm" variant="outline" onClick={() => link.mutate({ path: `/vendors/${id}/portal-link`, body: { purpose: STEPS.indexOf(v.status) < 3 ? "onboarding" : "portal" } })}>
-                <Link2 /> Portal link
+                <Link2 /> {t("facility.vendors.detail.portalLink")}
               </Button>
               <Button size="sm" variant="outline" onClick={() => setDialog("edit")}>
-                <Pencil /> Edit
+                <Pencil /> {t("ui.edit")}
               </Button>
               {can("vendor:approve") &&
                 (v.status === "blacklisted" ? (
-                  <Button size="sm" variant="ghost" onClick={() => act.mutate({ path: `/vendors/${id}/blacklist`, body: { blacklisted: false } })}>Reinstate</Button>
+                  <Button size="sm" variant="ghost" onClick={() => act.mutate({ path: `/vendors/${id}/blacklist`, body: { blacklisted: false } })}>{t("facility.vendors.detail.reinstate")}</Button>
                 ) : (
                   <Button size="sm" variant="ghost" onClick={() => setDialog("blacklist")}>
-                    <Ban /> Blacklist
+                    <Ban /> {t("facility.vendors.detail.blacklist")}
                   </Button>
                 ))}
             </>
@@ -95,46 +97,46 @@ export function VendorDetail({ id }: { id: string }) {
         <ol className="mb-4 flex flex-wrap gap-1 text-xs">
           {STEPS.map((s, i) => (
             <li key={s} className={`rounded-full px-2.5 py-1 ${i < stepIdx ? "bg-accent text-accent-foreground" : i === stepIdx ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-              {i + 1}. {humanize(s)}
+              {t("facility.vendors.detail.step", { n: i + 1, label: t(`status.${s}`, undefined, humanize(s)) })}
             </li>
           ))}
         </ol>
       )}
-      {v.status === "blacklisted" && <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">Blacklisted: {v.blacklist_reason}</p>}
+      {v.status === "blacklisted" && <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">{t("facility.vendors.detail.blacklistedReason", { reason: v.blacklist_reason ?? "" })}</p>}
       <div className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat label="Work orders" value={perf.data?.work_orders_total ?? "—"} hint={`${perf.data?.work_orders_completed ?? 0} completed`} />
-        <Stat label="On-time completion" value={perf.data?.on_time_pct != null ? `${perf.data.on_time_pct}%` : "—"} />
-        <Stat label="Purchase orders" value={perf.data?.purchase_orders_total ?? "—"} />
-        <Stat label="Total spend" value={<Money value={perf.data?.spend ?? 0} compact />} />
+        <Stat label={t("facility.workOrders.title")} value={perf.data?.work_orders_total ?? "—"} hint={t("facility.vendors.detail.completedN", { n: perf.data?.work_orders_completed ?? 0 })} />
+        <Stat label={t("facility.vendors.detail.onTime")} value={perf.data?.on_time_pct != null ? `${perf.data.on_time_pct}%` : "—"} />
+        <Stat label={t("facility.vendors.detail.purchaseOrders")} value={perf.data?.purchase_orders_total ?? "—"} />
+        <Stat label={t("facility.vendors.detail.totalSpend")} value={<Money value={perf.data?.spend ?? 0} compact />} />
       </div>
       <Tabs defaultValue="profile">
         <TabsList>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="documents">Documents {docs.data?.some((d) => d.verification_status === "pending") ? "•" : ""}</TabsTrigger>
-          <TabsTrigger value="agreements">Agreements</TabsTrigger>
-          <TabsTrigger value="ratings">Ratings</TabsTrigger>
-          <TabsTrigger value="approval">Approval</TabsTrigger>
-          <TabsTrigger value="notes">Notes</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="profile">{t("facility.vendors.detail.tabProfile")}</TabsTrigger>
+          <TabsTrigger value="documents">{t("facility.assets.detail.documents")} {docs.data?.some((d) => d.verification_status === "pending") ? "•" : ""}</TabsTrigger>
+          <TabsTrigger value="agreements">{t("facility.vendors.detail.tabAgreements")}</TabsTrigger>
+          <TabsTrigger value="ratings">{t("facility.vendors.detail.tabRatings")}</TabsTrigger>
+          <TabsTrigger value="approval">{t("facility.vendors.detail.tabApproval")}</TabsTrigger>
+          <TabsTrigger value="notes">{t("ui.notes")}</TabsTrigger>
+          <TabsTrigger value="history">{t("ui.history")}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile">
           <Card>
             <CardContent className="pt-4">
               <DetailGrid
                 items={[
-                  { label: "Legal name", value: v.legal_name },
-                  { label: "Type", value: humanize(v.vendor_type) },
-                  { label: "Contact", value: v.contact_name },
-                  { label: "Email", value: v.email },
-                  { label: "Phone", value: v.phone },
-                  { label: "Website", value: v.website },
-                  { label: "Address", value: [v.address, v.city, v.state, v.pincode].filter(Boolean).join(", "), wide: true },
-                  { label: "GSTIN", value: v.gstin && <span className="font-mono">{v.gstin}</span> },
-                  { label: "PAN", value: v.pan && <span className="font-mono">{v.pan}</span> },
-                  { label: "MSME", value: v.msme_number },
-                  { label: "Payment terms", value: v.payment_terms_days != null ? `${v.payment_terms_days} days` : null },
-                  { label: "Bank", value: v.bank_account_number ? `${v.bank_name ?? ""} · ${v.bank_account_name ?? ""} · ****${String(v.bank_account_number).slice(-4)} · ${v.bank_ifsc}` : null, wide: true },
-                  { label: "Verified", value: v.verified_at ? <DateTime value={v.verified_at} /> : null },
+                  { label: t("facility.vendors.fields.legalName"), value: v.legal_name },
+                  { label: t("ui.type"), value: v.vendor_type ? t(`enum.vendorType.${v.vendor_type}`, undefined, humanize(v.vendor_type)) : humanize(v.vendor_type) },
+                  { label: t("facility.vendors.contact"), value: v.contact_name },
+                  { label: t("ui.email"), value: v.email },
+                  { label: t("ui.phone"), value: v.phone },
+                  { label: t("facility.vendors.detail.website"), value: v.website },
+                  { label: t("facility.vendors.fields.address"), value: [v.address, v.city, v.state, v.pincode].filter(Boolean).join(", "), wide: true },
+                  { label: t("facility.vendors.fields.gstin"), value: v.gstin && <span className="font-mono">{v.gstin}</span> },
+                  { label: t("facility.vendors.fields.pan"), value: v.pan && <span className="font-mono">{v.pan}</span> },
+                  { label: t("facility.vendors.detail.msme"), value: v.msme_number },
+                  { label: t("facility.vendors.detail.paymentTerms"), value: v.payment_terms_days != null ? t("facility.vendors.detail.days", { n: v.payment_terms_days }) : null },
+                  { label: t("facility.vendors.fields.bank"), value: v.bank_account_number ? `${v.bank_name ?? ""} · ${v.bank_account_name ?? ""} · ****${String(v.bank_account_number).slice(-4)} · ${v.bank_ifsc}` : null, wide: true },
+                  { label: t("status.verified"), value: v.verified_at ? <DateTime value={v.verified_at} /> : null },
                 ]}
               />
             </CardContent>
@@ -142,60 +144,60 @@ export function VendorDetail({ id }: { id: string }) {
         </TabsContent>
         <TabsContent value="documents" className="flex flex-col gap-3">
           <Card className="divide-y">
-            {docs.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No documents yet.</p>}
+            {docs.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("facility.vendors.detail.noDocuments")}</p>}
             {docs.data?.map((d) => (
               <div key={d.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{humanize(d.doc_type)} {d.doc_number && <span className="font-mono text-xs text-muted-foreground">{d.doc_number}</span>}</p>
+                  <p className="font-medium">{d.doc_type ? t(`enum.docType.${d.doc_type}`, undefined, humanize(d.doc_type)) : humanize(d.doc_type)} {d.doc_number && <span className="font-mono text-xs text-muted-foreground">{d.doc_number}</span>}</p>
                   <p className="text-xs text-muted-foreground">
-                    {d.attachment?.file_name ?? "No file"} {d.expires_on && <>· expires <DueDate value={d.expires_on} /></>}
+                    {d.attachment?.file_name ?? t("facility.vendors.detail.noFile")} {d.expires_on && <>· {t("facility.vendors.detail.expires")} <DueDate value={d.expires_on} /></>}
                   </p>
                 </div>
-                <StatusBadge status={d.verification_status === "pending" ? "pending" : d.verification_status === "verified" ? "approved" : "rejected"} label={humanize(d.verification_status)} />
+                <StatusBadge status={d.verification_status === "pending" ? "pending" : d.verification_status === "verified" ? "approved" : "rejected"} label={d.verification_status ? t(`status.${d.verification_status}`, undefined, humanize(d.verification_status)) : humanize(d.verification_status)} />
                 {d.attachment && (
-                  <Button size="xs" variant="ghost" onClick={async () => window.open((await api<{ url: string }>(`/attachments/${d.attachment.id}/url`)).url, "_blank")}>View</Button>
+                  <Button size="xs" variant="ghost" onClick={async () => window.open((await api<{ url: string }>(`/attachments/${d.attachment.id}/url`)).url, "_blank")}>{t("ui.view")}</Button>
                 )}
                 {manage && d.verification_status === "pending" && (
                   <div className="flex gap-1">
-                    <Button size="xs" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "verified" } })}><Check /> Verify</Button>
-                    <Button size="xs" variant="outline" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "rejected" } })}><X /> Reject</Button>
+                    <Button size="xs" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "verified" } })}><Check /> {t("facility.workOrders.detail.verify")}</Button>
+                    <Button size="xs" variant="outline" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "rejected" } })}><X /> {t("ui.reject")}</Button>
                   </div>
                 )}
               </div>
             ))}
           </Card>
-          {manage && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("doc")}><Plus /> Add document record</Button>}
+          {manage && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("doc")}><Plus /> {t("facility.vendors.detail.addDocRecord")}</Button>}
           <div>
-            <p className="mb-2 text-sm font-medium">Files</p>
+            <p className="mb-2 text-sm font-medium">{t("ui.files")}</p>
             <Attachments entityType="vendor" entityId={id} kind="document" canUpload={manage} />
           </div>
         </TabsContent>
         <TabsContent value="agreements" className="flex flex-col gap-3">
           <Card className="divide-y">
-            {agreements.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No agreements.</p>}
+            {agreements.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("facility.vendors.detail.noAgreements")}</p>}
             {agreements.data?.map((a) => (
               <div key={a.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium">{a.title}</p>
-                  <p className="text-xs text-muted-foreground">{humanize(a.agreement_type)} · {a.start_date} → {a.end_date ?? "open"} {a.auto_renew && "· auto-renews"}</p>
+                  <p className="text-xs text-muted-foreground">{a.agreement_type ? t(`enum.agreementType.${a.agreement_type}`, undefined, humanize(a.agreement_type)) : humanize(a.agreement_type)} · {a.start_date} → {a.end_date ?? t("facility.vendors.detail.openEnded")} {a.auto_renew && `· ${t("facility.vendors.detail.autoRenewsLower")}`}</p>
                 </div>
                 {a.value && <Money value={a.value} />}
-                {a.end_date && <span className="text-xs">ends <DueDate value={a.end_date} done={a.status !== "active"} /></span>}
+                {a.end_date && <span className="text-xs">{t("facility.vendors.detail.ends")} <DueDate value={a.end_date} done={a.status !== "active"} /></span>}
                 <StatusBadge status={a.status} />
               </div>
             ))}
           </Card>
-          {manage && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("agreement")}><Plus /> Add agreement</Button>}
+          {manage && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("agreement")}><Plus /> {t("facility.vendors.detail.addAgreement")}</Button>}
         </TabsContent>
         <TabsContent value="ratings" className="flex flex-col gap-3">
-          {(can("vendor:rate") || manage) && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("rate")}><Star /> Rate vendor</Button>}
+          {(can("vendor:rate") || manage) && <Button size="sm" variant="outline" className="self-start" onClick={() => setDialog("rate")}><Star /> {t("facility.vendors.detail.rateVendor")}</Button>}
           <Card className="divide-y">
-            {perf.data?.ratings?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No ratings yet.</p>}
+            {perf.data?.ratings?.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("facility.vendors.detail.noRatings")}</p>}
             {perf.data?.ratings?.map((r: any) => (
               <div key={r.id} className="px-4 py-3 text-sm">
                 <p>
                   <span className="text-amber-500">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</span>{" "}
-                  <span className="text-xs text-muted-foreground">{humanize(r.source_type)} · {r.rater?.full_name} · <DateTime value={r.created_at} relative /></span>
+                  <span className="text-xs text-muted-foreground">{r.source_type ? t(`enum.sourceType.${r.source_type}`, undefined, humanize(r.source_type)) : humanize(r.source_type)} · {r.rater?.full_name} · <DateTime value={r.created_at} relative /></span>
                 </p>
                 {r.comment && <p className="mt-0.5">{r.comment}</p>}
               </div>
@@ -209,35 +211,35 @@ export function VendorDetail({ id }: { id: string }) {
         <TabsContent value="history"><ActivityFeed entityType="vendor" entityId={id} /></TabsContent>
       </Tabs>
 
-      <ResourceFormDialog open={dialog === "edit"} onOpenChange={(o) => !o && setDialog(null)} title="Edit vendor" endpoint={`/vendors/${id}`} method="PATCH" fields={vendorFields} defaultValues={v} onSaved={refresh} />
+      <ResourceFormDialog open={dialog === "edit"} onOpenChange={(o) => !o && setDialog(null)} title={t("facility.vendors.detail.editTitle")} endpoint={`/vendors/${id}`} method="PATCH" fields={vendorFields(t)} defaultValues={v} onSaved={refresh} />
       <ResourceFormDialog
         open={dialog === "doc"}
         onOpenChange={(o) => !o && setDialog(null)}
-        title="Add document"
-        description="Upload the file in the Files section, then record it here."
+        title={t("facility.vendors.detail.addDocTitle")}
+        description={t("facility.vendors.detail.addDocDesc")}
         endpoint={`/vendors/${id}/documents`}
         fields={[
-          { name: "doc_type", label: "Type", type: "select", required: true, options: ["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "other"].map((x) => ({ value: x, label: humanize(x) })) },
-          { name: "doc_number", label: "Number" },
-          { name: "issued_on", label: "Issued on", type: "date" },
-          { name: "expires_on", label: "Expires on", type: "date" },
+          { name: "doc_type", label: t("ui.type"), type: "select", required: true, options: ["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "other"].map((x) => ({ value: x, label: t(`enum.docType.${x}`, undefined, humanize(x)) })) },
+          { name: "doc_number", label: t("ui.number") },
+          { name: "issued_on", label: t("facility.vendors.detail.issuedOn"), type: "date" },
+          { name: "expires_on", label: t("facility.vendors.detail.expiresOn"), type: "date" },
         ]}
         onSaved={refresh}
       />
       <ResourceFormDialog
         open={dialog === "agreement"}
         onOpenChange={(o) => !o && setDialog(null)}
-        title="Add agreement"
+        title={t("facility.vendors.detail.addAgreement")}
         endpoint={`/vendors/${id}/agreements`}
         fields={[
-          { name: "title", label: "Title", required: true, full: true },
-          { name: "agreement_type", label: "Type", type: "select", options: ["service", "supply", "nda", "rate_contract", "other"].map((x) => ({ value: x, label: humanize(x) })) },
-          { name: "value", label: "Value", type: "money" },
-          { name: "start_date", label: "Start", type: "date", required: true },
-          { name: "end_date", label: "End", type: "date" },
-          { name: "renewal_reminder_days", label: "Remind N days before end", type: "number" },
-          { name: "auto_renew", label: "Auto-renews", type: "switch" },
-          { name: "notes", label: "Notes", type: "textarea" },
+          { name: "title", label: t("ui.title"), required: true, full: true },
+          { name: "agreement_type", label: t("ui.type"), type: "select", options: ["service", "supply", "nda", "rate_contract", "other"].map((x) => ({ value: x, label: t(`enum.agreementType.${x}`, undefined, humanize(x)) })) },
+          { name: "value", label: t("facility.maintenance.amc.colValue"), type: "money" },
+          { name: "start_date", label: t("facility.maintenance.amc.start"), type: "date", required: true },
+          { name: "end_date", label: t("facility.maintenance.amc.end"), type: "date" },
+          { name: "renewal_reminder_days", label: t("facility.maintenance.amc.remindBeforeEnd"), type: "number" },
+          { name: "auto_renew", label: t("facility.vendors.detail.autoRenews"), type: "switch" },
+          { name: "notes", label: t("ui.notes"), type: "textarea" },
         ]}
         defaultValues={{ agreement_type: "service", renewal_reminder_days: 30 }}
         onSaved={refresh}
@@ -245,13 +247,13 @@ export function VendorDetail({ id }: { id: string }) {
       <ResourceFormDialog
         open={dialog === "rate"}
         onOpenChange={(o) => !o && setDialog(null)}
-        title="Rate vendor"
+        title={t("facility.vendors.detail.rateVendor")}
         endpoint={`/vendors/${id}/ratings`}
         fields={[
-          { name: "rating", label: "Overall (1-5)", type: "select", required: true, options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: "★".repeat(n) })) },
-          { name: "quality", label: "Quality", type: "select", options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: String(n) })) },
-          { name: "timeliness", label: "Timeliness", type: "select", options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: String(n) })) },
-          { name: "comment", label: "Comment", type: "textarea" },
+          { name: "rating", label: t("facility.vendors.detail.overall"), type: "select", required: true, options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: "★".repeat(n) })) },
+          { name: "quality", label: t("facility.vendors.detail.quality"), type: "select", options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: String(n) })) },
+          { name: "timeliness", label: t("facility.vendors.detail.timeliness"), type: "select", options: [5, 4, 3, 2, 1].map((n) => ({ value: String(n), label: String(n) })) },
+          { name: "comment", label: t("ui.comment"), type: "textarea" },
         ]}
         transform={(b) => ({ ...b, rating: Number(b.rating), quality: b.quality ? Number(b.quality) : undefined, timeliness: b.timeliness ? Number(b.timeliness) : undefined })}
         onSaved={refresh}
@@ -262,19 +264,20 @@ export function VendorDetail({ id }: { id: string }) {
 }
 
 function BlacklistDialog({ id, open, onOpenChange, onDone }: { id: string; open: boolean; onOpenChange: (o: boolean) => void; onDone: () => void }) {
+  const { t } = useT();
   const [reason, setReason] = useState("");
-  const act = useAction({ success: "Vendor blacklisted", onSuccess: () => { onDone(); onOpenChange(false); } });
+  const act = useAction({ success: t("facility.vendors.detail.blacklistedToast"), onSuccess: () => { onDone(); onOpenChange(false); } });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Blacklist vendor</DialogTitle>
-          <DialogDescription>Blacklisted vendors cannot receive POs, RFQs or work orders, and lose portal access.</DialogDescription>
+          <DialogTitle>{t("facility.vendors.detail.blacklistTitle")}</DialogTitle>
+          <DialogDescription>{t("facility.vendors.detail.blacklistDesc")}</DialogDescription>
         </DialogHeader>
-        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Reason" />
+        <Textarea value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("facility.assets.detail.reason")} />
         <DialogFooter>
           <Button variant="destructive" disabled={reason.trim().length < 3} loading={act.isPending} onClick={() => act.mutate({ path: `/vendors/${id}/blacklist`, body: { blacklisted: true, reason } })}>
-            <ShieldCheck /> Blacklist
+            <ShieldCheck /> {t("facility.vendors.detail.blacklist")}
           </Button>
         </DialogFooter>
       </DialogContent>

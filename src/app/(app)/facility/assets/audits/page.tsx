@@ -8,15 +8,17 @@ import { DataTable } from "@/components/shared/data-table";
 import { PageHeader } from "@/components/shared/page-header";
 import { ResourceFormDialog } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
+import { useT } from "@/lib/i18n/client";
 
 export default function AuditsPage() {
+  const { t } = useT();
   const can = useCan();
   const router = useRouter();
   const { campuses } = useSession();
   const [open, setOpen] = useState(false);
   return (
     <div>
-      <PageHeader title="Asset verification audits" breadcrumbs={[{ label: "Assets", href: "/facility/assets" }, { label: "Audits" }]} description="Periodic physical verification: scan tags to mark assets found, missing or relocated." />
+      <PageHeader title={t("facility.assets.audits.title")} breadcrumbs={[{ label: t("facility.assets.title"), href: "/facility/assets" }, { label: t("facility.assets.auditsLabel") }]} description={t("facility.assets.audits.description")} />
       <Suspense>
         <DataTable
           id="asset-audits"
@@ -25,26 +27,26 @@ export default function AuditsPage() {
           rowHref={(r) => `/facility/assets/audits/${r.id}`}
           exportable={false}
           columns={[
-            { key: "name", header: "Audit", pinned: true, render: (r) => <span className="font-medium">{r.name}</span> },
-            { key: "campus", header: "Campus", render: (r) => r.campus?.name },
-            { key: "location", header: "Scope", render: (r) => r.location?.name ?? "Whole campus" },
-            { key: "scheduled_for", header: "Scheduled", sortable: true },
-            { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
+            { key: "name", header: t("facility.assets.audits.colAudit"), pinned: true, render: (r) => <span className="font-medium">{r.name}</span> },
+            { key: "campus", header: t("ui.campus"), render: (r) => r.campus?.name },
+            { key: "location", header: t("facility.assets.audits.colScope"), render: (r) => r.location?.name ?? t("facility.assets.audits.wholeCampus") },
+            { key: "scheduled_for", header: t("facility.workOrders.scheduled"), sortable: true },
+            { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
           ]}
-          toolbar={can("asset_audit:create") && <Button size="sm" onClick={() => setOpen(true)}><Plus /> New audit</Button>}
+          toolbar={can("asset_audit:create") && <Button size="sm" onClick={() => setOpen(true)}><Plus /> {t("facility.assets.audits.newAudit")}</Button>}
         />
       </Suspense>
       <ResourceFormDialog
         open={open}
         onOpenChange={setOpen}
-        title="Plan an audit"
+        title={t("facility.assets.audits.planTitle")}
         endpoint="/asset-audits"
         fields={[
-          { name: "name", label: "Name", required: true, full: true, placeholder: "e.g. Half-yearly IT asset verification" },
-          { name: "campus_id", label: "Campus", type: "campus", required: true },
-          { name: "scheduled_for", label: "Date", type: "date" },
-          { name: "location_id", label: "Limit to location", type: "resource", endpoint: "/locations" },
-          { name: "category_id", label: "Limit to category", type: "resource", endpoint: "/asset-categories" },
+          { name: "name", label: t("ui.name"), required: true, full: true, placeholder: t("facility.assets.audits.namePlaceholder") },
+          { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
+          { name: "scheduled_for", label: t("ui.date"), type: "date" },
+          { name: "location_id", label: t("facility.assets.audits.limitLocation"), type: "resource", endpoint: "/locations" },
+          { name: "category_id", label: t("facility.assets.audits.limitCategory"), type: "resource", endpoint: "/asset-categories" },
         ]}
         defaultValues={{ campus_id: campuses.length === 1 ? campuses[0].id : "", scheduled_for: new Date().toISOString().slice(0, 10) }}
         invalidate={["/asset-audits"]}
