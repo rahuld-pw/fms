@@ -27,6 +27,8 @@ const facility_ur = {
     },
     me: "میں",
     issues: {
+      anonymousYou: "گمنام (آپ)",
+      anonymousAdminOnly: "گمنام رپورٹ · صرف ایڈمن کو دکھائی دیتا ہے",
       title: "مسائل",
       description: "تمام کیمپسز میں رپورٹ کیے گئے مسائل، SLA ٹریکنگ کے ساتھ۔",
       report: "مسئلے کی اطلاع دیں",
@@ -36,6 +38,8 @@ const facility_ur = {
       anonymous: "گمنام",
       searchPlaceholder: "عنوان یا نمبر تلاش کریں…",
       new: {
+        anonymous: "گمنام طور پر رپورٹ کریں",
+        anonymousHint: "آپ کا نام ساتھیوں یا اسے سنبھالنے والوں کو نہیں دکھایا جائے گا۔ صرف ادارے کے ایڈمن دیکھ سکتے ہیں کہ کس نے رپورٹ کیا۔",
         title: "مسئلے کی اطلاع دیں",
         chooseCampus: "کیمپس یا مقام منتخب کریں",
         reported: "مسئلہ {number} رپورٹ ہو گیا",

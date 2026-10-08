@@ -3048,6 +3048,49 @@ export type Database = {
           },
         ]
       }
+      issue_reporter_identities: {
+        Row: {
+          issue_id: string
+          org_id: string
+          user_id: string
+          created_at: string
+        }
+        Insert: {
+          issue_id: string
+          org_id: string
+          user_id: string
+          created_at?: string
+        }
+        Update: {
+          issue_id?: string
+          org_id?: string
+          user_id?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "issue_reporter_identities_issue_id_fkey"
+            columns: ["issue_id"]
+            isOneToOne: true
+            referencedRelation: "issues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issue_reporter_identities_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issue_reporter_identities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       issues: {
         Row: {
           id: string
@@ -3088,6 +3131,7 @@ export type Database = {
           updated_at: string
           deleted_at: string | null
           resolved_by: string | null
+          reporter_token: string | null
         }
         Insert: {
           id?: string
@@ -3128,6 +3172,7 @@ export type Database = {
           updated_at?: string
           deleted_at?: string | null
           resolved_by?: string | null
+          reporter_token?: string | null
         }
         Update: {
           id?: string
@@ -3168,6 +3213,7 @@ export type Database = {
           updated_at?: string
           deleted_at?: string | null
           resolved_by?: string | null
+          reporter_token?: string | null
         }
         Relationships: [
           {
@@ -7832,6 +7878,8 @@ export type Database = {
         | { Args: { p_public?: string; p_private?: string }; Returns: Json }
       rate_limit_hit:
         | { Args: { p_bucket: string; p_limit: number; p_window_seconds?: number }; Returns: { allowed: boolean; remaining: number; reset_at: string }[] }
+      reported_by_me:
+        | { Args: { i: unknown }; Returns: boolean }
       requisition_submit:
         | { Args: { p_requisition_id: string }; Returns: Json }
       resolution_feedback:

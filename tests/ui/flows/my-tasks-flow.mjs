@@ -26,7 +26,6 @@ const call = (p, method, path, body) =>
 
 // teacher creates a task for the HOD (not assigned to themselves)
 let teacher = await login("teacher@greenfield.test");
-const me = (await call(teacher, "GET", "/me")).json.data;
 const hodId = (await call(teacher, "GET", "/members?limit=100")).json.data.find((m) => m.profile?.email === "hod.science@greenfield.test" || m.email === "hod.science@greenfield.test")?.user_id;
 const created = await call(teacher, "POST", "/tasks", { title: "Collect lab safety forms", assignee_ids: hodId ? [hodId] : [], due_date: new Date().toISOString().slice(0, 10) });
 console.log("create task:", created.status, "assigned to hod:", !!hodId);

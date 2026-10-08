@@ -27,6 +27,8 @@ const facility_pa = {
     },
     me: "ਮੈਂ",
     issues: {
+      anonymousYou: "ਗੁਮਨਾਮ (ਤੁਸੀਂ)",
+      anonymousAdminOnly: "ਗੁਮਨਾਮ ਰਿਪੋਰਟ · ਸਿਰਫ਼ ਐਡਮਿਨ ਨੂੰ ਦਿਖਦੀ ਹੈ",
       title: "ਸਮੱਸਿਆਵਾਂ",
       description: "ਸਾਰੇ ਕੈਂਪਸਾਂ ਵਿੱਚ ਰਿਪੋਰਟ ਕੀਤੀਆਂ ਸਮੱਸਿਆਵਾਂ, SLA ਟਰੈਕਿੰਗ ਸਮੇਤ।",
       report: "ਸਮੱਸਿਆ ਦੀ ਰਿਪੋਰਟ ਕਰੋ",
@@ -36,6 +38,8 @@ const facility_pa = {
       anonymous: "ਅਗਿਆਤ",
       searchPlaceholder: "ਸਿਰਲੇਖ ਜਾਂ ਨੰਬਰ ਖੋਜੋ…",
       new: {
+        anonymous: "ਗੁਮਨਾਮ ਤੌਰ 'ਤੇ ਰਿਪੋਰਟ ਕਰੋ",
+        anonymousHint: "ਤੁਹਾਡਾ ਨਾਮ ਸਾਥੀਆਂ ਜਾਂ ਇਸ ਨੂੰ ਸੰਭਾਲਣ ਵਾਲਿਆਂ ਨੂੰ ਨਹੀਂ ਦਿਖੇਗਾ। ਕਿਸ ਨੇ ਰਿਪੋਰਟ ਕੀਤੀ ਇਹ ਸਿਰਫ਼ ਸੰਸਥਾ ਦੇ ਐਡਮਿਨ ਦੇਖ ਸਕਦੇ ਹਨ।",
         title: "ਸਮੱਸਿਆ ਦੀ ਰਿਪੋਰਟ ਕਰੋ",
         chooseCampus: "ਕੈਂਪਸ ਜਾਂ ਥਾਂ ਚੁਣੋ",
         reported: "ਸਮੱਸਿਆ {number} ਦਰਜ ਹੋਈ",

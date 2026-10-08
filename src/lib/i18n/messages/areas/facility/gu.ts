@@ -27,6 +27,8 @@ const facility_gu = {
     },
     me: "હું",
     issues: {
+      anonymousYou: "અનામી (તમે)",
+      anonymousAdminOnly: "અનામી રિપોર્ટ · ફક્ત ઍડમિનને દેખાય છે",
       title: "સમસ્યાઓ",
       description: "બધા કેમ્પસમાં જણાવેલી સમસ્યાઓ, SLA ટ્રૅકિંગ સાથે.",
       report: "સમસ્યા જણાવો",
@@ -36,6 +38,8 @@ const facility_gu = {
       anonymous: "અનામી",
       searchPlaceholder: "શીર્ષક કે નંબર શોધો…",
       new: {
+        anonymous: "અનામી રીતે રિપોર્ટ કરો",
+        anonymousHint: "તમારું નામ સહકર્મીઓ કે આ સંભાળનારાઓને દેખાશે નહીં. કોણે રિપોર્ટ કર્યું તે ફક્ત સંસ્થાના ઍડમિન જોઈ શકે છે.",
         title: "સમસ્યા જણાવો",
         chooseCampus: "કેમ્પસ કે જગ્યા પસંદ કરો",
         reported: "સમસ્યા {number} નોંધાઈ",

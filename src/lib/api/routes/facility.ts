@@ -76,6 +76,8 @@ const issueCreate = z.object({
   assignee_id: optUuid,
   vendor_id: optUuid,
   reporter_id: optUuid,
+  /** Hide the reporter from everyone except organisation admins. */
+  is_anonymous: z.boolean().optional(),
   custom_fields: customFields,
 });
 const issueUpdate = z
@@ -109,9 +111,9 @@ export const issues: ResourceSpec = {
   campusColumn: "campus_id",
   departmentColumn: "department_id",
   select:
-    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names), assignee:profiles!issues_assignee_id_fkey(id, full_name), reporter:profiles!issues_reporter_id_fkey(id, full_name), vendor:vendors(id, name)",
+    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names), assignee:profiles!issues_assignee_id_fkey(id, full_name), reporter:profiles!issues_reporter_id_fkey(id, full_name), vendor:vendors(id, name), reported_by_me",
   detailSelect:
-    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names, qr_token), asset:assets(id, name, asset_tag), assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email), resolver:profiles!issues_resolved_by_fkey(id, full_name), vendor:vendors(id, name, phone), work_order:work_orders!issues_work_order_id_fkey(id, number, status)",
+    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names, qr_token), asset:assets(id, name, asset_tag), assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email), resolver:profiles!issues_resolved_by_fkey(id, full_name), vendor:vendors(id, name, phone), work_order:work_orders!issues_work_order_id_fkey(id, number, status), reported_by_me, confidential_reporter:issue_reporter_identities(user_id, profile:profiles(id, full_name, email))",
   filters: {
     status: "in",
     priority: "in",
@@ -138,8 +140,13 @@ export const issues: ResourceSpec = {
   createSchema: issueCreate,
   updateSchema: issueUpdate,
   prepareCreate: async (ctx, input) => {
-    // People report as themselves; reporting on behalf of others needs issue:create
-    if (!input.reporter_id || input.reporter_id === ctx.userId) input.reporter_id = ctx.userId;
+    // People report as themselves; reporting on behalf of others needs issue:create.
+    // Anonymous reports are always your own (the database hides the name).
+    if (input.is_anonymous) {
+      if (ctx.kind !== "user") throw new ApiError("bad_request", "Anonymous reports are made by signed-in users");
+      if (input.reporter_id && input.reporter_id !== ctx.userId) throw new ApiError("validation_failed", "Anonymous reports can only be made as yourself");
+      input.reporter_id = ctx.userId;
+    } else if (!input.reporter_id || input.reporter_id === ctx.userId) input.reporter_id = ctx.userId;
     else await ctx.require("issue:create", { campusId: input.campus_id });
     if (!input.campus_id && !input.location_id) throw new ApiError("validation_failed", "campus_id or location_id is required");
     if (!input.campus_id) {

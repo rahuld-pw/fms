@@ -38,11 +38,14 @@ export function Comments({ entityType, entityId, allowInternal }: { entityType: 
   const [internal, setInternal] = useState(false);
   const { user } = useSession();
   const { data = [] } = useQuery({ queryKey: key, queryFn: () => api<Comment[]>(`/comments?entity_type=${entityType}&entity_id=${entityId}`) });
+  // The draft is passed as variables: onMutate clears the box before the
+  // request runs, so the request must not read the (now empty) state.
+  type Draft = { body: string; mentions: string[]; internal: boolean };
   const add = useMutation({
-    mutationFn: () => api<Comment>("/comments", { body: { entity_type: entityType, entity_id: entityId, body, mentions, is_internal: internal } }),
-    onMutate: async () => {
+    mutationFn: (d: Draft) => api<Comment>("/comments", { body: { entity_type: entityType, entity_id: entityId, body: d.body, mentions: d.mentions, is_internal: d.internal } }),
+    onMutate: async (d: Draft) => {
       const optimistic: Comment = {
-        id: `tmp-${Date.now()}`, body, created_at: new Date().toISOString(), is_internal: internal, author_label: null,
+        id: `tmp-${Date.now()}`, body: d.body, created_at: new Date().toISOString(), is_internal: d.internal, author_label: null,
         author: { id: user.id, full_name: user.full_name },
       };
       qc.setQueryData<Comment[]>(key, (old = []) => [...old, optimistic]);
@@ -50,8 +53,9 @@ export function Comments({ entityType, entityId, allowInternal }: { entityType: 
       setMentions([]);
       setShowMention(false);
     },
-    onError: (e) => {
+    onError: (e, d) => {
       toast.error(errorMessage(e));
+      setBody(d.body); // give the text back so nothing is lost
       qc.invalidateQueries({ queryKey: key });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),
@@ -83,7 +87,7 @@ export function Comments({ entityType, entityId, allowInternal }: { entityType: 
         onSubmit={(e) => {
           e.preventDefault();
           if (add.isPending) return;
-          if (body.trim()) add.mutate();
+          if (body.trim()) add.mutate({ body, mentions, internal });
         }}
       >
         <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder={t("shared.comments.placeholder")} rows={3} aria-label={t("ui.comment")} />

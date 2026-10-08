@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, ListTodo, MoreHorizontal, Pause, Play, RotateCcw, Star, UserPlus, Wrench, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardCheck, ListTodo, Lock, MoreHorizontal, Pause, Play, RotateCcw, Star, UserPlus, Wrench, XCircle } from "lucide-react";
 import { useCan, useModule, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -59,7 +59,7 @@ export function IssueDetail({ id }: { id: string }) {
   const scope = { campusId: issue.campus_id, departmentId: issue.department_id };
   const manager = can("issue:update", scope, "auto");
   const isAssignee = issue.assignee_id === user.id;
-  const isReporter = issue.reporter_id === user.id;
+  const isReporter = issue.reporter_id === user.id || issue.reported_by_me === true;
   const options = (NEXT[issue.status] ?? []).filter((o) => {
     if (manager) return true;
     if (isAssignee) return ["acknowledged", "in_progress", "on_hold", "resolved"].includes(o.to);
@@ -184,7 +184,14 @@ export function IssueDetail({ id }: { id: string }) {
                   { label: t("ui.asset"), value: issue.asset ? <Link className="text-primary hover:underline" href={`/facility/assets/${issue.asset.id}`}>{issue.asset.asset_tag} · {issue.asset.name}</Link> : null, wide: true },
                   { label: t("ui.assignee"), value: <UserChip name={issue.assignee?.full_name} /> },
                   { label: t("ui.vendor"), value: issue.vendor?.name },
-                  { label: t("facility.issues.detail.reportedBy"), value: issue.is_anonymous ? t("facility.issues.anonymous") : <UserChip name={issue.reporter?.full_name} /> },
+                  { label: t("facility.issues.detail.reportedBy"), value: !issue.is_anonymous ? <UserChip name={issue.reporter?.full_name} />
+                    : issue.confidential_reporter?.profile && !issue.reported_by_me ? (
+                      <span className="flex flex-col gap-1">
+                        <UserChip name={issue.confidential_reporter.profile.full_name ?? issue.confidential_reporter.profile.email} />
+                        <span className="flex items-start gap-1 text-xs text-muted-foreground"><Lock className="mt-0.5 size-3 shrink-0" aria-hidden />{t("facility.issues.anonymousAdminOnly")}</span>
+                      </span>
+                    )
+                    : issue.reported_by_me ? t("facility.issues.anonymousYou") : t("facility.issues.anonymous") },
                   { label: t("facility.issues.reported"), value: <DateTime value={issue.created_at} /> },
                   { label: t("facility.issues.detail.source"), value: issue.source ? t(`enum.issueSource.${issue.source}`, undefined, humanize(issue.source)) : humanize(issue.source) },
                   { label: t("facility.issues.detail.reopened"), value: issue.reopened_count ? t("facility.issues.detail.times", { n: issue.reopened_count }) : "—" },

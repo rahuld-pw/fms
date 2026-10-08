@@ -27,6 +27,8 @@ const facility_mr = {
     },
     me: "मी",
     issues: {
+      anonymousYou: "निनावी (तुम्ही)",
+      anonymousAdminOnly: "निनावी तक्रार · फक्त ॲडमिनना दिसते",
       title: "समस्या",
       description: "सर्व कॅम्पसमधील कळवलेल्या समस्या, SLA ट्रॅकिंगसह.",
       report: "समस्या कळवा",
@@ -36,6 +38,8 @@ const facility_mr = {
       anonymous: "अनामिक",
       searchPlaceholder: "शीर्षक किंवा क्रमांक शोधा…",
       new: {
+        anonymous: "निनावी तक्रार करा",
+        anonymousHint: "तुमचे नाव सहकाऱ्यांना किंवा हे हाताळणाऱ्यांना दिसणार नाही. कोणी तक्रार केली हे फक्त संस्थेचे ॲडमिन पाहू शकतात.",
         title: "समस्या कळवा",
         chooseCampus: "कॅम्पस किंवा ठिकाण निवडा",
         reported: "समस्या {number} नोंदवली",

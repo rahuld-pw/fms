@@ -27,6 +27,8 @@ const facility_as = {
     },
     me: "মই",
     issues: {
+      anonymousYou: "বেনামী (আপুনি)",
+      anonymousAdminOnly: "বেনামী ৰিপ'ৰ্ট · কেৱল এডমিনে দেখে",
       title: "সমস্যা",
       description: "সকলো কেম্পাছত জনোৱা সমস্যা, SLA ট্ৰেকিংৰ সৈতে।",
       report: "সমস্যা জনাওক",
@@ -36,6 +38,8 @@ const facility_as = {
       anonymous: "অজ্ঞাত",
       searchPlaceholder: "শিৰোনাম বা নম্বৰ বিচাৰক…",
       new: {
+        anonymous: "বেনামীভাৱে ৰিপ'ৰ্ট কৰক",
+        anonymousHint: "আপোনাৰ নাম সহকৰ্মী বা ইয়াক চম্ভালা লোকসকলক দেখুওৱা নহ'ব। কোনে ৰিপ'ৰ্ট কৰিলে সেয়া কেৱল সংস্থাৰ এডমিনে চাব পাৰে।",
         title: "সমস্যা জনাওক",
         chooseCampus: "কেম্পাছ বা স্থান বাছক",
         reported: "সমস্যা {number} জনোৱা হ'ল",

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Switch } from "@/components/ui/checkbox";
 import { Input, Textarea } from "@/components/ui/input";
 import { CampusSelect, Field, ResourcePicker } from "@/components/shared/fields";
 import { api, errorMessage, uploadToSigned } from "@/lib/client/api";
@@ -28,6 +29,7 @@ export function NewIssueForm() {
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<string>("");
   const [photos, setPhotos] = useState<File[]>([]);
+  const [anonymous, setAnonymous] = useState(false);
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const { data: categories = [] } = useQuery({ queryKey: ["issue-categories", "active"], queryFn: () => api<Category[]>("/issue-categories?active=true&limit=100") });
@@ -42,6 +44,7 @@ export function NewIssueForm() {
         body: {
           campus_id: campusId ?? undefined, location_id: locationId ?? undefined, asset_id: assetId ?? undefined, category_id: categoryId ?? undefined,
           title, description: description || undefined, priority: priority || undefined, source: window.innerWidth < 768 ? "mobile" : "web",
+          is_anonymous: anonymous || undefined,
         },
         idempotencyKey: crypto.randomUUID(),
       });
@@ -132,6 +135,13 @@ export function NewIssueForm() {
           </div>
           <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => e.target.files?.[0] && setPhotos([...photos, e.target.files[0]].slice(0, 3))} />
         </Field>
+        <label className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3">
+          <Switch checked={anonymous} onCheckedChange={setAnonymous} disabled={busy} className="mt-0.5" aria-describedby="anon-hint" />
+          <span className="min-w-0">
+            <span className="block text-sm font-medium">{t("facility.issues.new.anonymous")}</span>
+            <span id="anon-hint" className="block text-xs text-muted-foreground">{t("facility.issues.new.anonymousHint")}</span>
+          </span>
+        </label>
       </Card>
       <Button type="submit" size="lg" loading={busy} className="w-full sm:w-auto sm:self-end">
         {t("facility.issues.new.submit")}

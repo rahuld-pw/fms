@@ -27,6 +27,8 @@ const facility = {
     },
     me: "Me",
     issues: {
+      anonymousYou: "Anonymous (you)",
+      anonymousAdminOnly: "Reported anonymously · visible to admins only",
       title: "Issues",
       description: "Reported problems across campuses, with SLA tracking.",
       report: "Report issue",
@@ -36,6 +38,8 @@ const facility = {
       anonymous: "Anonymous",
       searchPlaceholder: "Search title or number…",
       new: {
+        anonymous: "Report anonymously",
+        anonymousHint: "Your name won't be shown to colleagues or to the people handling it. Only organisation admins can see who reported it.",
         title: "Report an issue",
         chooseCampus: "Choose a campus or location",
         reported: "Issue {number} reported",

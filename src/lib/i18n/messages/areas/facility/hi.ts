@@ -27,6 +27,8 @@ const facility_hi = {
     },
     me: "मैं",
     issues: {
+      anonymousYou: "गुमनाम (आप)",
+      anonymousAdminOnly: "गुमनाम रिपोर्ट · केवल एडमिन को दिखता है",
       title: "समस्याएँ",
       description: "सभी कैंपस में बताई गई समस्याएँ, SLA ट्रैकिंग के साथ।",
       report: "समस्या बताएँ",
@@ -36,6 +38,8 @@ const facility_hi = {
       anonymous: "अनाम",
       searchPlaceholder: "शीर्षक या नंबर खोजें…",
       new: {
+        anonymous: "गुमनाम रूप से रिपोर्ट करें",
+        anonymousHint: "आपका नाम सहकर्मियों या इसे संभालने वालों को नहीं दिखेगा। केवल संगठन के एडमिन देख सकते हैं कि किसने रिपोर्ट किया।",
         title: "समस्या बताएँ",
         chooseCampus: "कैंपस या जगह चुनें",
         reported: "समस्या {number} दर्ज हुई",
