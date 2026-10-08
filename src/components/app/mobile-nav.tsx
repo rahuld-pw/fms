@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { CheckSquare, Home, Inbox, QrCode } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 import { hasApprovals } from "@/lib/nav";
 import { cn } from "@/lib/utils/cn";
 import { useCan, useSession } from "./session";
@@ -11,6 +12,7 @@ export function MobileNav() {
   const pathname = usePathname();
   const { modules } = useSession();
   const can = useCan();
+  const { t } = useT();
   const items = [
     { href: "/", label: "Home", icon: Home, show: true },
     { href: "/scan", label: "Scan", icon: QrCode, show: modules.includes("facility") },
@@ -24,7 +26,7 @@ export function MobileNav() {
         return (
           <Link key={href} href={href} className={cn("flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px]", active ? "text-primary" : "text-muted-foreground")}>
             <Icon className="size-5" />
-            {label}
+            {t(`nav.${href}`, undefined, label)}
           </Link>
         );
       })}

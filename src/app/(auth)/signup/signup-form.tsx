@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -16,6 +17,7 @@ export function SignupForm() {
   const invited = next.startsWith("/invite/");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
+  const { t } = useT();
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,36 +30,36 @@ export function SignupForm() {
     setLoading(false);
     if (error) return toast.error(error.message);
     if (data.session) router.replace(next);
-    else toast.success("Check your email to confirm your account, then sign in.");
+    else toast.success(t("auth.confirmEmail"));
   };
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-semibold">{invited ? "Create your account to join" : "Create your free account"}</h1>
-        <p className="text-sm text-muted-foreground">{invited ? "Use the email address the invitation was sent to." : "You get a personal workspace for tasks and projects."}</p>
+        <h1 className="text-lg font-semibold">{invited ? t("auth.signupInvitedTitle") : t("auth.signupTitle")}</h1>
+        <p className="text-sm text-muted-foreground">{invited ? t("auth.signupInvitedSubtitle") : t("auth.signupSubtitle")}</p>
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="name">Full name</Label>
+        <Label htmlFor="name">{t("auth.fullName")}</Label>
         <Input id="name" required value={form.name} onChange={set("name")} autoComplete="name" />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("auth.email")}</Label>
         <Input id="email" type="email" required value={form.email} onChange={set("email")} autoComplete="email" />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{t("auth.password")}</Label>
         <Input id="password" type="password" minLength={8} required value={form.password} onChange={set("password")} autoComplete="new-password" />
       </div>
       <Button type="submit" size="lg" loading={loading}>
-        Create account
+        {t("auth.createAccount")}
       </Button>
       {!invited && <p className="rounded-md bg-muted/60 p-3 text-xs text-muted-foreground">
-        Is your school or institute on Campus Ops? Use the invitation link from your administrator to join it with Facilities, Expenses and Purchasing.
+        {t("auth.schoolNote")}
       </p>}
       <p className="text-center text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link href={invited ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-primary hover:underline">
-          Sign in
+          {t("auth.signIn")}
         </Link>
       </p>
     </form>

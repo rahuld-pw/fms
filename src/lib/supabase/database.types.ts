@@ -7498,6 +7498,8 @@ export type Database = {
         | { Args: { p_org: string; p_name?: string; p_status?: string; p_licensed_modules?: string[]; p_plan?: string; p_notes?: string }; Returns: undefined }
       am_platform_admin:
         | { Args: never; Returns: boolean }
+      analytics_scope:
+        | { Args: { p_org: string }; Returns: Json }
       approval_act:
         | { Args: { p_request_id: string; p_action: string; p_comment?: string }; Returns: string }
       approval_cancel:
@@ -7574,6 +7576,10 @@ export type Database = {
         | { Args: never; Returns: { org_name: string; expires_at: string }[] }
       my_permissions:
         | { Args: { p_org: string }; Returns: { permission_key: string; scope_type: string; campus_id: string; department_id: string }[] }
+      org_analytics:
+        | { Args: { p_org: string; p_days?: number; p_campus?: string }; Returns: Json }
+      platform_analytics:
+        | { Args: { p_days?: number }; Returns: Json }
       po_amend:
         | { Args: { p_po_id: string; p_reason: string }; Returns: number }
       po_cancel:

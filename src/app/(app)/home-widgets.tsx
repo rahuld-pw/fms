@@ -10,6 +10,7 @@ import { StatusBadge } from "@/components/shared/status";
 import { api, apiList } from "@/lib/client/api";
 import { humanize } from "@/lib/utils/format";
 import { hasApprovals } from "@/lib/nav";
+import { useT } from "@/lib/i18n/client";
 
 interface Approval { id: string; title: string; entity_type: string; entity_id: string; amount: number | null; submitted_at: string; requester: { full_name: string | null } | null }
 interface Task { id: string; title: string; due_date: string | null; status: string; project: { name: string } | null }
@@ -37,6 +38,7 @@ export function HomeWidgets() {
   const tasks = useModule("tasks");
   const facility = useModule("facility");
   const showApprovals = hasApprovals(useSession().modules);
+  const { t } = useT();
   const approvals = useQuery({ queryKey: ["approvals-inbox"], queryFn: () => api<Approval[]>("/approvals/inbox"), enabled: showApprovals });
   const myTasks = useQuery({ queryKey: ["tasks-mine-home"], queryFn: () => apiList<Task>("/tasks/mine?limit=8&sort=due_date"), enabled: tasks });
   const issues = useQuery({ queryKey: ["issues-home"], queryFn: () => apiList<Issue>("/issues?limit=6&sort=-created_at"), enabled: facility });
@@ -47,12 +49,12 @@ export function HomeWidgets() {
       {showApprovals && (
         <Card>
           <CardHeader>
-            <CardTitle>Approvals waiting for you</CardTitle>
-            <Link href="/approvals" className="text-xs text-primary hover:underline">View all</Link>
+            <CardTitle>{t("home.approvalsTitle")}</CardTitle>
+            <Link href="/approvals" className="text-xs text-primary hover:underline">{t("common.viewAll")}</Link>
           </CardHeader>
           <CardContent className="flex flex-col divide-y">
             {approvals.isLoading && <Skeleton className="h-24" />}
-            {approvals.data?.length === 0 && <p className="py-4 text-sm text-muted-foreground">Nothing to approve. 🎉</p>}
+            {approvals.data?.length === 0 && <p className="py-4 text-sm text-muted-foreground">{t("home.nothingToApprove")}</p>}
             {approvals.data?.slice(0, 6).map((a) => (
               <Link key={a.id} href={entityHref(a.entity_type, a.entity_id)} className="flex items-center gap-3 py-2.5 hover:bg-muted/40">
                 <div className="min-w-0 flex-1">
@@ -72,12 +74,12 @@ export function HomeWidgets() {
       {tasks && (
         <Card>
           <CardHeader>
-            <CardTitle>My tasks</CardTitle>
-            <Link href="/tasks" className="text-xs text-primary hover:underline">Open My Tasks</Link>
+            <CardTitle>{t("home.myTasks")}</CardTitle>
+            <Link href="/tasks" className="text-xs text-primary hover:underline">{t("home.openMyTasks")}</Link>
           </CardHeader>
           <CardContent className="flex flex-col divide-y">
             {myTasks.isLoading && <Skeleton className="h-24" />}
-            {myTasks.data?.data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No open tasks assigned to you.</p>}
+            {myTasks.data?.data.length === 0 && <p className="py-4 text-sm text-muted-foreground">{t("home.noTasks")}</p>}
             {myTasks.data?.data.map((t) => (
               <Link key={t.id} href={`/tasks/t/${t.id}`} className="flex items-center gap-2.5 py-2 hover:bg-muted/40">
                 {t.status === "done" ? <CheckCircle2 className="size-4 text-primary" /> : <Circle className="size-4 text-muted-foreground" />}
@@ -93,12 +95,12 @@ export function HomeWidgets() {
       {facility && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent issues</CardTitle>
-            <Link href="/facility/issues" className="text-xs text-primary hover:underline">All issues</Link>
+            <CardTitle>{t("home.recentIssues")}</CardTitle>
+            <Link href="/facility/issues" className="text-xs text-primary hover:underline">{t("home.allIssues")}</Link>
           </CardHeader>
           <CardContent className="flex flex-col divide-y">
             {issues.isLoading && <Skeleton className="h-24" />}
-            {issues.data?.data.length === 0 && <p className="py-4 text-sm text-muted-foreground">No issues reported.</p>}
+            {issues.data?.data.length === 0 && <p className="py-4 text-sm text-muted-foreground">{t("home.noIssues")}</p>}
             {issues.data?.data.map((i) => (
               <Link key={i.id} href={`/facility/issues/${i.id}`} className="flex items-center gap-2.5 py-2 hover:bg-muted/40">
                 <span className="w-20 shrink-0 font-mono text-xs text-muted-foreground">{i.number}</span>
@@ -112,7 +114,7 @@ export function HomeWidgets() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Activity</CardTitle>
+          <CardTitle>{t("home.recentActivity")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2.5">
           {activity.isLoading && <Skeleton className="h-24" />}

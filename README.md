@@ -13,6 +13,8 @@ Built with Next.js (App Router, TypeScript strict), Tailwind CSS, shadcn-style c
 - [Getting started](#getting-started)
 - [Sign-in methods](#sign-in-methods)
 - [Organisations and access](#organisations-and-access)
+- [Analytics](#analytics)
+- [Languages](#languages)
 - [Demo data](#demo-data)
 - [Configuration](#configuration)
 - [API](#api)
@@ -138,6 +140,31 @@ insert into public.platform_admin_emails (email) values ('you@example.com');
 More platform admins can be added from **/admin → Platform admins**.
 
 **Feedback.** Anyone can report a bug or suggest a feature: signed-in users from the account menu, visitors at `/feedback` (email + captcha, rate-limited). Reports are triaged at **/admin → Feedback**.
+
+## Analytics
+
+**/analytics** (everyone) adapts to the viewer. `public.org_analytics` runs with the caller's permissions, so row-level security decides what is counted:
+
+| Viewer | Sees |
+|---|---|
+| Organisation admin / org-wide roles (owner, admin, finance, procurement, auditor…) | The whole organisation, with a campus filter; team workload for everyone with open or completed work |
+| Campus or department roles (e.g. facility manager for one campus, head of department) | Their campus or department; their direct reports are flagged in team workload |
+| Managers | "My team": open, overdue and completed work for people who report to them (`org_members.manager_id`) |
+| Staff | Their own work only |
+
+Every viewer gets "My performance" (tasks completed and on time, issues reported/closed, claims, approvals decided). Module sections (Facilities, Expenses, Purchasing, Tasks) appear only for modules the viewer can use, with KPIs, a trend chart (daily/weekly/monthly buckets by range) and breakdowns. API: `GET /api/v1/analytics?days=30&campus_id=…` (signed-in sessions).
+
+**/admin/analytics** (platform super admins) shows growth and usage across tenants: organisations, personal workspaces, users, active users (7/30 days), sign-ups over time, licences per module, most active organisations and feedback by status. It reports counts only; platform admins still can't read tenant analytics. API: `GET /api/v1/admin/analytics?days=90`.
+
+## Languages
+
+The interface is available in English and 12 Indian languages: Hindi, Bengali, Telugu, Marathi, Tamil, Urdu, Gujarati, Kannada, Odia, Malayalam, Punjabi and Assamese. Pick one from the account menu, the sign-in page or the platform console header.
+
+- The choice is stored in a `locale` cookie (this device) and in the user's auth metadata (follows them to other devices). First-time visitors get their browser language if supported.
+- Strings live in `src/lib/i18n/messages/<code>.ts`; `en.ts` is the source. Missing keys fall back to English, and `tests/unit/i18n.test.ts` fails if a language is missing a key or a `{placeholder}`.
+- Translated so far: navigation, top bar and menus, home dashboard, sign-in/sign-up and the product overview, analytics, statuses and priorities. Deeper module screens (forms, tables) are still English. Dates, numbers and relative times use the language's Intl formatting.
+- Translations were drafted for review: have native speakers check them before rolling out to a school.
+- Use client components' `useT()` (`t(key, vars?)`) and server components' `getT()`.
 
 ## Demo data
 

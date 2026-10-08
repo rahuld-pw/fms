@@ -53,6 +53,7 @@ export const NAV: NavSection[] = [
   {
     items: [
       { label: "Home", href: "/", icon: Home },
+      { label: "Analytics", href: "/analytics", icon: BarChart3 },
       { label: "Approvals", href: "/approvals", icon: Inbox, approvals: true },
     ],
   },

@@ -149,13 +149,15 @@ async function resolveUserOrg(db: DB, userId: string, explicit?: string | null):
 export interface SessionUser {
   id: string;
   email: string | null;
+  /** Preferred interface language (auth user metadata), if set. */
+  locale?: string | null;
 }
 
 /** The signed-in user, or null. */
 export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const db = await createUserClient();
   const { data } = await db.auth.getUser();
-  return data.user ? { id: data.user.id, email: data.user.email ?? null } : null;
+  return data.user ? { id: data.user.id, email: data.user.email ?? null, locale: (data.user.user_metadata?.locale as string | undefined) ?? null } : null;
 });
 
 /**

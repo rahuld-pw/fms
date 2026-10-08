@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
@@ -22,6 +23,7 @@ interface Notification {
 }
 
 export function NotificationBell() {
+  const { locale } = useT();
   const qc = useQueryClient();
   const { user } = useSession();
   const { data } = useQuery({
@@ -91,7 +93,7 @@ export function NotificationBell() {
               <span className="min-w-0 flex-1">
                 <span className="block text-sm leading-snug">{n.title}</span>
                 {n.body && <span className="line-clamp-2 block text-xs text-muted-foreground">{n.body}</span>}
-                <span className="mt-0.5 block text-[11px] text-muted-foreground">{relativeTime(n.created_at)}</span>
+                <span className="mt-0.5 block text-[11px] text-muted-foreground">{relativeTime(n.created_at, locale)}</span>
               </span>
             </Link>
           ))}

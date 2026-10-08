@@ -1,4 +1,6 @@
+"use client";
 import { Badge } from "@/components/ui/badge";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 
 type Tone = "neutral" | "green" | "blue" | "amber" | "red" | "violet";
@@ -36,8 +38,9 @@ const TONES: Record<string, Tone> = {
 };
 
 export function StatusBadge({ status, label }: { status: string | null | undefined; label?: string }) {
+  const { t } = useT();
   if (!status) return <span className="text-muted-foreground">—</span>;
-  return <Badge tone={TONES[status] ?? "neutral"}>{label ?? humanize(status)}</Badge>;
+  return <Badge tone={TONES[status] ?? "neutral"}>{label ?? t(`status.${status}`, undefined, humanize(status))}</Badge>;
 }
 
 const PRIORITY_DOT: Record<string, string> = {
@@ -45,11 +48,12 @@ const PRIORITY_DOT: Record<string, string> = {
 };
 
 export function PriorityLabel({ priority }: { priority: string | null | undefined }) {
+  const { t } = useT();
   if (!priority) return <span className="text-muted-foreground">—</span>;
   return (
     <span className="inline-flex items-center gap-1.5 text-sm">
       <span className={`size-2 rounded-full ${PRIORITY_DOT[priority] ?? "bg-zinc-400"}`} />
-      {humanize(priority)}
+      {t(`priority.${priority}`, undefined, humanize(priority))}
     </span>
   );
 }

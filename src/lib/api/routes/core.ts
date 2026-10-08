@@ -818,6 +818,21 @@ export const coreRoutes: RouteDef[] = [
       return unwrap(await ctx.db.rpc("home_dashboard", { p_org: ctx.orgId }));
     },
   }),
+  route({
+    method: "GET",
+    path: "/analytics",
+    summary: "Analytics for the caller: organisation, campus, department, team or personal, depending on their roles",
+    tags: ["dashboards"],
+    query: z.object({ days: z.coerce.number().int().min(7).max(730).optional(), campus_id: z.uuid().optional() }),
+    handler: async ({ ctx, query }) => {
+      if (ctx.kind === "api_key") throw new ApiError("bad_request", "Available to signed-in users only");
+      return unwrap(
+        await ctx.db.rpc("org_analytics", {
+          p_org: ctx.orgId, p_days: Number(query.get("days") ?? 90), p_campus: query.get("campus_id") ?? undefined,
+        }),
+      );
+    },
+  }),
 
   // Settings: number series, SLAs, API keys, webhooks
   ...crudRoutes(numberSeries, { tag: "settings", ops: ["list", "get", "create", "update"] }),

@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Providers } from "@/components/providers";
+import { I18nProvider } from "@/lib/i18n/client";
+import { getLocale, getMessages } from "@/lib/i18n/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -18,11 +20,16 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const [locale, messages] = await Promise.all([getLocale(), getMessages()]);
+  // Layout stays left-to-right for every language (Urdu text still renders
+  // right-to-left inside its blocks); the UI uses physical spacing utilities.
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="min-h-dvh font-sans">
-        <Providers>{children}</Providers>
+        <I18nProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </I18nProvider>
       </body>
     </html>
   );

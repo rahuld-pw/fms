@@ -6,6 +6,7 @@ import { Boxes, ClipboardList, FileText, FolderKanban, MapPin, Plus, Receipt, Sh
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { hasApprovals, NAV } from "@/lib/nav";
 import { useCan, useSession } from "./session";
 
@@ -42,9 +43,10 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
     setQ("");
     router.push(href);
   };
-  const pages = NAV.flatMap((s) => (s.module && !modules.includes(s.module) ? [] : s.items.filter((i) => !i.approvals || hasApprovals(modules)).map((i) => ({ ...i, section: s.title }))));
+  const { t } = useT();
+  const pages = NAV.flatMap((s) => (s.module && !modules.includes(s.module) ? [] : s.items.filter((i) => !i.approvals || hasApprovals(modules)).map((i) => ({ ...i, label: t(`nav.${i.href}`, undefined, i.label), section: s.module ? t(`modules.${s.module}`, undefined, s.title) : s.title }))));
   const actions = [
-    { label: "Report an issue", href: "/facility/issues/new", show: modules.includes("facility") && can("issue:report") },
+    { label: t("quick.issue"), href: "/facility/issues/new", show: modules.includes("facility") && can("issue:report") },
     { label: "New expense claim", href: "/expense/claims/new", show: modules.includes("expense") && can("expense:submit") },
     { label: "New requisition", href: "/po/requisitions/new", show: modules.includes("po") && can("requisition:submit") },
     { label: "New task", href: "/tasks?new=1", show: modules.includes("tasks") && can("task:create") },

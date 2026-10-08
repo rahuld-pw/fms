@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { hasApprovals, NAV, SETTINGS_NAV, type NavItem } from "@/lib/nav";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { useCan, useSession } from "./session";
 
@@ -29,6 +30,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const visible = useVisible();
   const { modules, org } = useSession();
+  const { t } = useT();
   const settings = SETTINGS_NAV.filter(visible);
   return (
     <nav className="flex h-full flex-col gap-4 overflow-y-auto px-2.5 py-3 scrollbar-thin" aria-label="Main">
@@ -43,7 +45,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
         if (items.length === 0) return null;
         return (
           <div key={i} className="flex flex-col gap-0.5">
-            {section.title && <div className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{section.title}</div>}
+            {section.title && <div className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{section.module ? t(`modules.${section.module}`, undefined, section.title) : section.title}</div>}
             {items.map((item) => (
               <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} onNavigate={onNavigate} />
             ))}
@@ -52,15 +54,18 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       })}
       {settings.length > 0 && (
         <div className="mt-auto flex flex-col gap-0.5 border-t pt-3">
-          <NavLink item={{ ...settings[0], label: "Settings" }} active={pathname.startsWith("/settings")} onNavigate={onNavigate} />
+          <NavLink item={{ ...settings[0], label: "Settings" }} labelKey="nav./settings" active={pathname.startsWith("/settings")} onNavigate={onNavigate} />
         </div>
       )}
     </nav>
   );
 }
 
-function NavLink({ item, active, onNavigate }: { item: NavItem; active: boolean; onNavigate?: () => void }) {
+function NavLink({ item, active, onNavigate, labelKey }: { item: NavItem; active: boolean; onNavigate?: () => void; labelKey?: string }) {
   const Icon = item.icon;
+  const { t } = useT();
+  // "/settings" is the Organisation page within settings
+  const key = labelKey ?? (item.href === "/settings" ? "nav./settings/org" : `nav.${item.href}`);
   return (
     <Link
       href={item.href}
@@ -72,7 +77,7 @@ function NavLink({ item, active, onNavigate }: { item: NavItem; active: boolean;
       )}
     >
       <Icon className="size-4 shrink-0 opacity-80" />
-      <span className="truncate">{item.label}</span>
+      <span className="truncate">{t(key, undefined, item.label)}</span>
     </Link>
   );
 }

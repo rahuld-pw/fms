@@ -122,6 +122,18 @@ export const platformRoutes: RouteDef[] = [
     ...ADMIN,
     public: true,
     method: "GET",
+    path: "/admin/analytics",
+    summary: "Platform admin: growth, usage, licences and feedback across tenants",
+    query: z.object({ days: z.coerce.number().int().min(7).max(730).optional() }),
+    handler: async ({ query }) => {
+      const { db } = await platformAdmin();
+      return unwrap(await db.rpc("platform_analytics", { p_days: Number(query.get("days") ?? 90) }));
+    },
+  }),
+  publicRoute({
+    ...ADMIN,
+    public: true,
+    method: "GET",
     path: "/admin/platform-admins",
     summary: "Platform admin: list platform administrators",
     handler: async () => {

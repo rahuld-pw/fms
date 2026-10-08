@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSessionContext, getSessionUser } from "@/lib/auth/context";
 import { isPlatformAdmin } from "@/lib/auth/session-data";
+import { LanguageSelect } from "@/components/shared/language-select";
 import { AdminNav } from "./admin-nav";
 
 export const metadata = { title: { template: "%s · Platform admin", default: "Platform admin" } };
@@ -20,7 +21,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span className="rounded-full bg-violet-500/10 px-2 py-0.5 text-xs font-medium text-violet-700 dark:text-violet-300">Platform admin</span>
           <div className="ml-auto flex items-center gap-3 text-sm">
             {hasOrg && <Link href="/" className="text-muted-foreground hover:text-foreground">Open app</Link>}
-            <span className="hidden text-muted-foreground sm:inline">{user.email}</span>
+            <LanguageSelect compact />
+            <span className="hidden text-muted-foreground md:inline">{user.email}</span>
             <form action="/auth/signout" method="post"><button className="text-muted-foreground hover:text-foreground">Sign out</button></form>
           </div>
         </div>

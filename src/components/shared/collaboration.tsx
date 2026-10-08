@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRef, useState } from "react";
 import { AtSign, Check, Download, FileText, ImageIcon, Lock, Paperclip, Trash2, Upload, X } from "lucide-react";
@@ -26,6 +27,7 @@ interface Comment {
 }
 
 export function Comments({ entityType, entityId, allowInternal }: { entityType: string; entityId: string; allowInternal?: boolean }) {
+  const { locale } = useT();
   const qc = useQueryClient();
   const key = ["comments", entityType, entityId];
   const [body, setBody] = useState("");
@@ -62,7 +64,7 @@ export function Comments({ entityType, entityId, allowInternal }: { entityType: 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-baseline gap-x-2 text-xs">
                 <span className="font-medium text-foreground">{c.author?.full_name ?? c.author_label}</span>
-                <span className="text-muted-foreground" title={c.created_at}>{relativeTime(c.created_at)}</span>
+                <span className="text-muted-foreground" title={c.created_at}>{relativeTime(c.created_at, locale)}</span>
                 {c.is_internal && (
                   <span className="inline-flex items-center gap-0.5 text-amber-600">
                     <Lock className="size-3" /> internal

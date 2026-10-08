@@ -78,6 +78,7 @@ const server = http.createServer(async (req, res) => {
           "select * from auth.users where lower(email) = lower($1) and encrypted_password = extensions.crypt($2, encrypted_password)", [b.email, b.password]);
         user = rows[0];
         if (!user) return send(res, 400, { error: "invalid_grant", error_description: "Invalid login credentials", code: "invalid_credentials" });
+        await pool.query("update auth.users set last_sign_in_at = now() where id = $1", [user.id]);
       } else if (grant === "refresh_token") {
         const id = String(b.refresh_token ?? "").replace(/^r-/, "");
         user = (await pool.query("select * from auth.users where id::text = $1", [id])).rows[0];
@@ -109,6 +110,10 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === "/auth/v1/user") {
       const claims = verify((req.headers.authorization ?? "").replace(/^Bearer /, ""));
       if (!claims?.sub) return send(res, 401, { code: 401, msg: "invalid JWT" });
+      if (req.method === "PUT") {
+        const b = JSON.parse((await body(req)).toString() || "{}");
+        if (b.data) await pool.query("update auth.users set raw_user_meta_data = coalesce(raw_user_meta_data, '{}') || $2 where id = $1", [claims.sub, b.data]);
+      }
       const { rows } = await pool.query("select * from auth.users where id = $1", [claims.sub]);
       if (!rows[0]) return send(res, 404, { msg: "user not found" });
       return send(res, 200, (await session(rows[0])).user);

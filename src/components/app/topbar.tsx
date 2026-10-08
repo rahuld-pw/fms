@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { api, errorMessage } from "@/lib/client/api";
 import { FeedbackDialog, type FeedbackKind } from "@/components/shared/feedback-form";
+import { LanguageSelect } from "@/components/shared/language-select";
+import { useT } from "@/lib/i18n/client";
 import { CommandPalette } from "./command-palette";
 import { NotificationBell } from "./notifications";
 import { useCan, useSession } from "./session";
@@ -32,6 +34,7 @@ export function Topbar() {
   const [feedback, setFeedback] = useState<FeedbackKind | null>(null);
   const can = useCan();
   const { theme, setTheme } = useTheme();
+  const { t } = useT();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,20 +59,20 @@ export function Topbar() {
   };
 
   const quick = [
-    { label: "Report an issue", href: "/facility/issues/new", show: modules.includes("facility") && can("issue:report") },
-    { label: "Expense claim", href: "/expense/claims/new", show: modules.includes("expense") && can("expense:submit") },
-    { label: "Requisition", href: "/po/requisitions/new", show: modules.includes("po") && can("requisition:submit") },
-    { label: "Task", href: "/tasks?new=1", show: modules.includes("tasks") && can("task:create") },
+    { label: t("quick.issue"), href: "/facility/issues/new", show: modules.includes("facility") && can("issue:report") },
+    { label: t("quick.claim"), href: "/expense/claims/new", show: modules.includes("expense") && can("expense:submit") },
+    { label: t("quick.requisition"), href: "/po/requisitions/new", show: modules.includes("po") && can("requisition:submit") },
+    { label: t("quick.task"), href: "/tasks?new=1", show: modules.includes("tasks") && can("task:create") },
   ].filter((q) => q.show);
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-background/90 px-3 backdrop-blur md:px-5">
-      <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setMenuOpen(true)} aria-label="Open menu">
+      <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={() => setMenuOpen(true)} aria-label={t("common.openMenu")}>
         <Menu />
       </Button>
       <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
         <SheetContent side="left" aria-describedby={undefined} className="bg-sidebar p-0">
-          <span className="sr-only" role="heading" aria-level={2}>Navigation</span>
+          <span className="sr-only" role="heading" aria-level={2}>{t("common.navigation")}</span>
           <SidebarNav onNavigate={() => setMenuOpen(false)} />
         </SheetContent>
       </Dialog>
@@ -79,7 +82,7 @@ export function Topbar() {
         className="flex h-9 w-full max-w-md items-center gap-2 rounded-md border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
       >
         <Search className="size-4" />
-        <span className="truncate">Search…</span>
+        <span className="truncate">{t("common.search")}</span>
         <kbd className="ml-auto hidden rounded border bg-background px-1.5 text-[10px] font-medium sm:inline">⌘K</kbd>
       </button>
       <CommandPalette open={searchOpen} onOpenChange={setSearchOpen} />
@@ -89,7 +92,7 @@ export function Topbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button size="sm" className="hidden sm:inline-flex">
-                <Plus /> New
+                <Plus /> {t("common.new")}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
@@ -104,7 +107,7 @@ export function Topbar() {
         <NotificationBell />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="ml-1 rounded-full focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none" aria-label="Account menu">
+            <button className="ml-1 rounded-full focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none" aria-label={t("common.accountMenu")}>
               <Avatar name={user.full_name ?? user.email} />
             </button>
           </DropdownMenuTrigger>
@@ -115,23 +118,23 @@ export function Topbar() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => router.push("/settings/profile")}>
-              <User /> Profile & notifications
+              <User /> {t("account.profile")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setFeedback("bug")}>
-              <Bug /> Report a bug
+              <Bug /> {t("account.reportBug")}
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setFeedback("feature")}>
-              <Lightbulb /> Suggest a feature
+              <Lightbulb /> {t("account.suggestFeature")}
             </DropdownMenuItem>
             {isPlatformAdmin && (
               <DropdownMenuItem onSelect={() => router.push("/admin")}>
-                <ShieldCheck /> Platform admin
+                <ShieldCheck /> {t("account.platformAdmin")}
               </DropdownMenuItem>
             )}
             {orgs.length > 1 && (
               <>
                 <DropdownMenuSeparator />
-                <DropdownMenuLabel>Organisations</DropdownMenuLabel>
+                <DropdownMenuLabel>{t("common.organisations")}</DropdownMenuLabel>
                 {orgs.map((o) => (
                   <DropdownMenuItem key={o.id} onSelect={() => o.id !== org.id && switchOrg(o.id)}>
                     <Building2 /> <span className="truncate">{o.name}</span>
@@ -141,7 +144,11 @@ export function Topbar() {
               </>
             )}
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>Theme</DropdownMenuLabel>
+            <div className="px-2 py-1.5" onKeyDown={(e) => e.stopPropagation()}>
+              <LanguageSelect />
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>{t("common.theme")}</DropdownMenuLabel>
             <div className="flex gap-1 px-2 pb-1.5">
               {[
                 { v: "light", icon: Sun },
@@ -156,7 +163,7 @@ export function Topbar() {
             <DropdownMenuSeparator />
             <form action="/auth/signout" method="post">
               <button type="submit" className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-muted">
-                <LogOut className="size-4 text-muted-foreground" /> Sign out
+                <LogOut className="size-4 text-muted-foreground" /> {t("common.signOut")}
               </button>
             </form>
           </DropdownMenuContent>

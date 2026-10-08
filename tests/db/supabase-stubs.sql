@@ -30,6 +30,8 @@ create table if not exists auth.users (
   recovery_token text,
   email_change_token_new text,
   email_change text,
+  last_sign_in_at timestamptz,
+  deleted_at timestamptz,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

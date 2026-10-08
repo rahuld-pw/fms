@@ -401,6 +401,7 @@ describe.runIf(process.env.E2E === "1")("API end-to-end", () => {
   it("platform admin endpoints need a platform admin session; feedback is open with an email", async () => {
     expect((await api("", "GET", "/admin/organisations")).status).toBe(401);
     expect((await api("owner", "GET", "/admin/organisations")).status).toBe(401); // API keys never reach the console
+    expect((await api("owner", "GET", "/analytics")).status).toBe(400); // analytics are for signed-in users
     const report = { kind: "bug", title: "E2E: button does nothing", description: "Clicking save on the e2e page does nothing." };
     const noEmail = await api("", "POST", "/feedback", report, { "x-forwarded-for": "203.0.113.77" });
     expect(noEmail.status).toBe(422);

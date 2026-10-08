@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, MessageSquareWarning, ShieldCheck } from "lucide-react";
+import { BarChart3, Building2, MessageSquareWarning, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 const ITEMS = [
   { href: "/admin", label: "Organisations", icon: Building2 },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquareWarning },
   { href: "/admin/admins", label: "Platform admins", icon: ShieldCheck },
 ];

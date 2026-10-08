@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/client";
 import { useNow } from "@/lib/client/use-now";
 import { useOptionalSession } from "@/components/app/session";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -24,6 +25,7 @@ export function useMoney() {
 
 /** UTC timestamp rendered in the organisation timezone. */
 export function DateTime({ value, relative, dateOnly }: { value: string | null | undefined; relative?: boolean; dateOnly?: boolean }) {
+  const { locale } = useT();
   const org = useOrgFormat();
   if (!value) return <span className="text-muted-foreground">—</span>;
   const full = formatDateTime(value, org.timezone);
@@ -31,7 +33,7 @@ export function DateTime({ value, relative, dateOnly }: { value: string | null |
     return (
       <Tooltip content={full}>
         <time dateTime={value} className="whitespace-nowrap">
-          {relativeTime(value)}
+          {relativeTime(value, locale)}
         </time>
       </Tooltip>
     );

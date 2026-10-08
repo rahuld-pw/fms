@@ -36,9 +36,15 @@ export function formatDate(value: string | Date | null | undefined, timeZone = "
   return formatInTimeZone(value, timeZone, "dd MMM yyyy");
 }
 
-export function relativeTime(value: string | Date | null | undefined) {
+const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [["year", 31536000], ["month", 2592000], ["week", 604800], ["day", 86400], ["hour", 3600], ["minute", 60], ["second", 1]];
+
+/** "5 minutes ago" — in the given locale when one is passed (Intl), else English. */
+export function relativeTime(value: string | Date | null | undefined, locale?: string) {
   if (!value) return "—";
-  return formatDistanceToNowStrict(new Date(value), { addSuffix: true });
+  if (!locale) return formatDistanceToNowStrict(new Date(value), { addSuffix: true });
+  const secs = Math.round((new Date(value).getTime() - Date.now()) / 1000);
+  const [unit, size] = UNITS.find(([, s]) => Math.abs(secs) >= s) ?? UNITS[UNITS.length - 1];
+  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(Math.round(secs / size), unit);
 }
 
 export const humanize = (s: string | null | undefined) =>

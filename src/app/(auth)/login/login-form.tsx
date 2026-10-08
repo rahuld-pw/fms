@@ -1,4 +1,5 @@
 "use client";
+import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -25,6 +26,7 @@ export function LoginForm() {
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { t } = useT();
 
   const done = () => {
     router.replace(next.startsWith("/") && !next.startsWith("//") ? next : "/");
@@ -37,7 +39,7 @@ export function LoginForm() {
     setLoading(false);
     if (error) return toast.error(error.message);
     setCodeSent(true);
-    toast.success("We emailed you a sign-in code");
+    toast.success(t("auth.codeSent"));
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -61,43 +63,43 @@ export function LoginForm() {
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-semibold">Sign in</h1>
-        <p className="text-sm text-muted-foreground">Welcome back.</p>
+        <h1 className="text-lg font-semibold">{t("auth.signIn")}</h1>
+        <p className="text-sm text-muted-foreground">{t("auth.welcomeBack")}</p>
       </div>
       <Tabs value={method} onValueChange={(v) => { setMethod(v as Method); setCodeSent(false); setCode(""); }}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="password">Password</TabsTrigger>
-          <TabsTrigger value="otp">Email code</TabsTrigger>
+          <TabsTrigger value="password">{t("auth.password")}</TabsTrigger>
+          <TabsTrigger value="otp">{t("auth.emailCode")}</TabsTrigger>
         </TabsList>
       </Tabs>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{t("auth.email")}</Label>
         <Input id="email" type="email" inputMode="email" autoComplete="email" autoCapitalize="none" required value={email} disabled={codeSent}
           onChange={(e) => setEmail(e.target.value)} />
       </div>
       {method === "password" && (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
       )}
       {method === "otp" && codeSent && (
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="code">Code from email</Label>
+          <Label htmlFor="code">{t("auth.codeFromEmail")}</Label>
           <Input id="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" maxLength={10} required autoFocus
             className="text-center font-mono text-lg tracking-[0.4em]" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
           <div className="flex justify-between text-xs">
-            <button type="button" className="text-muted-foreground hover:underline" onClick={() => { setCodeSent(false); setCode(""); }}>Change email</button>
-            <button type="button" className="text-primary hover:underline" disabled={loading} onClick={sendCode}>Resend code</button>
+            <button type="button" className="text-muted-foreground hover:underline" onClick={() => { setCodeSent(false); setCode(""); }}>{t("auth.changeEmail")}</button>
+            <button type="button" className="text-primary hover:underline" disabled={loading} onClick={sendCode}>{t("auth.resendCode")}</button>
           </div>
         </div>
       )}
       <Button type="submit" size="lg" loading={loading}>
-        {method === "password" ? "Sign in" : codeSent ? "Verify and sign in" : "Email me a code"}
+        {method === "password" ? t("auth.signIn") : codeSent ? t("auth.verify") : t("auth.emailMeCode")}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
-        New to Campus Ops?{" "}
-        <Link href="/signup" className="text-primary hover:underline">Create a free account</Link>
+        {t("auth.newHere")}{" "}
+        <Link href="/signup" className="text-primary hover:underline">{t("auth.createFree")}</Link>
       </p>
     </form>
   );
