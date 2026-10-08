@@ -61,6 +61,7 @@ const en = {
     profile: "Profile & notifications",
     reportBug: "Report a bug",
     suggestFeature: "Suggest a feature",
+    installApp: "Install app",
     platformAdmin: "Platform admin",
   },
   quick: {

@@ -9,6 +9,7 @@ import { publicRoutes } from "./public";
 import { platformRoutes } from "./platform";
 import { surveyRoutes } from "./surveys";
 import { internalRoutes } from "./internal";
+import { pushRoutes } from "./push";
 import { buildOpenApi } from "@/lib/api/openapi";
 import { publicRoute } from "@/lib/api/router";
 
@@ -44,6 +45,7 @@ export const allRoutes: RouteDef[] = [
   ...poRoutes,
   ...surveyRoutes,
   ...internalRoutes,
+  ...pushRoutes,
 ];
 
 export const router = new Router(allRoutes);

@@ -8,7 +8,8 @@ export const metadata: Metadata = {
   title: { default: "Campus Ops", template: "%s · Campus Ops" },
   description: "Facility, expense, task and purchase management for schools and institutes",
   applicationName: "Campus Ops",
-  icons: { icon: "/icon.svg" },
+  icons: { icon: "/icon.svg", apple: "/icons/apple-touch-icon.png" },
+  appleWebApp: { capable: true, title: "Campus Ops", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

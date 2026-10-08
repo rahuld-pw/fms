@@ -60,6 +60,7 @@ const urdu = {
     profile: "پروفائل اور اطلاعات",
     reportBug: "خرابی کی اطلاع دیں",
     suggestFeature: "فیچر تجویز کریں",
+    installApp: "ایپ انسٹال کریں",
     platformAdmin: "پلیٹ فارم ایڈمن",
   },
   quick: {

@@ -60,6 +60,7 @@ const assamese = {
     profile: "প্ৰফাইল আৰু জাননী",
     reportBug: "সমস্যা জনাওক",
     suggestFeature: "নতুন সুবিধাৰ পৰামৰ্শ",
+    installApp: "এপ ইনষ্টল কৰক",
     platformAdmin: "প্লেটফৰ্ম এডমিন",
   },
   quick: {

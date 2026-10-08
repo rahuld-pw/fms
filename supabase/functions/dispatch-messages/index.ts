@@ -1,4 +1,6 @@
-// Sends queued email / WhatsApp messages from message_outbox.
+// Sends queued email / WhatsApp / push messages from message_outbox.
+// Push notifications are relayed to the app (POST /api/v1/internal/push),
+// which holds the push keys and the device subscriptions.
 // Providers: Resend (email) and Meta WhatsApp Cloud API. Without a Resend key,
 // email is relayed to the app (POST /api/v1/internal/email), which sends it
 // through its own SMTP settings (e.g. Gmail). Channels without a configured
@@ -53,6 +55,23 @@ async function sendEmail(to: string, subject: string, html: string, text: string
   return "sent" as const;
 }
 
+async function relayPush(userId: string, payload: Record<string, unknown>) {
+  const res = await fetch(`${APP_URL}/api/v1/internal/push`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${DISPATCH_TOKEN}`, "content-type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      title: String(payload.title ?? "Campus Ops").slice(0, 300),
+      body: payload.body == null ? null : String(payload.body).slice(0, 2000),
+      link: payload.link == null ? null : String(payload.link),
+      tag: payload.type == null ? undefined : String(payload.type).slice(0, 100),
+    }),
+  });
+  if (!res.ok) throw new Error(`Push relay ${res.status}: ${(await res.text()).slice(0, 300)}`);
+  const { data } = (await res.json()) as { data?: { result?: "sent" | "skipped" } };
+  return data?.result === "sent" ? ("sent" as const) : ("skipped" as const);
+}
+
 async function sendWhatsApp(to: string, tpl: { name: string; params: string[] } | undefined, text: string) {
   const token = env("WHATSAPP_TOKEN"), phoneId = env("WHATSAPP_PHONE_NUMBER_ID");
   if (!token || !phoneId) return "skipped" as const;
@@ -87,7 +106,8 @@ Deno.serve(async (req) => {
       if (!orgNames.has(row.org_id)) orgNames.set(row.org_id, (await supabase.from("organisations").select("name").eq("id", row.org_id).single()).data?.name ?? "Campus Ops");
       const portalLink = VENDOR_TEMPLATES.has(row.template) ? await vendorPortalLink(row) : undefined;
       const r = render(row, { appUrl: APP_URL, org: orgNames.get(row.org_id)!, portalLink });
-      const result = row.channel === "email" ? await sendEmail(row.recipient, r.subject, r.html, r.text)
+      const result = row.channel === "push" ? await relayPush(row.recipient, row.payload)
+        : row.channel === "email" ? await sendEmail(row.recipient, r.subject, r.html, r.text)
         : row.channel === "whatsapp" ? await sendWhatsApp(row.recipient, r.whatsapp, r.text) : "skipped";
       await supabase.from("message_outbox").update({ status: result, sent_at: result === "sent" ? new Date().toISOString() : null, last_error: null }).eq("id", row.id);
       stats[result]++;

@@ -99,6 +99,7 @@ const settings = {
         update: "Update password",
         updated: "Password updated",
       },
+      push: { title: "Notifications on this device", description: "Get alerts on this phone or computer, even when Campus Ops is closed. They follow your “In app” choices below.", unsupported: "This browser can't show notifications.", ios: "On iPhone or iPad, first add Campus Ops to your Home Screen (Share → Add to Home Screen), then open it from there.", blocked: "Notifications are blocked for this site. Allow them in your browser settings, then reload.", test: "Send a test", enabled: "Notifications turned on for this device", disabled: "Notifications turned off for this device", testSent: "Test notification sent" },
       notifications: {
         title: "Notifications",
         inApp: "In app",

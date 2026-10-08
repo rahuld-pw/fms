@@ -5003,6 +5003,47 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent: string | null
+          created_at: string
+          last_success_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          endpoint: string
+          p256dh: string
+          auth: string
+          user_agent?: string | null
+          created_at?: string
+          last_success_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          endpoint?: string
+          p256dh?: string
+          auth?: string
+          user_agent?: string | null
+          created_at?: string
+          last_success_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_lines: {
         Row: {
           id: string
@@ -7787,6 +7828,8 @@ export type Database = {
         | { Args: { p_token: string }; Returns: Json }
       public_survey_respond:
         | { Args: { p_token: string; p_score: number; p_comment?: string; p_segment?: string; p_name?: string; p_email?: string }; Returns: string }
+      push_vapid_keys:
+        | { Args: { p_public?: string; p_private?: string }; Returns: Json }
       rate_limit_hit:
         | { Args: { p_bucket: string; p_limit: number; p_window_seconds?: number }; Returns: { allowed: boolean; remaining: number; reset_at: string }[] }
       requisition_submit:

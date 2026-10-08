@@ -60,6 +60,7 @@ const tamil = {
     profile: "சுயவிவரம் & அறிவிப்புகள்",
     reportBug: "பிழையைப் புகாரளி",
     suggestFeature: "புதிய வசதியைப் பரிந்துரை",
+    installApp: "செயலியை நிறுவு",
     platformAdmin: "தள நிர்வாகி",
   },
   quick: {

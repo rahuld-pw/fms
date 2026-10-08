@@ -63,7 +63,7 @@ async function scan(p, path) {
     if (await dlg.count()) {
       const box = await dlg.boundingBox();
       if (box && (box.x < -1 || box.x + box.width > W + 1)) problems.push(`${path}: dialog ${Math.round(box.x)}..${Math.round(box.x + box.width)}`);
-      const inner = await dlg.evaluate((d, W) => [...d.querySelectorAll("*")].filter((e) => { const r = e.getBoundingClientRect(); return r.width && (r.right > W + 1 || r.left < -1); }).slice(0, 3).map((e) => `${e.tagName.toLowerCase()} "${(e.textContent ?? "").trim().slice(0, 30)}"`), W);
+      const inner = await dlg.evaluate((d, W) => [...d.querySelectorAll("*")].filter((e) => { if (e.closest("[aria-hidden=true]")) return false; const r = e.getBoundingClientRect(); return r.width && (r.right > W + 1 || r.left < -1); }).slice(0, 3).map((e) => `${e.tagName.toLowerCase()} "${(e.textContent ?? "").trim().slice(0, 30)}"`), W);
       if (inner.length) problems.push(`${path}: inside dialog → ${inner.join("; ")}`);
       await p.screenshot({ path: `${OUT}/${shot}-dialog.png` });
       await p.keyboard.press("Escape");

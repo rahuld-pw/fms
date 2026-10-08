@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,6 @@ type Method = "password" | "otp";
  * The OTP email template must include {{ .Token }} (see README → Auth).
  */
 export function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") ?? "/";
   const [method, setMethod] = useState<Method>("password");
@@ -34,8 +33,8 @@ export function LoginForm() {
   const { t } = useT();
 
   const done = () => {
-    router.replace(next.startsWith("/") && !next.startsWith("//") ? next : "/");
-    router.refresh();
+    // a full load: pages prefetched while signed out hold "go to /login" redirects
+    window.location.replace(next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/");
   };
 
   const sendCode = async (resend = false) => {

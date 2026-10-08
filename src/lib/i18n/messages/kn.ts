@@ -60,6 +60,7 @@ const kannada = {
     profile: "ಪ್ರೊಫೈಲ್ & ಅಧಿಸೂಚನೆಗಳು",
     reportBug: "ದೋಷ ವರದಿ ಮಾಡಿ",
     suggestFeature: "ಹೊಸ ಸೌಲಭ್ಯ ಸೂಚಿಸಿ",
+    installApp: "ಆ್ಯಪ್ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ",
     platformAdmin: "ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ಅಡ್ಮಿನ್",
   },
   quick: {

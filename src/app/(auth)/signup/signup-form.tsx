@@ -1,7 +1,7 @@
 "use client";
 import { useT } from "@/lib/i18n/client";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -10,10 +10,9 @@ import { Label } from "@/components/ui/label";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 export function SignupForm() {
-  const router = useRouter();
   const nextParam = useSearchParams().get("next");
   // only same-site paths (e.g. an invitation link)
-  const next = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : "/onboarding";
+  const next = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") && !nextParam.startsWith("/\\") ? nextParam : "/onboarding";
   const invited = next.startsWith("/invite/");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -33,7 +32,8 @@ export function SignupForm() {
       return toast.error(error.message);
     }
     // with a session, stay busy until the navigation replaces this page
-    if (data.session) router.replace(next);
+    // a full load: pages prefetched while signed out hold "go to /login" redirects
+    if (data.session) window.location.replace(next);
     else {
       setLoading(false);
       toast.success(t("auth.confirmEmail"));

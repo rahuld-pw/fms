@@ -60,6 +60,7 @@ const malayalam = {
     profile: "പ്രൊഫൈലും അറിയിപ്പുകളും",
     reportBug: "ബഗ് റിപ്പോർട്ട് ചെയ്യുക",
     suggestFeature: "ഫീച്ചർ നിർദ്ദേശിക്കുക",
+    installApp: "ആപ്പ് ഇൻസ്റ്റാൾ ചെയ്യുക",
     platformAdmin: "പ്ലാറ്റ്ഫോം അഡ്മിൻ",
   },
   quick: {

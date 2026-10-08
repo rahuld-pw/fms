@@ -60,6 +60,7 @@ const bengali = {
     profile: "প্রোফাইল ও নোটিফিকেশন",
     reportBug: "সমস্যা জানান",
     suggestFeature: "নতুন ফিচারের প্রস্তাব",
+    installApp: "অ্যাপ ইনস্টল করুন",
     platformAdmin: "প্ল্যাটফর্ম অ্যাডমিন",
   },
   quick: {

@@ -60,6 +60,7 @@ const telugu = {
     profile: "ప్రొఫైల్ & నోటిఫికేషన్లు",
     reportBug: "బగ్ నివేదించండి",
     suggestFeature: "ఫీచర్ సూచించండి",
+    installApp: "యాప్ ఇన్‌స్టాల్ చేయండి",
     platformAdmin: "ప్లాట్‌ఫామ్ అడ్మిన్",
   },
   quick: {

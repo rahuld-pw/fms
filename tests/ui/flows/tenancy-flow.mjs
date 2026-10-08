@@ -1,8 +1,9 @@
 // Platform tenancy end to end: super admin creates an organisation (licensed
-// for Facilities + Tasks) and invites its admin; the admin accepts; a public
+// for Facilities, Tasks and Feedback & NPS) and invites its admin; the admin accepts; a public
 // user gets a Tasks-only workspace and files a bug that the super admin sees.
 // Usage: node tests/ui/flows/tenancy-flow.mjs <out-dir>
-// Needs users root@platform.test (platform admin), principal@sunrise.test and asha@public.test (password Password123!).
+// Needs users root@platform.test (platform admin), principal@sunrise.test and asha@public.test (password Password123!):
+// psql "$TEST_DATABASE_URL" -f tests/ui/flows/tenancy-fixtures.sql
 import { chromium } from "playwright";
 const OUT = process.argv[2];
 const BASE = process.env.APP_URL ?? "http://localhost:3000";

@@ -60,6 +60,7 @@ const punjabi = {
     profile: "ਪ੍ਰੋਫਾਈਲ ਅਤੇ ਸੂਚਨਾਵਾਂ",
     reportBug: "ਬੱਗ ਦੀ ਰਿਪੋਰਟ ਕਰੋ",
     suggestFeature: "ਫੀਚਰ ਸੁਝਾਓ",
+    installApp: "ਐਪ ਇੰਸਟਾਲ ਕਰੋ",
     platformAdmin: "ਪਲੇਟਫਾਰਮ ਐਡਮਿਨ",
   },
   quick: {

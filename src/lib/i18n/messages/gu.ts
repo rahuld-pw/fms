@@ -60,6 +60,7 @@ const gu = {
     profile: "પ્રોફાઇલ અને સૂચનાઓ",
     reportBug: "ખામી જણાવો",
     suggestFeature: "નવું ફીચર સૂચવો",
+    installApp: "ઍપ ઇન્સ્ટોલ કરો",
     platformAdmin: "પ્લેટફોર્મ એડમિન",
   },
   quick: {

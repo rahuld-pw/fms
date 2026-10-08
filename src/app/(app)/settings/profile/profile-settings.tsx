@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
+import { PushToggle } from "@/components/app/push-toggle";
 import { useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,6 +113,7 @@ function Preferences() {
     <Card>
       <CardHeader><CardTitle>{t("settings.profile.notifications.title")}</CardTitle></CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <PushToggle />
         <div className="grid grid-cols-[1fr_auto_auto] items-center gap-x-4 gap-y-2 text-sm">
           <span />
           <span className="text-xs font-medium text-muted-foreground">{t("settings.profile.notifications.inApp")}</span>

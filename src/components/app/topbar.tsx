@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Bug, Building2, Check, Lightbulb, LogOut, Menu, Monitor, Moon, Plus, Search, ShieldCheck, Sun, User } from "lucide-react";
+import { Bug, Building2, Check, Download, Lightbulb, LogOut, Menu, Monitor, Moon, Plus, Search, ShieldCheck, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
@@ -24,6 +24,7 @@ import { LanguageSelect } from "@/components/shared/language-select";
 import { useT } from "@/lib/i18n/client";
 import { CommandPalette } from "./command-palette";
 import { NotificationBell } from "./notifications";
+import { useInstallPrompt } from "./pwa";
 import { useCan, useSession } from "./session";
 import { SidebarNav } from "./sidebar";
 
@@ -37,6 +38,7 @@ export function Topbar() {
   const can = useCan();
   const { theme, setTheme } = useTheme();
   const { t } = useT();
+  const install = useInstallPrompt();
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -133,6 +135,11 @@ export function Topbar() {
             <DropdownMenuItem onSelect={() => setFeedback("feature")}>
               <Lightbulb /> {t("account.suggestFeature")}
             </DropdownMenuItem>
+            {install && (
+              <DropdownMenuItem onSelect={() => install()}>
+                <Download /> {t("account.installApp")}
+              </DropdownMenuItem>
+            )}
             {isPlatformAdmin && (
               <DropdownMenuItem onSelect={() => router.push("/admin")}>
                 <ShieldCheck /> {t("account.platformAdmin")}

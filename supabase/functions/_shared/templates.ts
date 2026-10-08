@@ -2,7 +2,7 @@
 // Kept free of runtime dependencies so it can be unit tested in Node.
 
 export interface OutboxMessage {
-  channel: "email" | "whatsapp" | "sms";
+  channel: "email" | "whatsapp" | "sms" | "push";
   template: string;
   subject: string | null;
   payload: Record<string, unknown>;

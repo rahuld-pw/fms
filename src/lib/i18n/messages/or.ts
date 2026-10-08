@@ -60,6 +60,7 @@ const odia = {
     profile: "ପ୍ରୋଫାଇଲ୍ ଓ ବିଜ୍ଞପ୍ତି",
     reportBug: "ସମସ୍ୟା ଜଣାନ୍ତୁ",
     suggestFeature: "ନୂଆ ସୁବିଧା ପରାମର୍ଶ",
+    installApp: "ଆପ୍ ଇନଷ୍ଟଲ୍ କରନ୍ତୁ",
     platformAdmin: "ପ୍ଲାଟଫର୍ମ ଆଡମିନ୍",
   },
   quick: {

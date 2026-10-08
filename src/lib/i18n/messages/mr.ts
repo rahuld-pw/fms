@@ -60,6 +60,7 @@ const mr = {
     profile: "प्रोफाइल आणि सूचना",
     reportBug: "त्रुटी कळवा",
     suggestFeature: "नवीन फीचर सुचवा",
+    installApp: "ॲप इन्स्टॉल करा",
     platformAdmin: "प्लॅटफॉर्म अ‍ॅडमिन",
   },
   quick: {

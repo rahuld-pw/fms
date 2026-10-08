@@ -60,6 +60,7 @@ const hi = {
     profile: "प्रोफ़ाइल और सूचनाएँ",
     reportBug: "गड़बड़ी बताएँ",
     suggestFeature: "नया फ़ीचर सुझाएँ",
+    installApp: "ऐप इंस्टॉल करें",
     platformAdmin: "प्लेटफ़ॉर्म एडमिन",
   },
   quick: {

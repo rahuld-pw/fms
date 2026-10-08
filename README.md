@@ -24,6 +24,7 @@ Built with Next.js (App Router, TypeScript strict), Tailwind CSS, shadcn-style c
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Mobile](#mobile)
+- [Installable app and push notifications](#installable-app-and-push-notifications)
 - [Theming](#theming)
 - [Project layout](#project-layout)
 
@@ -357,6 +358,17 @@ If the final URL differs from the one you passed as `APP_URL`, re-run the Supaba
 ## Mobile
 
 The app is designed for phones as much as desktops: a bottom tab bar (Home, Scan, Approvals, Tasks) and slide-out navigation, list pages that switch to compact cards, dialogs that fit small screens, `inputmode`/`autocomplete` hints on forms, camera capture for photos, an in-browser QR scanner (`BarcodeDetector`) with manual fallback, invisible hit-area extension on small controls, a tap-a-day agenda on calendars, and a web app manifest for "Add to Home Screen". Public pages (QR reporting, issue tracking, vendor portal) are mobile-first. `tests/ui/mobile-audit.mjs` checks every page for horizontal overflow at 390 px.
+
+## Installable app and push notifications
+
+Campus Ops is a progressive web app (PWA):
+
+- **Install.** Chrome, Edge and Android offer "Install app" (also in the account menu). On iPhone and iPad use Share → Add to Home Screen. The app opens full screen with its own icon and has shortcuts to Scan QR, Approvals and My tasks.
+- **Offline.** `public/sw.js` caches only build assets, icons and an offline page. Pages and data are never cached because they are per user. Without a connection, the app shows "You're offline" and reloads when the connection returns.
+- **Push notifications.** Each person turns them on per device in **Profile → Notifications → Notifications on this device**. On iPhone and iPad this works only in the app added to the Home Screen (iOS 16.4+). A notification is pushed when it would show in the app ("In app" preference on). It goes through the outbox and the `dispatch-messages` function, which relays it to `POST /api/v1/internal/push`, so it arrives within about a minute. Tapping it opens the related screen.
+- **Nothing to configure.** The push (VAPID) keys are created by the app on first use and kept in the database (`app.push_keys`, server-only). Only addresses of the real browser push services (Google, Mozilla, Apple, Microsoft) are accepted as devices. Devices that the browser has dropped are removed automatically.
+
+`tests/ui/flows/pwa-push-flow.mjs` checks the service worker, the offline page, subscribing, and an encrypted push delivered to a local stand-in push service.
 
 ## Theming
 
