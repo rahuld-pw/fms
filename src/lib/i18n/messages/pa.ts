@@ -25,6 +25,7 @@ const punjabi = {
     "/analytics": "ਵਿਸ਼ਲੇਸ਼ਣ",
     "/approvals": "ਮਨਜ਼ੂਰੀਆਂ",
     "/facility": "ਸੰਖੇਪ",
+    "/tasks/overview": "ਸੰਖੇਪ",
     "/facility/issues": "ਸਮੱਸਿਆਵਾਂ",
     "/facility/work-orders": "ਵਰਕ ਆਰਡਰ",
     "/facility/assets": "ਸੰਪਤੀਆਂ",

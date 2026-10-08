@@ -25,6 +25,7 @@ const gu = {
     "/analytics": "એનાલિટિક્સ",
     "/approvals": "મંજૂરીઓ",
     "/facility": "ઝાંખી",
+    "/tasks/overview": "ઝાંખી",
     "/facility/issues": "સમસ્યાઓ",
     "/facility/work-orders": "વર્ક ઓર્ડર",
     "/facility/assets": "એસેટ",

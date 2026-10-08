@@ -25,6 +25,7 @@ const telugu = {
     "/analytics": "విశ్లేషణ",
     "/approvals": "ఆమోదాలు",
     "/facility": "అవలోకనం",
+    "/tasks/overview": "అవలోకనం",
     "/facility/issues": "సమస్యలు",
     "/facility/work-orders": "వర్క్ ఆర్డర్లు",
     "/facility/assets": "ఆస్తులు",

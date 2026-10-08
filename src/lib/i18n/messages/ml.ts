@@ -25,6 +25,7 @@ const malayalam = {
     "/analytics": "അനലിറ്റിക്സ്",
     "/approvals": "അംഗീകാരങ്ങൾ",
     "/facility": "അവലോകനം",
+    "/tasks/overview": "അവലോകനം",
     "/facility/issues": "പ്രശ്നങ്ങൾ",
     "/facility/work-orders": "വർക്ക് ഓർഡറുകൾ",
     "/facility/assets": "ആസ്തികൾ",

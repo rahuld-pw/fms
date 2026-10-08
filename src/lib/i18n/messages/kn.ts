@@ -25,6 +25,7 @@ const kannada = {
     "/analytics": "ವಿಶ್ಲೇಷಣೆ",
     "/approvals": "ಅನುಮೋದನೆಗಳು",
     "/facility": "ಸಾರಾಂಶ",
+    "/tasks/overview": "ಸಾರಾಂಶ",
     "/facility/issues": "ಸಮಸ್ಯೆಗಳು",
     "/facility/work-orders": "ಕೆಲಸದ ಆದೇಶಗಳು",
     "/facility/assets": "ಆಸ್ತಿಗಳು",

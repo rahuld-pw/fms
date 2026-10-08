@@ -5,7 +5,7 @@ import { ApiError, unwrap } from "@/lib/api/errors";
 import { listParamsSchema } from "@/lib/api/pagination";
 import { route, type RouteDef } from "@/lib/api/router";
 import { customFields, isoDate, name, optUuid, taskPriority } from "@/lib/schemas/common";
-import { getResource, listResource, type ResourceSpec } from "@/lib/services/resource";
+import { getResource, listResource, type Query, type ResourceSpec } from "@/lib/services/resource";
 
 const M = "tasks" as const;
 const db = (ctx: { kind: string; admin: () => import("@/lib/supabase/server").DB; db: import("@/lib/supabase/server").DB }) =>
@@ -315,21 +315,65 @@ export const taskRoutes: RouteDef[] = [
   }),
   route({
     method: "GET",
-    path: "/tasks/mine",
-    summary: "My tasks (assigned to me), optionally due soon",
+    path: "/tasks/dashboard",
+    summary: "Tasks overview: open, overdue, completed, trend, projects and workload, for the tasks you can see",
     tags: ["tasks"],
     module: M,
-    query: listParamsSchema.extend({ status: z.string().optional(), due_within_days: z.coerce.number().int().optional(), due_date_to: z.string().optional() }),
+    query: z.object({ days: z.coerce.number().int().min(7).max(365).optional() }),
+    handler: async ({ ctx, query }) =>
+      unwrap(await ctx.db.rpc("task_dashboard", { p_org: ctx.orgId, p_days: Number(query.get("days") ?? 30) })),
+  }),
+  route({
+    method: "GET",
+    path: "/tasks/mine",
+    summary: "My tasks: open ones assigned to me (default), open ones I created (view=created), or recently completed ones I created or was assigned (view=completed)",
+    tags: ["tasks"],
+    module: M,
+    query: listParamsSchema.extend({
+      status: z.string().optional(),
+      due_within_days: z.coerce.number().int().optional(),
+      due_date_to: z.string().optional(),
+      view: z.enum(["assigned", "created", "completed"]).optional(),
+    }),
     response: "list",
     handler: async ({ ctx, query }) => {
+      const view = query.get("view") ?? "assigned";
+      const base = Object.fromEntries([...query].filter(([k]) => k !== "view"));
+      const open = (q: Query) => (query.get("status") ? q : q.not("status", "in", "(done,cancelled)"));
+
+      if (view === "created") {
+        const params = listParamsSchema.parse({ sort: "due_date", ...base });
+        return listResource(ctx, tasks, params, query, (q) => open(q.eq("created_by", ctx.userId)));
+      }
+
+      if (view === "completed") {
+        // completed tasks I created or was assigned, most recently completed first
+        const params = listParamsSchema.parse({ ...base, sort: "-updated_at" });
+        const done = (q: Query) => q.eq("status", "done");
+        const [created, assigned] = await Promise.all([
+          listResource(ctx, tasks, params, new URLSearchParams(), (q) => done(q.eq("created_by", ctx.userId))),
+          listResource(ctx, { ...tasks, select: `${taskSelect}, mine:task_assignees!inner(user_id)` }, params, new URLSearchParams(), (q) =>
+            done(q.eq("mine.user_id", ctx.userId)),
+          ),
+        ]);
+        const byId = new Map<string, Record<string, unknown>>();
+        for (const row of [...created.data, ...assigned.data]) {
+          const task = { ...(row as Record<string, unknown>) };
+          delete task.mine;
+          byId.set(String(task.id), task);
+        }
+        const when = (r: Record<string, unknown>) => String(r.completed_at ?? r.updated_at ?? "");
+        const data = [...byId.values()].sort((a, b) => when(b).localeCompare(when(a))).slice(0, params.limit);
+        return { data, meta: { has_more: created.meta.has_more || assigned.meta.has_more, next_cursor: null, limit: params.limit } };
+      }
+
       const spec = { ...tasks, select: `${taskSelect}, mine:task_assignees!inner(user_id)` };
-      const params = listParamsSchema.parse({ sort: "due_date", ...Object.fromEntries(query) });
+      const params = listParamsSchema.parse({ sort: "due_date", ...base });
       return listResource(ctx, spec, params, query, (q) => {
         let out = q.eq("mine.user_id", ctx.userId);
         const days = query.get("due_within_days");
         if (days) out = out.lte("due_date", new Date(Date.now() + Number(days) * 86400_000).toISOString().slice(0, 10));
-        if (!query.get("status")) out = out.not("status", "in", "(done,cancelled)");
-        return out;
+        return open(out);
       });
     },
   }),

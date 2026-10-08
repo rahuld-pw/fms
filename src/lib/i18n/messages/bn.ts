@@ -25,6 +25,7 @@ const bengali = {
     "/analytics": "বিশ্লেষণ",
     "/approvals": "অনুমোদন",
     "/facility": "সারসংক্ষেপ",
+    "/tasks/overview": "সারসংক্ষেপ",
     "/facility/issues": "সমস্যা",
     "/facility/work-orders": "কাজের অর্ডার",
     "/facility/assets": "সম্পদ",

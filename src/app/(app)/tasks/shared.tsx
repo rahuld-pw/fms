@@ -25,6 +25,8 @@ export interface Task {
   parent_task_id: string | null;
   position: number;
   recurrence: unknown;
+  completed_at?: string | null;
+  created_by?: string | null;
   project?: { id: string; name: string; color: string } | null;
   section?: { id: string; name: string } | null;
   assignees?: { user_id: string; profile: { id: string; full_name: string | null } | null }[];

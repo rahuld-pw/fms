@@ -25,6 +25,7 @@ const odia = {
     "/analytics": "ବିଶ୍ଳେଷଣ",
     "/approvals": "ଅନୁମୋଦନ",
     "/facility": "ସାରାଂଶ",
+    "/tasks/overview": "ସାରାଂଶ",
     "/facility/issues": "ସମସ୍ୟା",
     "/facility/work-orders": "କାମ ଅର୍ଡର",
     "/facility/assets": "ସମ୍ପତ୍ତି",

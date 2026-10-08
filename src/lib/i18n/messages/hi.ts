@@ -25,6 +25,7 @@ const hi = {
     "/analytics": "एनालिटिक्स",
     "/approvals": "मंज़ूरियाँ",
     "/facility": "सारांश",
+    "/tasks/overview": "सारांश",
     "/facility/issues": "समस्याएँ",
     "/facility/work-orders": "वर्क ऑर्डर",
     "/facility/assets": "एसेट",

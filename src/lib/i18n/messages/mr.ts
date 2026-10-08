@@ -25,6 +25,7 @@ const mr = {
     "/analytics": "अ‍ॅनालिटिक्स",
     "/approvals": "मंजुरी",
     "/facility": "आढावा",
+    "/tasks/overview": "आढावा",
     "/facility/issues": "समस्या",
     "/facility/work-orders": "वर्क ऑर्डर",
     "/facility/assets": "मालमत्ता",

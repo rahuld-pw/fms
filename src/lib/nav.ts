@@ -88,6 +88,7 @@ export const NAV: NavSection[] = [
     title: "Tasks",
     module: "tasks",
     items: [
+      { label: "Overview", href: "/tasks/overview", icon: BarChart3, anyOf: ["task:read"] },
       { label: "My tasks", href: "/tasks", icon: CheckSquare, anyOf: ["task:read", "task:create"] },
       { label: "Projects", href: "/tasks/projects", icon: FolderKanban, anyOf: ["task:read", "project:create"] },
       { label: "Teams", href: "/tasks/teams", icon: Users, anyOf: ["task:read"] },

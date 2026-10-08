@@ -7852,6 +7852,8 @@ export type Database = {
         | { Args: { p_survey: string; p_score: number; p_comment?: string }; Returns: string }
       survey_results:
         | { Args: { p_survey: string; p_days?: number }; Returns: Json }
+      task_dashboard:
+        | { Args: { p_org: string; p_days?: number }; Returns: Json }
       task_from_template:
         | { Args: { p_template_id: string; p_project_id?: string; p_section_id?: string; p_start?: string }; Returns: string }
       task_rollup:

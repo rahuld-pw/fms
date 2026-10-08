@@ -25,6 +25,7 @@ const urdu = {
     "/analytics": "تجزیات",
     "/approvals": "منظوریاں",
     "/facility": "جائزہ",
+    "/tasks/overview": "جائزہ",
     "/facility/issues": "مسائل",
     "/facility/work-orders": "ورک آرڈرز",
     "/facility/assets": "اثاثے",

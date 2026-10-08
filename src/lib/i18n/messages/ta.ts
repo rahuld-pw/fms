@@ -25,6 +25,7 @@ const tamil = {
     "/analytics": "பகுப்பாய்வு",
     "/approvals": "ஒப்புதல்கள்",
     "/facility": "மேலோட்டம்",
+    "/tasks/overview": "மேலோட்டம்",
     "/facility/issues": "பிரச்சனைகள்",
     "/facility/work-orders": "பணி ஆணைகள்",
     "/facility/assets": "சொத்துகள்",

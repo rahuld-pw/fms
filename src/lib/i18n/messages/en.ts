@@ -26,6 +26,7 @@ const en = {
     "/analytics": "Analytics",
     "/approvals": "Approvals",
     "/facility": "Overview",
+    "/tasks/overview": "Overview",
     "/facility/issues": "Issues",
     "/facility/work-orders": "Work orders",
     "/facility/assets": "Assets",

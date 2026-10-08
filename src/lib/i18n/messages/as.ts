@@ -25,6 +25,7 @@ const assamese = {
     "/analytics": "বিশ্লেষণ",
     "/approvals": "অনুমোদন",
     "/facility": "সাৰাংশ",
+    "/tasks/overview": "সাৰাংশ",
     "/facility/issues": "সমস্যা",
     "/facility/work-orders": "কামৰ অৰ্ডাৰ",
     "/facility/assets": "সম্পদ",
