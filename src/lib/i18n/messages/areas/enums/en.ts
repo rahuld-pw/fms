@@ -1,0 +1,43 @@
+// Labels for values stored in the database (statuses, priorities, types).
+// StatusBadge and PriorityLabel use status.* and priority.*; other enums are
+// under enum.<field>.<value>, e.g. t(`enum.workOrderType.${v}`, undefined, humanize(v)).
+const enums = {
+  status: {
+    acknowledged: "Acknowledged", active: "Active", approved: "Approved", archived: "Archived", assigned: "Assigned", awarded: "Awarded",
+    blacklisted: "Blacklisted", blocked: "Blocked", cancelled: "Cancelled", closed: "Closed", completed: "Completed", confirmed: "Confirmed",
+    dead: "Dead", declined: "Declined", disbursed: "Disbursed", disposed: "Disposed", disputed: "Disputed", done: "Done", draft: "Draft",
+    duplicate: "Duplicate", expired: "Expired", failed: "Failed", frozen: "Frozen", in_flight: "In flight", in_progress: "In progress",
+    in_stock: "In stock", in_use: "In use", inactive: "Inactive", invited: "Invited", lost: "Lost", matched: "Matched", new: "New",
+    not_required: "Not required", on_hold: "On hold", open: "Open", ordered: "Ordered", over_billed: "Over-billed", override: "Override",
+    paid: "Paid", partially_paid: "Partially paid", partially_received: "Partially received", pending: "Pending", pending_approval: "Pending approval",
+    planned: "Planned", posted: "Posted", price_mismatch: "Price mismatch", qty_mismatch: "Quantity mismatch", received: "Received",
+    rejected: "Rejected", renewed: "Renewed", reopened: "Reopened", requested: "Requested", rescheduled: "Rescheduled", resolved: "Resolved",
+    rfq: "RFQ", scheduled: "Scheduled", sending: "Sending", sent: "Sent", settled: "Settled", shortlisted: "Shortlisted", skipped: "Skipped",
+    submitted: "Submitted", succeeded: "Succeeded", suspended: "Suspended", terminated: "Terminated", todo: "To do", triaged: "Triaged",
+    under_repair: "Under repair", under_verification: "Under verification", verified: "Verified", waiting: "Waiting", wont_fix: "Won't fix",
+    overdue: "Overdue", expiring: "Expiring", due_soon: "Due soon",
+  },
+  priority: { critical: "Critical", urgent: "Urgent", high: "High", medium: "Medium", low: "Low" },
+  enum: {
+    scopeType: { org: "Whole organisation", campus: "Campus", department: "Department" },
+    channel: { email: "Email", whatsapp: "WhatsApp", sms: "SMS", in_app: "In-app" },
+    fieldType: { text: "Text", number: "Number", date: "Date", boolean: "Yes / no", select: "Dropdown", multiselect: "Multi-select", user: "User", currency: "Amount" },
+    approverType: { role: "Role", user: "Specific person", permission: "Anyone with permission", reporting_manager: "Reporting manager", department_head: "Department head" },
+    locationType: { building: "Building", floor: "Floor", room: "Room", area: "Area" },
+    vendorType: { service: "Service", supplier: "Supplier", both: "Service & supplier" },
+    agreementType: { service: "Service", supply: "Supply", nda: "NDA", rate_contract: "Rate contract", other: "Other" },
+    sourceType: { manual: "Manual", purchase_order: "Purchase order", work_order: "Work order", issue: "Issue" },
+    contractType: { comprehensive: "Comprehensive", non_comprehensive: "Non-comprehensive", labour_only: "Labour only" },
+    triggerType: { time: "Time-based", usage: "Usage-based" },
+    workOrderType: { corrective: "Corrective", preventive: "Preventive", inspection: "Inspection", compliance: "Compliance", installation: "Installation" },
+    entryType: { commitment: "Commitment", actual: "Actual" },
+    txnType: { topup: "Top-up", expense: "Expense", adjustment: "Adjustment" },
+    claimType: { reimbursement: "Reimbursement", advance_settlement: "Advance settlement", petty_cash_replenishment: "Petty cash top-up", vendor_direct: "Vendor payment" },
+    taxType: { cgst_sgst: "CGST + SGST", igst: "IGST", none: "No tax" },
+    orgKind: { organisation: "Organisation", personal: "Personal workspace" },
+    feedbackKind: { bug: "Bug", feature: "Feature request", other: "Other" },
+    module: { facility: "Facilities", expense: "Expenses", tasks: "Tasks", po: "Purchasing" },
+  },
+};
+
+export default enums;
