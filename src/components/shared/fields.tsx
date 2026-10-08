@@ -9,6 +9,7 @@ import { NativeSelect } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 export function Field({
@@ -62,7 +63,7 @@ export function AsyncSelect<T>({
   toOption,
   value,
   onChange,
-  placeholder = "Select…",
+  placeholder,
   multiple,
   disabled,
   id,
@@ -80,13 +81,14 @@ export function AsyncSelect<T>({
   initialLabel?: string | null;
   extraParams?: string;
 }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const [labels, setLabels] = useState<Record<string, string>>({});
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(q), 200);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setDebounced(q), 200);
+    return () => clearTimeout(timer);
   }, [q]);
   const sep = endpoint.includes("?") ? "&" : "?";
   const { data = [], isFetching } = useQuery({
@@ -96,7 +98,7 @@ export function AsyncSelect<T>({
   });
   const options = data.map(toOption);
   const values = multiple ? ((value as string[] | null) ?? []) : value ? [value as string] : [];
-  const labelOf = (v: string) => labels[v] ?? options.find((o) => o.value === v)?.label ?? (values.length === 1 && initialLabel ? initialLabel : "Selected");
+  const labelOf = (v: string) => labels[v] ?? options.find((o) => o.value === v)?.label ?? (values.length === 1 && initialLabel ? initialLabel : t("shared.picker.selected"));
 
   const listId = useId();
   const pick = (o: Option) => {
@@ -126,7 +128,7 @@ export function AsyncSelect<T>({
           className="flex min-h-9 w-full items-center gap-1.5 rounded-md border border-input bg-background px-3 py-1 text-left text-sm shadow-xs focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:outline-none disabled:opacity-50"
         >
           <span className="flex min-w-0 flex-1 flex-wrap gap-1">
-            {values.length === 0 && <span className="text-muted-foreground">{placeholder}</span>}
+            {values.length === 0 && <span className="text-muted-foreground">{placeholder ?? t("ui.select")}</span>}
             {!multiple && values[0] && <span className="truncate">{labelOf(values[0])}</span>}
             {multiple &&
               values.map((v) => (
@@ -157,9 +159,9 @@ export function AsyncSelect<T>({
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-64 p-0">
         <Command shouldFilter={false}>
-          <CommandInput placeholder="Search…" value={q} onValueChange={setQ} />
+          <CommandInput placeholder={t("ui.search")} value={q} onValueChange={setQ} />
           <CommandList id={listId}>
-            <CommandEmpty>{isFetching ? "Loading…" : "No matches."}</CommandEmpty>
+            <CommandEmpty>{isFetching ? t("ui.loading") : t("shared.picker.noMatches")}</CommandEmpty>
             {options.map((o) => (
               <CommandItem key={o.value} value={o.value} onSelect={() => pick(o)}>
                 <Check className={cn("size-4", values.includes(o.value) ? "opacity-100" : "opacity-0")} />
@@ -182,11 +184,12 @@ interface UserRow {
 }
 
 export function UserPicker(props: { value: string | string[] | null | undefined; onChange: (v: string | string[] | null) => void; multiple?: boolean; placeholder?: string; id?: string; initialLabel?: string | null }) {
+  const { t } = useT();
   return (
     <AsyncSelect<UserRow>
       endpoint="/users/lookup"
       toOption={(u) => ({ value: u.id, label: u.full_name ?? u.email ?? u.id, hint: u.title ?? u.email ?? undefined })}
-      placeholder={props.placeholder ?? (props.multiple ? "Add people…" : "Select person…")}
+      placeholder={props.placeholder ?? (props.multiple ? t("shared.picker.addPeople") : t("shared.picker.selectPerson"))}
       {...props}
     />
   );
@@ -230,11 +233,12 @@ export function UserChip({ name }: { name: string | null | undefined }) {
   );
 }
 
-export function CampusSelect({ value, onChange, id, allowEmpty, emptyLabel = "All campuses" }: { value: string | null | undefined; onChange: (v: string | null) => void; id?: string; allowEmpty?: boolean; emptyLabel?: string }) {
+export function CampusSelect({ value, onChange, id, allowEmpty, emptyLabel }: { value: string | null | undefined; onChange: (v: string | null) => void; id?: string; allowEmpty?: boolean; emptyLabel?: string }) {
   const { campuses } = useSession();
+  const { t } = useT();
   return (
     <NativeSelect id={id} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
-      {(allowEmpty || !value) && <option value="">{allowEmpty ? emptyLabel : "Select campus…"}</option>}
+      {(allowEmpty || !value) && <option value="">{allowEmpty ? (emptyLabel ?? t("ui.allCampuses")) : t("shared.picker.selectCampus")}</option>}
       {campuses.map((c) => (
         <option key={c.id} value={c.id}>
           {c.name}
@@ -246,10 +250,11 @@ export function CampusSelect({ value, onChange, id, allowEmpty, emptyLabel = "Al
 
 export function DepartmentSelect({ value, onChange, campusId, id }: { value: string | null | undefined; onChange: (v: string | null) => void; campusId?: string | null; id?: string }) {
   const { departments } = useSession();
+  const { t } = useT();
   const list = departments.filter((d) => !campusId || !d.campus_id || d.campus_id === campusId);
   return (
     <NativeSelect id={id} value={value ?? ""} onChange={(e) => onChange(e.target.value || null)}>
-      <option value="">No department</option>
+      <option value="">{t("shared.picker.noDepartment")}</option>
       {list.map((d) => (
         <option key={d.id} value={d.id}>
           {d.name}

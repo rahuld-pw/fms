@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { BreadcrumbNav } from "./breadcrumb-nav";
 
 export function PageHeader({
   title,
@@ -21,7 +22,7 @@ export function PageHeader({
     <div className={cn("mb-5 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between", className)}>
       <div className="min-w-0">
         {breadcrumbs && breadcrumbs.length > 0 && (
-          <nav className="mb-1 flex items-center gap-1 text-xs text-muted-foreground" aria-label="Breadcrumb">
+          <BreadcrumbNav>
             {breadcrumbs.map((b, i) => (
               <span key={i} className="flex items-center gap-1">
                 {i > 0 && <ChevronRight className="size-3" />}
@@ -34,7 +35,7 @@ export function PageHeader({
                 )}
               </span>
             ))}
-          </nav>
+          </BreadcrumbNav>
         )}
         <h1 className="text-xl font-semibold tracking-tight text-balance">{title}</h1>
         {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}

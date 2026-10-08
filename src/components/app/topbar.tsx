@@ -155,7 +155,7 @@ export function Topbar() {
                 { v: "dark", icon: Moon },
                 { v: "system", icon: Monitor },
               ].map(({ v, icon: Icon }) => (
-                <Button key={v} variant={theme === v ? "secondary" : "ghost"} size="icon-sm" onClick={() => setTheme(v)} aria-label={`${v} theme`}>
+                <Button key={v} variant={theme === v ? "secondary" : "ghost"} size="icon-sm" onClick={() => setTheme(v)} aria-label={t(`shared.theme.${v}`)}>
                   <Icon />
                 </Button>
               ))}

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { Switch } from "@/components/ui/checkbox";
 import { ApiClientError, api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { CampusSelect, DepartmentSelect, Field, ResourcePicker, UserPicker } from "./fields";
 
@@ -62,6 +63,7 @@ function normalise(fields: FieldSpec[], values: FieldValues) {
 
 export function FormFields({ fields, form }: { fields: FieldSpec[]; form: ReturnType<typeof useForm> }) {
   const { register, control, watch, formState } = form;
+  const { t } = useT();
   const values = watch();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -75,11 +77,11 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
           let control_: React.ReactNode;
           switch (type) {
             case "textarea":
-              control_ = <Textarea id={id} rows={3} placeholder={f.placeholder} {...register(f.name, { required: f.required && `${f.label} is required` })} />;
+              control_ = <Textarea id={id} rows={3} placeholder={f.placeholder} {...register(f.name, { required: f.required && t("shared.form.isRequired", { label: f.label }) })} />;
               break;
             case "select":
               control_ = (
-                <NativeSelect id={id} {...register(f.name, { required: f.required && `${f.label} is required` })}>
+                <NativeSelect id={id} {...register(f.name, { required: f.required && t("shared.form.isRequired", { label: f.label }) })}>
                   {!f.required && <option value="">—</option>}
                   {f.options?.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -100,7 +102,7 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                 <Controller
                   control={control}
                   name={f.name}
-                  rules={{ required: f.required && `${f.label} is required` }}
+                  rules={{ required: f.required && t("shared.form.isRequired", { label: f.label }) }}
                   render={({ field }) => <UserPicker id={id} multiple={type === "users"} value={field.value} onChange={field.onChange} initialLabel={f.initialLabel} />}
                 />
               );
@@ -111,7 +113,7 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                 <Controller
                   control={control}
                   name={f.name}
-                  rules={{ required: f.required && `${f.label} is required` }}
+                  rules={{ required: f.required && t("shared.form.isRequired", { label: f.label }) }}
                   render={({ field }) => (
                     <ResourcePicker
                       id={id}
@@ -133,7 +135,7 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                 <Controller
                   control={control}
                   name={f.name}
-                  rules={{ required: f.required && `${f.label} is required` }}
+                  rules={{ required: f.required && t("shared.form.isRequired", { label: f.label }) }}
                   render={({ field }) => <CampusSelect id={id} value={field.value} onChange={field.onChange} allowEmpty={!f.required} emptyLabel="—" />}
                 />
               );
@@ -156,7 +158,7 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                   inputMode={type === "money" || type === "number" ? "decimal" : undefined}
                   placeholder={f.placeholder}
                   aria-invalid={!!err}
-                  {...register(f.name, { required: f.required && `${f.label} is required` })}
+                  {...register(f.name, { required: f.required && t("shared.form.isRequired", { label: f.label }) })}
                 />
               );
           }
@@ -183,7 +185,7 @@ export function ResourceFormDialog<T = Record<string, unknown>>({
   defaultValues,
   endpoint,
   method = "POST",
-  submitLabel = "Save",
+  submitLabel,
   invalidate = [],
   transform,
   onSaved,
@@ -204,6 +206,7 @@ export function ResourceFormDialog<T = Record<string, unknown>>({
   wide?: boolean;
 }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const form = useForm({ defaultValues: defaultValues as FieldValues, values: open ? (defaultValues as FieldValues) : undefined });
   const save = useMutation({
     mutationFn: (values: FieldValues) => {
@@ -213,7 +216,7 @@ export function ResourceFormDialog<T = Record<string, unknown>>({
       return api<T>(endpoint, { method, body, idempotencyKey: method === "POST" ? crypto.randomUUID() : undefined });
     },
     onSuccess: (row) => {
-      toast.success("Saved");
+      toast.success(t("ui.saved"));
       for (const k of invalidate) qc.invalidateQueries({ queryKey: [k] });
       onOpenChange(false);
       form.reset();
@@ -239,10 +242,10 @@ export function ResourceFormDialog<T = Record<string, unknown>>({
           <FormFields fields={fields} form={form as never} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("ui.cancel")}
             </Button>
             <Button type="submit" loading={save.isPending}>
-              {submitLabel}
+              {submitLabel ?? t("ui.save")}
             </Button>
           </DialogFooter>
         </form>

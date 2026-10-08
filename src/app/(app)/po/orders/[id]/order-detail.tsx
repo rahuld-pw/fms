@@ -22,6 +22,7 @@ import { DetailGrid, EmptyState, PageHeader } from "@/components/shared/page-hea
 import { useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api, apiList, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 import { LinesEditor, poLinePayload, type LineDraft } from "../../lines-editor";
 import { CloseDialog, CreateAssetsDialog, InvoiceDialog, ReasonDialog, ReceiveDialog, type AssetCandidate } from "./po-dialogs";
@@ -31,6 +32,7 @@ const RECEIVABLE = ["approved", "sent", "acknowledged", "partially_received"];
 type DialogName = "receive" | "invoice" | "amend" | "cancel" | "close" | null;
 
 export function OrderDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const router = useRouter();
   const can = useCan();
@@ -49,12 +51,12 @@ export function OrderDetail({ id }: { id: string }) {
   const submit = useAction<{ result: { status: string; budget_check?: { result: string; message?: string } } }>({
     onSuccess: (r) => {
       const st = r.result?.status;
-      toast.success(st === "approved" ? "Auto-approved" : "Submitted for approval", { description: r.result?.budget_check?.result === "warning" ? r.result.budget_check.message : undefined });
+      toast.success(st === "approved" ? t("po.common.autoApproved") : t("po.common.submittedForApproval"), { description: r.result?.budget_check?.result === "warning" ? r.result.budget_check.message : undefined });
       refresh();
     },
   });
-  const send = useAction({ success: "PO sent to vendor", onSuccess: refresh });
-  const remove = useAction({ success: "Draft deleted", onSuccess: () => router.push("/po/orders") });
+  const send = useAction({ success: t("po.order.sentToVendor"), onSuccess: refresh });
+  const remove = useAction({ success: t("po.order.draftDeleted"), onSuccess: () => router.push("/po/orders") });
   if (isLoading || !po) return <Skeleton className="h-96" />;
 
   const scope = { campusId: po.campus_id, departmentId: po.department_id };
@@ -68,13 +70,13 @@ export function OrderDetail({ id }: { id: string }) {
   const igst = po.tax_type === "igst";
 
   const actions = [
-    can("po:send", scope, "auto") && ["approved"].includes(po.status) && { key: "send", label: "Send to vendor", icon: Send, primary: true, run: () => send.mutate({ path: `/purchase-orders/${id}/send` }) },
-    can("grn:create", { campusId: po.campus_id }, "auto") && RECEIVABLE.includes(po.status) && hasPendingReceipt && { key: "receive", label: "Receive goods", icon: PackageCheck, primary: po.status !== "approved", run: () => setDialog("receive") },
-    can("invoice:create", { campusId: po.campus_id }, "auto") && hasUninvoiced && { key: "invoice", label: "Record invoice", icon: Receipt, run: () => setDialog("invoice") },
-    can("po:send", scope, "auto") && po.status === "sent" && { key: "resend", label: "Resend to vendor", icon: Send, run: () => send.mutate({ path: `/purchase-orders/${id}/send` }) },
-    can("po:amend", scope, "auto") && RECEIVABLE.includes(po.status) && { key: "amend", label: "Amend", icon: FilePen, run: () => setDialog("amend") },
-    can("po:close", scope, "auto") && ["received", "partially_received", "acknowledged", "sent", "approved"].includes(po.status) && { key: "close", label: "Close PO", icon: Lock, run: () => setDialog("close") },
-    can("po:cancel", scope, "auto") && !["closed", "cancelled"].includes(po.status) && received === 0 && { key: "cancel", label: "Cancel PO", icon: Ban, run: () => setDialog("cancel") },
+    can("po:send", scope, "auto") && ["approved"].includes(po.status) && { key: "send", label: t("po.order.sendToVendor"), icon: Send, primary: true, run: () => send.mutate({ path: `/purchase-orders/${id}/send` }) },
+    can("grn:create", { campusId: po.campus_id }, "auto") && RECEIVABLE.includes(po.status) && hasPendingReceipt && { key: "receive", label: t("po.order.receiveGoods"), icon: PackageCheck, primary: po.status !== "approved", run: () => setDialog("receive") },
+    can("invoice:create", { campusId: po.campus_id }, "auto") && hasUninvoiced && { key: "invoice", label: t("po.order.recordInvoice"), icon: Receipt, run: () => setDialog("invoice") },
+    can("po:send", scope, "auto") && po.status === "sent" && { key: "resend", label: t("po.order.resendToVendor"), icon: Send, run: () => send.mutate({ path: `/purchase-orders/${id}/send` }) },
+    can("po:amend", scope, "auto") && RECEIVABLE.includes(po.status) && { key: "amend", label: t("po.order.amend"), icon: FilePen, run: () => setDialog("amend") },
+    can("po:close", scope, "auto") && ["received", "partially_received", "acknowledged", "sent", "approved"].includes(po.status) && { key: "close", label: t("po.order.closePo"), icon: Lock, run: () => setDialog("close") },
+    can("po:cancel", scope, "auto") && !["closed", "cancelled"].includes(po.status) && received === 0 && { key: "cancel", label: t("po.order.cancelPo"), icon: Ban, run: () => setDialog("cancel") },
   ].filter(Boolean) as { key: string; label: string; icon: React.ComponentType; primary?: boolean; run: () => void }[];
   const primary = actions.filter((a) => a.primary);
   const secondary = actions.filter((a) => !a.primary);
@@ -89,7 +91,7 @@ export function OrderDetail({ id }: { id: string }) {
         if (l.id) await api(`/purchase-orders/${id}/lines/${l.id}`, { method: "PATCH", body: poLinePayload(l) });
         else await api(`/purchase-orders/${id}/lines`, { body: poLinePayload(l) });
       }
-      toast.success("Lines saved");
+      toast.success(t("po.common.linesSaved"));
       setEditing(null);
       refresh();
     } catch (e) {
@@ -102,7 +104,7 @@ export function OrderDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
-        breadcrumbs={[{ label: "Purchase orders", href: "/po/orders" }, { label: po.number }]}
+        breadcrumbs={[{ label: t("po.common.purchaseOrders"), href: "/po/orders" }, { label: po.number }]}
         title={<span className="font-mono">{po.number}{po.version > 1 && <span className="ml-2 text-base text-muted-foreground">v{po.version}</span>}</span>}
         meta={
           <>
@@ -115,21 +117,21 @@ export function OrderDetail({ id }: { id: string }) {
           <>
             {canEdit && (
               <Button size="sm" onClick={() => submit.mutate({ path: `/purchase-orders/${id}/submit` })} loading={submit.isPending} disabled={!!editing || !lines.length}>
-                <Send /> {po.status === "rejected" ? "Resubmit" : "Submit"}
+                <Send /> {po.status === "rejected" ? t("po.common.resubmit") : t("ui.submit")}
               </Button>
             )}
             {primary.map((a) => <Button key={a.key} size="sm" onClick={a.run} loading={a.key === "send" && send.isPending}><a.icon /> {a.label}</Button>)}
             <Button size="sm" variant="outline" asChild>
-              <a href={`/api/v1/purchase-orders/${id}/pdf`} target="_blank" rel="noreferrer"><FileDown /> PDF</a>
+              <a href={`/api/v1/purchase-orders/${id}/pdf`} target="_blank" rel="noreferrer"><FileDown /> {t("po.order.pdf")}</a>
             </Button>
             {(secondary.length > 0 || (draft && can("po:delete", scope, "auto"))) && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button size="icon-sm" variant="outline" aria-label="More actions"><MoreHorizontal /></Button></DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild><Button size="icon-sm" variant="outline" aria-label={t("po.order.moreActions")}><MoreHorizontal /></Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {secondary.map((a) => <DropdownMenuItem key={a.key} onSelect={a.run}><a.icon /> {a.label}</DropdownMenuItem>)}
                   {draft && po.version === 1 && can("po:delete", scope, "auto") && (
-                    <DropdownMenuItem destructive onSelect={() => confirm("Delete this draft PO?") && remove.mutate({ path: `/purchase-orders/${id}`, method: "DELETE" })}>
-                      <Trash2 /> Delete draft
+                    <DropdownMenuItem destructive onSelect={() => confirm(t("po.order.confirmDelete")) && remove.mutate({ path: `/purchase-orders/${id}`, method: "DELETE" })}>
+                      <Trash2 /> {t("po.order.deleteDraft")}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -140,7 +142,7 @@ export function OrderDetail({ id }: { id: string }) {
       />
       {po.amendment_reason && po.status === "draft" && (
         <p className="mb-3 flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-800 dark:text-blue-300">
-          <FilePen className="size-4 shrink-0" /> Amendment v{po.version}: {po.amendment_reason}. Edit the lines and resubmit for approval.
+          <FilePen className="size-4 shrink-0" /> {t("po.order.amendmentNotice", { version: po.version, reason: po.amendment_reason })}
         </p>
       )}
       {po.budget_check?.result && !["ok", "no_budget"].includes(po.budget_check.result) && (
@@ -148,18 +150,18 @@ export function OrderDetail({ id }: { id: string }) {
           <AlertTriangle className="size-4 shrink-0" /> {po.budget_check.message}
         </p>
       )}
-      {po.status === "cancelled" && po.cancel_reason && <p className="mb-3 rounded-md border px-3 py-2 text-sm text-muted-foreground">Cancelled: {po.cancel_reason}</p>}
+      {po.status === "cancelled" && po.cancel_reason && <p className="mb-3 rounded-md border px-3 py-2 text-sm text-muted-foreground">{t("po.order.cancelled", { reason: po.cancel_reason })}</p>}
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <div className="flex min-w-0 flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Lines</CardTitle>
+              <CardTitle>{t("ui.lines")}</CardTitle>
               {canEdit && !editing && (
                 <Button size="xs" variant="outline" onClick={() => setEditing(lines.map((l: any) => ({
                   id: l.id, item_id: l.item_id, description: l.description, quantity: String(Number(l.quantity)), unit: l.unit, unit_price: String(l.unit_price),
                   tax_rate: String(Number(l.tax_rate)), discount_pct: String(Number(l.discount_pct)), hsn_sac: l.hsn_sac ?? "", is_asset: l.is_asset,
                 })))}>
-                  <Pencil /> Edit lines
+                  <Pencil /> {t("po.common.editLines")}
                 </Button>
               )}
             </CardHeader>
@@ -167,8 +169,8 @@ export function OrderDetail({ id }: { id: string }) {
               <CardContent className="flex flex-col gap-3">
                 <LinesEditor lines={editing} onChange={setEditing} mode="po" />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>Discard</Button>
-                  <Button size="sm" onClick={saveLines} loading={saving}>Save lines</Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>{t("po.common.discard")}</Button>
+                  <Button size="sm" onClick={saveLines} loading={saving}>{t("po.common.saveLines")}</Button>
                 </div>
               </CardContent>
             ) : (
@@ -179,9 +181,9 @@ export function OrderDetail({ id }: { id: string }) {
                     <div key={l.id} className="flex flex-col gap-1 px-4 py-3 text-sm">
                       <div className="flex justify-between gap-2"><span className="font-medium">{l.description}</span><Money value={l.line_total} className="font-medium" /></div>
                       <span className="text-xs text-muted-foreground">
-                        {Number(l.quantity)} {l.unit} × <Money value={l.unit_price} />{Number(l.discount_pct) > 0 && ` −${Number(l.discount_pct)}%`} · GST {Number(l.tax_rate)}%
+                        {Number(l.quantity)} {l.unit} × <Money value={l.unit_price} />{Number(l.discount_pct) > 0 && ` −${Number(l.discount_pct)}%`} · {t("po.common.gstRate", { rate: Number(l.tax_rate) })}
                       </span>
-                      {!draft && <span className="text-xs text-muted-foreground">Received {Number(l.received_qty)} · Invoiced {Number(l.invoiced_qty)}</span>}
+                      {!draft && <span className="text-xs text-muted-foreground">{t("po.order.receivedInvoiced", { received: Number(l.received_qty), invoiced: Number(l.invoiced_qty) })}</span>}
                     </div>
                   ))}
                 </div>
@@ -190,12 +192,12 @@ export function OrderDetail({ id }: { id: string }) {
                     <THead>
                       <TR>
                         <TH className="w-8">#</TH>
-                        <TH>Item</TH>
-                        <TH className="text-right">Qty</TH>
-                        <TH className="text-right">Rate</TH>
-                        <TH className="text-right">GST</TH>
-                        <TH className="text-right">Amount</TH>
-                        {!draft && <TH className="text-right">Rcvd / Inv</TH>}
+                        <TH>{t("ui.item")}</TH>
+                        <TH className="text-right">{t("ui.qty")}</TH>
+                        <TH className="text-right">{t("ui.rate")}</TH>
+                        <TH className="text-right">{t("po.common.gst")}</TH>
+                        <TH className="text-right">{t("ui.amount")}</TH>
+                        {!draft && <TH className="text-right">{t("po.order.rcvdInv")}</TH>}
                       </TR>
                     </THead>
                     <TBody>
@@ -204,7 +206,7 @@ export function OrderDetail({ id }: { id: string }) {
                           <TD className="text-muted-foreground">{l.line_no}</TD>
                           <TD>
                             {l.description}
-                            <span className="block text-xs text-muted-foreground">{[l.hsn_sac && `HSN ${l.hsn_sac}`, l.is_asset && "Asset"].filter(Boolean).join(" · ")}</span>
+                            <span className="block text-xs text-muted-foreground">{[l.hsn_sac && t("po.order.hsn", { code: l.hsn_sac }), l.is_asset && t("ui.asset")].filter(Boolean).join(" · ")}</span>
                           </TD>
                           <TD className="whitespace-nowrap text-right tabular">{Number(l.quantity)} {l.unit}</TD>
                           <TD className="text-right"><Money value={l.unit_price} />{Number(l.discount_pct) > 0 && <span className="block text-xs text-muted-foreground">−{Number(l.discount_pct)}%</span>}</TD>
@@ -217,10 +219,10 @@ export function OrderDetail({ id }: { id: string }) {
                   </Table>
                 </div>
                 <CardContent className="flex flex-col items-end gap-1 border-t pt-3 text-sm">
-                  <Row label="Taxable value" value={po.subtotal} />
-                  {Number(po.discount_total) > 0 && <Row label="Discount" value={-po.discount_total} />}
-                  {igst ? <Row label="IGST" value={po.tax_total} /> : <><Row label="CGST" value={po.tax_total / 2} /><Row label="SGST" value={po.tax_total / 2} /></>}
-                  <Row label="Total" value={po.total} strong />
+                  <Row label={t("po.order.taxableValue")} value={po.subtotal} />
+                  {Number(po.discount_total) > 0 && <Row label={t("ui.discount")} value={-po.discount_total} />}
+                  {igst ? <Row label={t("po.order.igst")} value={po.tax_total} /> : <><Row label={t("po.order.cgst")} value={po.tax_total / 2} /><Row label={t("po.order.sgst")} value={po.tax_total / 2} /></>}
+                  <Row label={t("ui.total")} value={po.total} strong />
                 </CardContent>
               </>
             )}
@@ -228,19 +230,19 @@ export function OrderDetail({ id }: { id: string }) {
           {!draft && ordered > 0 && (
             <Card>
               <CardContent className="grid gap-3 pt-4 sm:grid-cols-2">
-                <ProgressRow label="Received" value={received} max={ordered} />
-                <ProgressRow label="Invoiced" value={lines.reduce((s, l: any) => s + Number(l.invoiced_qty), 0)} max={ordered} />
+                <ProgressRow label={t("po.common.received")} value={received} max={ordered} />
+                <ProgressRow label={t("po.common.invoiced")} value={lines.reduce((s, l: any) => s + Number(l.invoiced_qty), 0)} max={ordered} />
               </CardContent>
             </Card>
           )}
           <Tabs defaultValue={draft || po.status === "pending_approval" ? "approval" : "receipts"}>
             <TabsList className="max-w-full overflow-x-auto">
-              <TabsTrigger value="approval">Approval</TabsTrigger>
-              <TabsTrigger value="receipts">Receipts{grns?.data.length ? ` (${grns.data.length})` : ""}</TabsTrigger>
-              <TabsTrigger value="invoices">Invoices{invoices?.data.length ? ` (${invoices.data.length})` : ""}</TabsTrigger>
-              <TabsTrigger value="timeline">Timeline</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-              <TabsTrigger value="files">Files</TabsTrigger>
+              <TabsTrigger value="approval">{t("po.common.approval")}</TabsTrigger>
+              <TabsTrigger value="receipts">{grns?.data.length ? t("po.order.receiptsCount", { n: grns.data.length }) : t("po.order.receipts")}</TabsTrigger>
+              <TabsTrigger value="invoices">{invoices?.data.length ? t("po.order.invoicesCount", { n: invoices.data.length }) : t("po.order.invoices")}</TabsTrigger>
+              <TabsTrigger value="timeline">{t("po.order.timeline")}</TabsTrigger>
+              <TabsTrigger value="comments">{t("ui.comments")}</TabsTrigger>
+              <TabsTrigger value="files">{t("ui.files")}</TabsTrigger>
             </TabsList>
             <TabsContent value="approval"><ApprovalPanel entityType="purchase_order" entityId={id} onDecided={refresh} /></TabsContent>
             <TabsContent value="receipts">
@@ -252,12 +254,12 @@ export function OrderDetail({ id }: { id: string }) {
                         <PackageCheck className="size-4 text-muted-foreground" />
                         <span className="font-mono text-xs">{g.number}</span>
                         <span className="text-muted-foreground"><DateTime value={g.received_date} dateOnly /></span>
-                        {g.delivery_note_number && <span className="text-muted-foreground">DN {g.delivery_note_number}</span>}
+                        {g.delivery_note_number && <span className="text-muted-foreground">{t("po.order.deliveryNote", { number: g.delivery_note_number })}</span>}
                         <span className="ml-auto flex items-center gap-2"><UserChip name={g.receiver?.full_name} /><StatusBadge status={g.status} /></span>
                       </div>
                     ))}
                   </div>
-                ) : <CardContent className="pt-4"><EmptyState icon={PackageCheck} title="Nothing received yet" /></CardContent>}
+                ) : <CardContent className="pt-4"><EmptyState icon={PackageCheck} title={t("po.order.nothingReceived")} /></CardContent>}
               </Card>
             </TabsContent>
             <TabsContent value="invoices">
@@ -273,7 +275,7 @@ export function OrderDetail({ id }: { id: string }) {
                       </Link>
                     ))}
                   </div>
-                ) : <CardContent className="pt-4"><EmptyState icon={Receipt} title="No invoices yet" /></CardContent>}
+                ) : <CardContent className="pt-4"><EmptyState icon={Receipt} title={t("po.order.noInvoices")} /></CardContent>}
               </Card>
             </TabsContent>
             <TabsContent value="timeline"><Timeline id={id} /></TabsContent>
@@ -286,25 +288,25 @@ export function OrderDetail({ id }: { id: string }) {
             <CardContent className="pt-4">
               <DetailGrid
                 items={[
-                  { label: "Vendor", value: <>{po.vendor?.name}{po.vendor?.gstin && <span className="block font-mono text-xs text-muted-foreground">{po.vendor.gstin}</span>}</>, wide: true },
-                  { label: "Campus", value: po.campus?.name },
-                  { label: "Department", value: po.department?.name },
-                  { label: "Order date", value: <DateTime value={po.order_date} dateOnly /> },
-                  { label: "Expected", value: <DateTime value={po.expected_delivery} dateOnly /> },
-                  { label: "Category", value: po.category?.name },
-                  { label: "GST", value: igst ? "IGST (inter-state)" : po.tax_type === "none" ? "None" : "CGST + SGST" },
-                  ...(po.requisition ? [{ label: "Requisition", value: <Link className="hover:underline" href={`/po/requisitions/${po.requisition.id}`}>{po.requisition.number}</Link>, wide: true }] : []),
-                  { label: "Payment terms", value: po.payment_terms, wide: true },
-                  ...(po.vendor_ack_at ? [{ label: "Vendor acknowledged", value: <><DateTime value={po.vendor_ack_at} /> · {po.vendor_ack_name}</>, wide: true }] : []),
-                  { label: "Created by", value: <UserChip name={po.creator?.full_name} /> },
-                  { label: "Sent", value: <DateTime value={po.sent_at} /> },
+                  { label: t("ui.vendor"), value: <>{po.vendor?.name}{po.vendor?.gstin && <span className="block font-mono text-xs text-muted-foreground">{po.vendor.gstin}</span>}</>, wide: true },
+                  { label: t("ui.campus"), value: po.campus?.name },
+                  { label: t("ui.department"), value: po.department?.name },
+                  { label: t("po.common.orderDate"), value: <DateTime value={po.order_date} dateOnly /> },
+                  { label: t("po.common.expected"), value: <DateTime value={po.expected_delivery} dateOnly /> },
+                  { label: t("ui.category"), value: po.category?.name },
+                  { label: t("po.common.gst"), value: igst ? t("po.order.igstInterState") : po.tax_type === "none" ? t("ui.none") : t("enum.taxType.cgst_sgst", undefined, "CGST + SGST") },
+                  ...(po.requisition ? [{ label: t("po.common.requisition"), value: <Link className="hover:underline" href={`/po/requisitions/${po.requisition.id}`}>{po.requisition.number}</Link>, wide: true }] : []),
+                  { label: t("po.common.paymentTerms"), value: po.payment_terms, wide: true },
+                  ...(po.vendor_ack_at ? [{ label: t("po.order.vendorAcknowledged"), value: <><DateTime value={po.vendor_ack_at} /> · {po.vendor_ack_name}</>, wide: true }] : []),
+                  { label: t("ui.createdBy"), value: <UserChip name={po.creator?.full_name} /> },
+                  { label: t("po.order.sent"), value: <DateTime value={po.sent_at} /> },
                 ]}
               />
             </CardContent>
           </Card>
           {po.versions?.length > 0 && (
             <Card>
-              <CardHeader><CardTitle>Previous versions</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t("po.order.previousVersions")}</CardTitle></CardHeader>
               <CardContent className="flex flex-col gap-2 text-sm">
                 {[...po.versions].sort((a: any, b: any) => b.version - a.version).map((v: any) => (
                   <div key={v.id} className="flex flex-col">
@@ -319,10 +321,10 @@ export function OrderDetail({ id }: { id: string }) {
       </div>
       {dialog === "receive" && <ReceiveDialog po={po} open onOpenChange={(o) => !o && setDialog(null)} onDone={() => { refresh(); qc.invalidateQueries({ queryKey: ["po", id, "grns"] }); }} onAssets={setAssetCandidates} />}
       {dialog === "invoice" && <InvoiceDialog po={po} open onOpenChange={(o) => !o && setDialog(null)} onDone={() => { refresh(); qc.invalidateQueries({ queryKey: ["po", id, "invoices"] }); }} />}
-      <ReasonDialog open={dialog === "amend"} onOpenChange={(o) => !o && setDialog(null)} onDone={refresh} path={`/purchase-orders/${id}/amend`} title="Amend purchase order"
-        description="The current version is saved and the PO returns to draft for changes and re-approval. The vendor receives the revised PO when it is sent again." cta="Start amendment" />
-      <ReasonDialog open={dialog === "cancel"} onOpenChange={(o) => !o && setDialog(null)} onDone={refresh} path={`/purchase-orders/${id}/cancel`} title="Cancel purchase order"
-        description="The budget commitment is released. This cannot be undone." cta="Cancel PO" destructive />
+      <ReasonDialog open={dialog === "amend"} onOpenChange={(o) => !o && setDialog(null)} onDone={refresh} path={`/purchase-orders/${id}/amend`} title={t("po.order.amendTitle")}
+        description={t("po.order.amendDescription")} cta={t("po.order.startAmendment")} />
+      <ReasonDialog open={dialog === "cancel"} onOpenChange={(o) => !o && setDialog(null)} onDone={refresh} path={`/purchase-orders/${id}/cancel`} title={t("po.order.cancelTitle")}
+        description={t("po.order.cancelDescription")} cta={t("po.order.cancelPo")} destructive />
       <CloseDialog id={id} open={dialog === "close"} onOpenChange={(o) => !o && setDialog(null)} onDone={refresh} />
       <CreateAssetsDialog candidates={assetCandidates} onClose={() => setAssetCandidates([])} />
     </div>
@@ -349,6 +351,7 @@ function ProgressRow({ label, value, max }: { label: string; value: number; max:
 }
 
 function Timeline({ id }: { id: string }) {
+  const { t } = useT();
   const { data, isLoading } = useQuery({ queryKey: ["po", id, "timeline"], queryFn: () => api<{ at: string; kind: string; label: string }[]>(`/purchase-orders/${id}/timeline`) });
   if (isLoading) return <Skeleton className="h-40" />;
   return (
@@ -362,7 +365,7 @@ function Timeline({ id }: { id: string }) {
               <span className="ml-2 text-xs text-muted-foreground">{humanize(e.kind)} · <DateTime value={e.at} /></span>
             </li>
           ))}
-          {!data?.length && <li className="text-sm text-muted-foreground"><CheckCircle2 className="mr-1 inline size-4" />No events yet</li>}
+          {!data?.length && <li className="text-sm text-muted-foreground"><CheckCircle2 className="mr-1 inline size-4" />{t("po.order.noEvents")}</li>}
         </ol>
       </CardContent>
     </Card>

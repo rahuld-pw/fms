@@ -20,6 +20,7 @@ import { DueDate } from "@/components/shared/format";
 import { PageHeader } from "@/components/shared/page-header";
 import { PriorityLabel } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { QuickAdd, TaskRow, type Task } from "../../shared";
 
@@ -30,31 +31,32 @@ interface Board {
 }
 
 const VIEWS = [
-  { key: "list", label: "List", icon: List },
-  { key: "board", label: "Board", icon: Columns3 },
-  { key: "calendar", label: "Calendar", icon: CalendarDays },
-  { key: "timeline", label: "Timeline", icon: GanttChart },
+  { key: "list", icon: List },
+  { key: "board", icon: Columns3 },
+  { key: "calendar", icon: CalendarDays },
+  { key: "timeline", icon: GanttChart },
 ] as const;
 
 export function ProjectView({ id }: { id: string }) {
+  const { t } = useT();
   const params = useSearchParams();
   const router = useRouter();
   const key = useMemo(() => ["tasks", "board", id], [id]);
   const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => api<Board>(`/projects/${id}/board`) });
   const view = params.get("view") ?? data?.project.default_view ?? "board";
   if (isLoading || !data) return <Skeleton className="h-96" />;
-  const done = data.tasks.filter((t) => t.status === "done").length;
-  const active = data.tasks.filter((t) => t.status !== "cancelled").length;
+  const done = data.tasks.filter((task) => task.status === "done").length;
+  const active = data.tasks.filter((task) => task.status !== "cancelled").length;
   return (
     <div>
       <PageHeader
-        breadcrumbs={[{ label: "Projects", href: "/tasks/projects" }, { label: data.project.name }]}
+        breadcrumbs={[{ label: t("tasks.project.breadcrumb"), href: "/tasks/projects" }, { label: data.project.name }]}
         title={data.project.name}
         description={data.project.description ?? undefined}
         meta={
           <div className="flex w-full max-w-xs items-center gap-2 text-xs text-muted-foreground">
             <Progress value={active ? (done / active) * 100 : 0} />
-            <span className="whitespace-nowrap">{done}/{active} done</span>
+            <span className="whitespace-nowrap">{t("tasks.project.done", { done, total: active })}</span>
             {data.project.team && <span className="inline-flex items-center gap-1 whitespace-nowrap"><Users className="size-3" />{data.project.team.name}</span>}
           </div>
         }
@@ -62,7 +64,7 @@ export function ProjectView({ id }: { id: string }) {
           <div className="flex rounded-md border p-0.5">
             {VIEWS.map((v) => (
               <button key={v.key} onClick={() => router.replace(`?view=${v.key}`)} className={cn("flex min-h-8 items-center gap-1.5 rounded px-2.5 py-1 text-sm", view === v.key ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")} aria-pressed={view === v.key}>
-                <v.icon className="size-4" /> <span className="hidden sm:inline">{v.label}</span>
+                <v.icon className="size-4" /> <span className="hidden sm:inline">{t(`tasks.project.views.${v.key}`)}</span>
               </button>
             ))}
           </div>
@@ -77,17 +79,18 @@ export function ProjectView({ id }: { id: string }) {
 }
 
 function ListView({ board }: { board: Board }) {
-  const groups = [...board.sections.map((s) => ({ id: s.id as string | null, name: s.name })), { id: null, name: "No section" }];
+  const { t } = useT();
+  const groups = [...board.sections.map((s) => ({ id: s.id as string | null, name: s.name })), { id: null, name: t("tasks.project.noSection") }];
   return (
     <div className="flex flex-col gap-4">
       {groups.map((g) => {
-        const tasks = board.tasks.filter((t) => t.section_id === g.id).sort((a, b) => a.position - b.position);
+        const tasks = board.tasks.filter((task) => task.section_id === g.id).sort((a, b) => a.position - b.position);
         if (g.id === null && tasks.length === 0) return null;
         return (
           <section key={g.id ?? "none"}>
             <h2 className="mb-1.5 text-sm font-semibold">{g.name} <span className="font-normal text-muted-foreground">{tasks.length}</span></h2>
             <Card>
-              {tasks.map((t) => <TaskRow key={t.id} task={t} />)}
+              {tasks.map((task) => <TaskRow key={task.id} task={task} />)}
               <QuickAdd projectId={board.project.id} sectionId={g.id} />
             </Card>
           </section>
@@ -99,6 +102,7 @@ function ListView({ board }: { board: Board }) {
 }
 
 function AddSection({ projectId }: { projectId: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const [name, setName] = useState("");
   const add = useMutation({
@@ -108,8 +112,8 @@ function AddSection({ projectId }: { projectId: string }) {
   });
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (name.trim()) add.mutate(); }} className="flex max-w-xs gap-2">
-      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="New section" className="h-8" />
-      <Button type="submit" size="sm" variant="outline"><Plus /> Add</Button>
+      <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tasks.project.newSection")} className="h-8" />
+      <Button type="submit" size="sm" variant="outline"><Plus /> {t("tasks.project.add")}</Button>
     </form>
   );
 }
@@ -118,6 +122,7 @@ function AddSection({ projectId }: { projectId: string }) {
 // Board (drag & drop between sections, optimistic)
 // ---------------------------------------------------------------------------
 function BoardView({ board, queryKey }: { board: Board; queryKey: readonly unknown[] }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }));
   const [dragging, setDragging] = useState<Task | null>(null);
@@ -166,10 +171,10 @@ function BoardView({ board, queryKey }: { board: Board; queryKey: readonly unkno
           const tasks = byColumn(c.id);
           return (
             <Column key={c.id} id={c.id} title={c.name} count={tasks.length}>
-              <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
-                {tasks.map((t) => <SortableCard key={t.id} task={t} />)}
+              <SortableContext items={tasks.map((task) => task.id)} strategy={verticalListSortingStrategy}>
+                {tasks.map((task) => <SortableCard key={task.id} task={task} />)}
               </SortableContext>
-              <QuickAdd projectId={board.project.id} sectionId={c.id} placeholder="+ Add task" />
+              <QuickAdd projectId={board.project.id} sectionId={c.id} placeholder={t("tasks.project.addTask")} />
             </Column>
           );
         })}
@@ -219,29 +224,30 @@ function TaskCard({ task, overlay }: { task: Task; overlay?: boolean }) {
 // Calendar & timeline
 // ---------------------------------------------------------------------------
 function CalendarView({ tasks }: { tasks: Task[] }) {
+  const { t, locale } = useT();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const from = startOfWeek(month, { weekStartsOn: 1 });
   const days = Array.from({ length: 42 }, (_, i) => addDays(from, i));
   const byDay = new Map<string, Task[]>();
-  for (const t of tasks) if (t.due_date) byDay.set(t.due_date, [...(byDay.get(t.due_date) ?? []), t]);
+  for (const task of tasks) if (task.due_date) byDay.set(task.due_date, [...(byDay.get(task.due_date) ?? []), task]);
   const today = format(new Date(), "yyyy-MM-dd");
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(month, -1)))} aria-label="Previous month"><ChevronLeft /></Button>
-        <span className="w-36 text-center text-sm font-medium">{format(month, "MMMM yyyy")}</span>
-        <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(endOfMonth(month), 1)))} aria-label="Next month"><ChevronRight /></Button>
+        <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(month, -1)))} aria-label={t("tasks.project.prevMonth")}><ChevronLeft /></Button>
+        <span className="w-36 text-center text-sm font-medium">{month.toLocaleDateString(locale, { month: "long", year: "numeric" })}</span>
+        <Button variant="outline" size="icon-sm" onClick={() => setMonth(startOfMonth(addDays(endOfMonth(month), 1)))} aria-label={t("tasks.project.nextMonth")}><ChevronRight /></Button>
       </div>
       <Card className="grid grid-cols-7 overflow-hidden">
-        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => <div key={d} className="border-b py-1.5 text-center text-xs text-muted-foreground">{d}</div>)}
+        {days.slice(0, 7).map((d) => <div key={d.getDay()} className="border-b py-1.5 text-center text-xs text-muted-foreground">{d.toLocaleDateString(locale, { weekday: "short" })}</div>)}
         {days.map((d) => {
           const k = format(d, "yyyy-MM-dd");
           return (
             <div key={k} className={cn("min-h-24 border-r border-b p-1 text-xs [&:nth-child(7n)]:border-r-0", d.getMonth() !== month.getMonth() && "bg-muted/30 text-muted-foreground")}>
               <span className={cn("inline-flex size-5 items-center justify-center rounded-full", k === today && "bg-primary text-primary-foreground")}>{d.getDate()}</span>
-              {(byDay.get(k) ?? []).map((t) => (
-                <Link key={t.id} href={`/tasks/t/${t.id}`} className={cn("mt-0.5 block truncate rounded bg-accent px-1 py-0.5 text-accent-foreground hover:bg-accent/70", t.status === "done" && "line-through opacity-60")}>
-                  {t.title}
+              {(byDay.get(k) ?? []).map((task) => (
+                <Link key={task.id} href={`/tasks/t/${task.id}`} className={cn("mt-0.5 block truncate rounded bg-accent px-1 py-0.5 text-accent-foreground hover:bg-accent/70", task.status === "done" && "line-through opacity-60")}>
+                  {task.title}
                 </Link>
               ))}
             </div>
@@ -253,11 +259,12 @@ function CalendarView({ tasks }: { tasks: Task[] }) {
 }
 
 function TimelineView({ tasks }: { tasks: Task[] }) {
+  const { t, locale } = useT();
   const now = useNow();
-  const dated = tasks.filter((t) => t.due_date).sort((a, b) => (a.start_date ?? a.due_date!).localeCompare(b.start_date ?? b.due_date!));
-  if (dated.length === 0) return <p className="text-sm text-muted-foreground">Add start and due dates to see tasks on the timeline.</p>;
-  const start = new Date(Math.min(...dated.map((t) => new Date(t.start_date ?? t.due_date!).getTime()), now));
-  const end = new Date(Math.max(...dated.map((t) => new Date(t.due_date!).getTime()), now + 7 * 86400000));
+  const dated = tasks.filter((task) => task.due_date).sort((a, b) => (a.start_date ?? a.due_date!).localeCompare(b.start_date ?? b.due_date!));
+  if (dated.length === 0) return <p className="text-sm text-muted-foreground">{t("tasks.project.timelineEmpty")}</p>;
+  const start = new Date(Math.min(...dated.map((task) => new Date(task.start_date ?? task.due_date!).getTime()), now));
+  const end = new Date(Math.max(...dated.map((task) => new Date(task.due_date!).getTime()), now + 7 * 86400000));
   const total = Math.max(1, differenceInCalendarDays(end, start) + 1);
   const pct = (d: Date) => (differenceInCalendarDays(d, start) / total) * 100;
   const weeks = Array.from({ length: Math.ceil(total / 7) }, (_, i) => addDays(startOfWeek(start, { weekStartsOn: 1 }), i * 7));
@@ -266,21 +273,21 @@ function TimelineView({ tasks }: { tasks: Task[] }) {
       <div className="min-w-[720px]">
         <div className="relative ml-56 h-7 border-b text-[11px] text-muted-foreground">
           {weeks.map((w) => (
-            <span key={w.toISOString()} className="absolute top-1.5 border-l pl-1" style={{ left: `${Math.max(0, pct(w))}%` }}>{format(w, "d MMM")}</span>
+            <span key={w.toISOString()} className="absolute top-1.5 border-l pl-1" style={{ left: `${Math.max(0, pct(w))}%` }}>{w.toLocaleDateString(locale, { day: "numeric", month: "short" })}</span>
           ))}
-          <span className="absolute inset-y-0 w-px bg-primary" style={{ left: `${pct(new Date())}%` }} aria-label="Today" />
+          <span className="absolute inset-y-0 w-px bg-primary" style={{ left: `${pct(new Date())}%` }} aria-label={t("tasks.project.today")} />
         </div>
-        {dated.map((t) => {
-          const s = new Date(t.start_date ?? t.due_date!);
-          const e = new Date(t.due_date!);
+        {dated.map((task) => {
+          const s = new Date(task.start_date ?? task.due_date!);
+          const e = new Date(task.due_date!);
           return (
-            <div key={t.id} className="flex h-9 items-center border-b last:border-0">
-              <Link href={`/tasks/t/${t.id}`} className="w-56 shrink-0 truncate px-3 text-sm hover:underline">{t.title}</Link>
+            <div key={task.id} className="flex h-9 items-center border-b last:border-0">
+              <Link href={`/tasks/t/${task.id}`} className="w-56 shrink-0 truncate px-3 text-sm hover:underline">{task.title}</Link>
               <div className="relative h-full flex-1">
                 <div
-                  className={cn("absolute top-2 h-5 rounded-[4px] text-[11px] leading-5 text-white", t.status === "done" ? "bg-muted-foreground/50" : "bg-[var(--chart-1)]")}
+                  className={cn("absolute top-2 h-5 rounded-[4px] text-[11px] leading-5 text-white", task.status === "done" ? "bg-muted-foreground/50" : "bg-[var(--chart-1)]")}
                   style={{ left: `${pct(s)}%`, width: `max(${((differenceInCalendarDays(e, s) + 1) / total) * 100}%, 6px)` }}
-                  title={`${t.start_date ?? t.due_date} → ${t.due_date}`}
+                  title={`${task.start_date ?? task.due_date} → ${task.due_date}`}
                 />
               </div>
             </div>

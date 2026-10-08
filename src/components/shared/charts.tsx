@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /*
@@ -147,10 +148,11 @@ export function BudgetBars({
   rows: { id: string; label: string; total: number; committed: number; actual: number }[];
   format: (v: number) => string;
 }) {
+  const { t } = useT();
   const [hover, setHover] = useState<string | null>(null);
   const series: Series[] = [
-    { key: "actual", label: "Actual", color: "var(--chart-1)" },
-    { key: "committed", label: "Committed (open POs)", color: "var(--chart-2)" },
+    { key: "actual", label: t("shared.chart.actual"), color: "var(--chart-1)" },
+    { key: "committed", label: t("shared.chart.committedOpenPos"), color: "var(--chart-2)" },
   ];
   const max = Math.max(1, ...rows.map((r) => Math.max(r.total, r.actual + r.committed)));
   return (
@@ -158,7 +160,7 @@ export function BudgetBars({
       <div className="flex items-center gap-4">
         <Legend series={series} />
         <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <span className="h-2.5 w-4 rounded-[3px] bg-chart-track" /> Budget
+          <span className="h-2.5 w-4 rounded-[3px] bg-chart-track" /> {t("ui.budget")}
         </span>
       </div>
       <ul className="flex flex-col gap-2.5">
@@ -177,18 +179,18 @@ export function BudgetBars({
                   {r.actual > 0 && <div className="h-full rounded-l rounded-r-[4px]" style={{ background: "var(--chart-1)", flex: r.actual }} />}
                   {r.committed > 0 && <div className="h-full rounded-r-[4px]" style={{ background: "var(--chart-2)", flex: r.committed }} />}
                 </div>
-                {r.total > 0 && <div className="absolute -inset-y-0.5 w-0.5 bg-foreground/70" style={{ left: `${(r.total / max) * 100}%` }} title="Budget" />}
+                {r.total > 0 && <div className="absolute -inset-y-0.5 w-0.5 bg-foreground/70" style={{ left: `${(r.total / max) * 100}%` }} title={t("ui.budget")} />}
               </div>
               <span className={cn("w-16 text-right text-xs tabular", over ? "font-semibold text-destructive" : "text-muted-foreground")}>
-                {pct === null ? "no budget" : `${pct}%${over ? " ⚠" : ""}`}
+                {pct === null ? t("shared.chart.noBudget") : `${pct}%${over ? " ⚠" : ""}`}
               </span>
               {hover === r.id && (
                 <div className="pointer-events-none absolute top-full left-36 z-10 mt-1 rounded-md border bg-popover px-2.5 py-1.5 text-xs shadow-md">
                   <div className="mb-0.5 font-medium">{r.label}</div>
-                  <div>Budget: <b className="tabular">{format(r.total)}</b></div>
-                  <div>Actual: <b className="tabular">{format(r.actual)}</b></div>
-                  <div>Committed: <b className="tabular">{format(r.committed)}</b></div>
-                  <div>Available: <b className={cn("tabular", over && "text-destructive")}>{format(r.total - used)}</b></div>
+                  <div>{withValue(t("shared.chart.budgetValue"), <b className="tabular">{format(r.total)}</b>)}</div>
+                  <div>{withValue(t("shared.chart.actualValue"), <b className="tabular">{format(r.actual)}</b>)}</div>
+                  <div>{withValue(t("shared.chart.committedValue"), <b className="tabular">{format(r.committed)}</b>)}</div>
+                  <div>{withValue(t("shared.chart.availableValue"), <b className={cn("tabular", over && "text-destructive")}>{format(r.total - used)}</b>)}</div>
                 </div>
               )}
             </li>
@@ -196,6 +198,18 @@ export function BudgetBars({
         })}
       </ul>
     </div>
+  );
+}
+
+/** Puts a node where `{value}` appears in a translated label. */
+function withValue(text: string, node: ReactNode) {
+  const [pre, post] = text.split("{value}");
+  return (
+    <>
+      {pre}
+      {post !== undefined && node}
+      {post}
+    </>
   );
 }
 

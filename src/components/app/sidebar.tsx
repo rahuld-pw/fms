@@ -33,7 +33,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useT();
   const settings = SETTINGS_NAV.filter(visible);
   return (
-    <nav className="flex h-full flex-col gap-4 overflow-y-auto px-2.5 py-3 scrollbar-thin" aria-label="Main">
+    <nav className="flex h-full flex-col gap-4 overflow-y-auto px-2.5 py-3 scrollbar-thin" aria-label={t("shared.nav.main")}>
       <Link href="/" onClick={onNavigate} className="flex items-center gap-2 px-2 py-1">
         <span className="flex size-7 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground">
           {org.name.slice(0, 1)}
@@ -85,8 +85,9 @@ function NavLink({ item, active, onNavigate, labelKey }: { item: NavItem; active
 export function SettingsNav() {
   const pathname = usePathname();
   const visible = useVisible();
+  const { t } = useT();
   return (
-    <nav className="flex gap-1 overflow-x-auto scrollbar-thin md:flex-col" aria-label="Settings">
+    <nav className="flex gap-1 overflow-x-auto scrollbar-thin md:flex-col" aria-label={t("nav./settings")}>
       {SETTINGS_NAV.filter(visible).map((item) => (
         <NavLink key={item.href} item={item} active={item.href === "/settings" ? pathname === "/settings" : pathname.startsWith(item.href)} />
       ))}

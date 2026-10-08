@@ -4,9 +4,11 @@ import { useState } from "react";
 import { MailOpen } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useT } from "@/lib/i18n/client";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 export function WorkspaceChoice({ invites }: { invites: { org_name: string; expires_at: string }[] }) {
+  const { t } = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const personal = async () => {
@@ -22,8 +24,8 @@ export function WorkspaceChoice({ invites }: { invites: { org_name: string; expi
   return (
     <div className="flex flex-col gap-4">
       <div>
-        <h1 className="text-lg font-semibold">You have an invitation</h1>
-        <p className="text-sm text-muted-foreground">Open the invitation link from your email to join:</p>
+        <h1 className="text-lg font-semibold">{t("onboarding.invitationTitle")}</h1>
+        <p className="text-sm text-muted-foreground">{t("onboarding.invitationBody")}</p>
       </div>
       <ul className="flex flex-col gap-2">
         {invites.map((i) => (
@@ -32,8 +34,8 @@ export function WorkspaceChoice({ invites }: { invites: { org_name: string; expi
           </li>
         ))}
       </ul>
-      <p className="text-xs text-muted-foreground">Can&apos;t find the email? Ask your administrator to resend it from Settings → Users.</p>
-      <Button variant="outline" loading={busy} onClick={personal}>Continue to my personal task workspace</Button>
+      <p className="text-xs text-muted-foreground">{t("onboarding.cantFind")}</p>
+      <Button variant="outline" loading={busy} onClick={personal}>{t("onboarding.continuePersonal")}</Button>
     </div>
   );
 }

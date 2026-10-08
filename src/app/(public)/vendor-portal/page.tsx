@@ -1,7 +1,11 @@
 import { Suspense } from "react";
 import { VendorPortal } from "./vendor-portal";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Vendor portal", robots: { index: false } };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t("public.vendor.metaTitle"), robots: { index: false } };
+}
 
 export default function VendorPortalPage() {
   return (

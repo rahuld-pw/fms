@@ -20,10 +20,12 @@ import { DetailGrid, PageHeader } from "@/components/shared/page-header";
 import { useAction } from "@/components/shared/resource-form";
 import { PriorityLabel, StatusBadge } from "@/components/shared/status";
 import { api, apiList, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { LinesEditor, reqLinePayload, type LineDraft } from "../../lines-editor";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function RequisitionDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const router = useRouter();
   const can = useCan();
@@ -41,11 +43,11 @@ export function RequisitionDetail({ id }: { id: string }) {
   };
   const submit = useAction<{ status: string; budget_check?: { result: string; message?: string } }>({
     onSuccess: (res) => {
-      toast.success(res.status === "approved" ? "Auto-approved" : "Submitted for approval", { description: res.budget_check?.result === "warning" ? res.budget_check.message : undefined });
+      toast.success(res.status === "approved" ? t("po.common.autoApproved") : t("po.common.submittedForApproval"), { description: res.budget_check?.result === "warning" ? res.budget_check.message : undefined });
       refresh();
     },
   });
-  const remove = useAction({ success: "Requisition deleted", onSuccess: () => router.push("/po/requisitions") });
+  const remove = useAction({ success: t("po.requisition.deleted"), onSuccess: () => router.push("/po/requisitions") });
   if (isLoading || !r) return <Skeleton className="h-96" />;
 
   const scope = { campusId: r.campus_id, departmentId: r.department_id };
@@ -67,7 +69,7 @@ export function RequisitionDetail({ id }: { id: string }) {
         if (l.id) await api(`/requisitions/${id}/lines/${l.id}`, { method: "PATCH", body });
         else await api(`/requisitions/${id}/lines`, { body });
       }
-      toast.success("Lines saved");
+      toast.success(t("po.common.linesSaved"));
       setEditing(null);
       refresh();
     } catch (e) {
@@ -80,7 +82,7 @@ export function RequisitionDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        breadcrumbs={[{ label: "Requisitions", href: "/po/requisitions" }, { label: r.number }]}
+        breadcrumbs={[{ label: t("po.common.requisitions"), href: "/po/requisitions" }, { label: r.number }]}
         title={r.title}
         meta={
           <>
@@ -94,17 +96,17 @@ export function RequisitionDetail({ id }: { id: string }) {
             {canEdit && (
               <>
                 <Button size="sm" onClick={() => submit.mutate({ path: `/requisitions/${id}/submit` })} loading={submit.isPending} disabled={!!editing || !lines.length}>
-                  <Send /> {r.status === "rejected" ? "Resubmit" : "Submit"}
+                  <Send /> {r.status === "rejected" ? t("po.common.resubmit") : t("ui.submit")}
                 </Button>
                 {r.status === "draft" && (
-                  <Button size="sm" variant="ghost" onClick={() => confirm("Delete this draft requisition?") && remove.mutate({ path: `/requisitions/${id}`, method: "DELETE" })}>
-                    <Trash2 /> Delete
+                  <Button size="sm" variant="ghost" onClick={() => confirm(t("po.requisition.confirmDelete")) && remove.mutate({ path: `/requisitions/${id}`, method: "DELETE" })}>
+                    <Trash2 /> {t("ui.delete")}
                   </Button>
                 )}
               </>
             )}
-            {canSource && <Button size="sm" variant="outline" onClick={() => setDialog("rfq")}><FileQuestion /> Request quotes</Button>}
-            {canOrder && <Button size="sm" onClick={() => setDialog("po")}><ShoppingCart /> Create PO</Button>}
+            {canSource && <Button size="sm" variant="outline" onClick={() => setDialog("rfq")}><FileQuestion /> {t("po.requisition.requestQuotes")}</Button>}
+            {canOrder && <Button size="sm" onClick={() => setDialog("po")}><ShoppingCart /> {t("po.requisition.createPo")}</Button>}
           </>
         }
       />
@@ -117,13 +119,13 @@ export function RequisitionDetail({ id }: { id: string }) {
         <div className="flex min-w-0 flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Lines</CardTitle>
+              <CardTitle>{t("ui.lines")}</CardTitle>
               {canEdit && !editing && (
                 <Button size="xs" variant="outline" onClick={() => setEditing(lines.map((l: any) => ({
                   id: l.id, item_id: l.item_id, description: l.description, quantity: String(l.quantity), unit: l.unit,
                   unit_price: String(l.estimated_unit_price), tax_rate: "18", discount_pct: "0", hsn_sac: "", is_asset: false,
                 })))}>
-                  <Pencil /> Edit lines
+                  <Pencil /> {t("po.common.editLines")}
                 </Button>
               )}
             </CardHeader>
@@ -131,18 +133,18 @@ export function RequisitionDetail({ id }: { id: string }) {
               <CardContent className="flex flex-col gap-3">
                 <LinesEditor lines={editing} onChange={setEditing} mode="requisition" />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>Discard</Button>
-                  <Button size="sm" onClick={saveLines} loading={saving}>Save lines</Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>{t("po.common.discard")}</Button>
+                  <Button size="sm" onClick={saveLines} loading={saving}>{t("po.common.saveLines")}</Button>
                 </div>
               </CardContent>
             ) : (
               <Table>
                 <THead>
                   <TR>
-                    <TH>Item</TH>
-                    <TH className="text-right">Qty</TH>
-                    <TH className="text-right">Est. rate</TH>
-                    <TH className="text-right">Amount</TH>
+                    <TH>{t("ui.item")}</TH>
+                    <TH className="text-right">{t("ui.qty")}</TH>
+                    <TH className="text-right">{t("po.common.estRate")}</TH>
+                    <TH className="text-right">{t("ui.amount")}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -158,7 +160,7 @@ export function RequisitionDetail({ id }: { id: string }) {
                     </TR>
                   ))}
                   <TR>
-                    <TD colSpan={3} className="text-right font-medium">Estimated total</TD>
+                    <TD colSpan={3} className="text-right font-medium">{t("po.common.estimatedTotal")}</TD>
                     <TD className="text-right font-semibold"><Money value={r.estimated_total} /></TD>
                   </TR>
                 </TBody>
@@ -167,12 +169,12 @@ export function RequisitionDetail({ id }: { id: string }) {
           </Card>
           {(rfqs?.data.length || pos?.data.length) ? (
             <Card>
-              <CardHeader><CardTitle>Sourcing</CardTitle></CardHeader>
+              <CardHeader><CardTitle>{t("po.requisition.sourcing")}</CardTitle></CardHeader>
               <CardContent className="flex flex-col divide-y text-sm">
                 {rfqs?.data.map((q: any) => (
                   <Link key={q.id} href={`/po/rfqs/${q.id}`} className="flex items-center gap-2 py-2 hover:underline">
                     <FileQuestion className="size-4 text-muted-foreground" /> <span className="font-mono text-xs">{q.number}</span>
-                    <span className="flex-1 truncate">{q.vendors?.length ?? 0} vendors invited</span>
+                    <span className="flex-1 truncate">{t("po.requisition.vendorsInvited", { n: q.vendors?.length ?? 0 })}</span>
                     <StatusBadge status={q.status} />
                   </Link>
                 ))}
@@ -189,10 +191,10 @@ export function RequisitionDetail({ id }: { id: string }) {
           ) : null}
           <Tabs defaultValue="approval">
             <TabsList>
-              <TabsTrigger value="approval">Approval</TabsTrigger>
-              <TabsTrigger value="files">Files</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="approval">{t("po.common.approval")}</TabsTrigger>
+              <TabsTrigger value="files">{t("ui.files")}</TabsTrigger>
+              <TabsTrigger value="comments">{t("ui.comments")}</TabsTrigger>
+              <TabsTrigger value="history">{t("ui.history")}</TabsTrigger>
             </TabsList>
             <TabsContent value="approval"><ApprovalPanel entityType="requisition" entityId={id} onDecided={refresh} /></TabsContent>
             <TabsContent value="files"><Attachments entityType="requisition" entityId={id} canUpload={canEdit} /></TabsContent>
@@ -204,13 +206,13 @@ export function RequisitionDetail({ id }: { id: string }) {
           <CardContent className="pt-4">
             <DetailGrid
               items={[
-                { label: "Requested by", value: <UserChip name={r.requester?.full_name} />, wide: true },
-                { label: "Campus", value: r.campus?.name },
-                { label: "Department", value: r.department?.name },
-                { label: "Category", value: r.category?.name },
-                { label: "Needed by", value: <DateTime value={r.needed_by} dateOnly /> },
-                { label: "Created", value: <DateTime value={r.created_at} /> },
-                ...(r.justification ? [{ label: "Justification", value: r.justification, wide: true }] : []),
+                { label: t("po.common.requestedBy"), value: <UserChip name={r.requester?.full_name} />, wide: true },
+                { label: t("ui.campus"), value: r.campus?.name },
+                { label: t("ui.department"), value: r.department?.name },
+                { label: t("ui.category"), value: r.category?.name },
+                { label: t("po.common.neededBy"), value: <DateTime value={r.needed_by} dateOnly /> },
+                { label: t("ui.created"), value: <DateTime value={r.created_at} /> },
+                ...(r.justification ? [{ label: t("po.requisition.justification"), value: r.justification, wide: true }] : []),
               ]}
             />
           </CardContent>
@@ -223,25 +225,26 @@ export function RequisitionDetail({ id }: { id: string }) {
 }
 
 function RfqDialog({ id, open, onOpenChange, onDone }: { id: string; open: boolean; onOpenChange: (o: boolean) => void; onDone: (rfqId: string) => void }) {
+  const { t } = useT();
   const [vendors, setVendors] = useState<string[]>([]);
   const [due, setDue] = useState("");
   const [terms, setTerms] = useState("");
-  const act = useAction<{ id: string }>({ success: "RFQ sent to vendors", onSuccess: (r) => onDone(r.id) });
+  const act = useAction<{ id: string }>({ success: t("po.requisition.rfqSent"), onSuccess: (r) => onDone(r.id) });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Request for quotation</DialogTitle>
-          <DialogDescription>Invited vendors get a portal link to submit their quote.</DialogDescription>
+          <DialogTitle>{t("po.requisition.rfqTitle")}</DialogTitle>
+          <DialogDescription>{t("po.requisition.rfqDescription")}</DialogDescription>
         </DialogHeader>
-        <Field label="Vendors" required>
+        <Field label={t("po.requisition.vendors")} required>
           <ResourcePicker endpoint="/vendors?status=approved" hintKey="code" multiple value={vendors} onChange={(v) => setVendors((v as string[]) ?? [])} />
         </Field>
-        <Field label="Quotes due by"><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
-        <Field label="Terms"><Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="Delivery, warranty, payment terms…" /></Field>
+        <Field label={t("po.requisition.quotesDueBy")}><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
+        <Field label={t("po.common.terms")}><Textarea rows={3} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder={t("po.requisition.termsPlaceholder")} /></Field>
         <DialogFooter>
           <Button disabled={!vendors.length} loading={act.isPending} onClick={() => act.mutate({ path: `/requisitions/${id}/rfq`, body: { vendor_ids: vendors, due_date: due || undefined, terms: terms || undefined } })}>
-            Send RFQ
+            {t("po.requisition.sendRfq")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -250,23 +253,24 @@ function RfqDialog({ id, open, onOpenChange, onDone }: { id: string; open: boole
 }
 
 function DirectPoDialog({ id, open, onOpenChange, onDone }: { id: string; open: boolean; onOpenChange: (o: boolean) => void; onDone: (poId: string) => void }) {
+  const { t } = useT();
   const [vendor, setVendor] = useState<string | null>(null);
   const [expected, setExpected] = useState("");
-  const act = useAction<{ id: string }>({ success: "Draft PO created", onSuccess: (r) => onDone(r.id) });
+  const act = useAction<{ id: string }>({ success: t("po.requisition.draftPoCreated"), onSuccess: (r) => onDone(r.id) });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create purchase order</DialogTitle>
-          <DialogDescription>Creates a draft PO with the requisition lines at their estimated rates. Review prices and GST before submitting.</DialogDescription>
+          <DialogTitle>{t("po.requisition.createPoTitle")}</DialogTitle>
+          <DialogDescription>{t("po.requisition.createPoDescription")}</DialogDescription>
         </DialogHeader>
-        <Field label="Vendor" required>
+        <Field label={t("ui.vendor")} required>
           <ResourcePicker endpoint="/vendors?status=approved" hintKey="code" value={vendor} onChange={(v) => setVendor(v as string | null)} />
         </Field>
-        <Field label="Expected delivery"><Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} /></Field>
+        <Field label={t("po.common.expectedDelivery")}><Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} /></Field>
         <DialogFooter>
           <Button disabled={!vendor} loading={act.isPending} onClick={() => act.mutate({ path: `/requisitions/${id}/purchase-order`, body: { vendor_id: vendor, expected_delivery: expected || undefined } })}>
-            Create draft PO
+            {t("po.requisition.createDraftPo")}
           </Button>
         </DialogFooter>
       </DialogContent>

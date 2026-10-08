@@ -7,12 +7,14 @@ import { Card } from "@/components/ui/card";
 import { EmptyState, PageHeader } from "@/components/shared/page-header";
 import { DateTime } from "@/components/shared/format";
 import { api, apiList } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 interface N { id: string; title: string; body: string | null; link: string | null; read_at: string | null; created_at: string }
 
 export default function NotificationsPage() {
   const qc = useQueryClient();
+  const { t } = useT();
   const q = useInfiniteQuery({
     queryKey: ["notifications-all"],
     queryFn: ({ pageParam }) => apiList<N>(`/notifications?limit=30${pageParam ? `&cursor=${pageParam}` : ""}`),
@@ -30,15 +32,15 @@ export default function NotificationsPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <PageHeader
-        title="Notifications"
+        title={t("notifications.page.title")}
         actions={
           <>
-            <Button variant="outline" size="sm" asChild><Link href="/settings/profile">Preferences</Link></Button>
-            <Button size="sm" onClick={() => markAll.mutate()} loading={markAll.isPending}>Mark all read</Button>
+            <Button variant="outline" size="sm" asChild><Link href="/settings/profile">{t("notifications.page.preferences")}</Link></Button>
+            <Button size="sm" onClick={() => markAll.mutate()} loading={markAll.isPending}>{t("notifications.page.markAllRead")}</Button>
           </>
         }
       />
-      {rows.length === 0 && !q.isLoading && <EmptyState icon={Bell} title="No notifications" />}
+      {rows.length === 0 && !q.isLoading && <EmptyState icon={Bell} title={t("notifications.page.empty")} />}
       <Card className="divide-y empty:hidden">
         {rows.map((n) => (
           <Link key={n.id} href={n.link ?? "#"} className={cn("flex gap-3 px-4 py-3 hover:bg-muted/40", !n.read_at && "bg-accent/30")}>
@@ -53,7 +55,7 @@ export default function NotificationsPage() {
       </Card>
       {q.hasNextPage && (
         <Button variant="outline" className="mt-3 w-full" onClick={() => q.fetchNextPage()} loading={q.isFetchingNextPage}>
-          Load more
+          {t("notifications.page.loadMore")}
         </Button>
       )}
     </div>

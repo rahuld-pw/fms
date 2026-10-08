@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { XIcon } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 export const Dialog = DialogPrimitive.Root;
@@ -14,6 +15,7 @@ export function DialogContent({
   wide,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & { wide?: boolean }) {
+  const { t } = useT();
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] data-[state=open]:animate-in" />
@@ -29,7 +31,7 @@ export function DialogContent({
         {children}
         <DialogPrimitive.Close className="absolute top-3.5 right-3.5 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground">
           <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t("ui.close")}</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>
@@ -51,6 +53,7 @@ export function DialogDescription({ className, ...props }: React.ComponentProps<
 
 /** Right-hand drawer (task details, filters on mobile). */
 export function SheetContent({ className, children, side = "right", ...props }: React.ComponentProps<typeof DialogPrimitive.Content> & { side?: "right" | "left" }) {
+  const { t } = useT();
   return (
     <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/30" />
@@ -65,7 +68,7 @@ export function SheetContent({ className, children, side = "right", ...props }: 
         {children}
         <DialogPrimitive.Close className="absolute top-3 right-3 rounded-md p-1 text-muted-foreground hover:bg-muted">
           <XIcon className="size-4" />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">{t("ui.close")}</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPrimitive.Portal>

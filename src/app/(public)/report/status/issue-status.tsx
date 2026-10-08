@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/shared/status";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { humanize } from "@/lib/utils/format";
 
@@ -19,6 +20,7 @@ const STEPS = ["open", "assigned", "in_progress", "resolved", "closed"];
 const fmt = (s: string) => new Date(s).toLocaleString(undefined, { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
 export function IssueStatus() {
+  const { t } = useT();
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get("token");
@@ -30,7 +32,7 @@ export function IssueStatus() {
     queryFn: async () => {
       const r = await fetch(`/api/v1/public/issues/status?token=${encodeURIComponent(token!)}`);
       const j = await r.json().catch(() => null);
-      if (!r.ok) throw new Error(j?.error?.message ?? "Not found");
+      if (!r.ok) throw new Error(j?.error?.message ?? t("public.status.notFound"));
       return j.data as Status;
     },
   });
@@ -39,19 +41,19 @@ export function IssueStatus() {
   if (!token) {
     return (
       <Card>
-        <CardHeader><CardTitle>Track an issue</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("public.status.title")}</CardTitle></CardHeader>
         <CardContent>
-          <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); const t = input.trim().split("token=").pop(); if (t) router.push(`/report/status?token=${encodeURIComponent(t)}`); }}>
-            <p className="text-sm text-muted-foreground">Paste the tracking link or code you got when you reported the issue.</p>
-            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder="Tracking code or link" autoCapitalize="none" />
-            <Button type="submit" size="lg" disabled={input.trim().length < 10}>Check status</Button>
+          <form className="flex flex-col gap-3" onSubmit={(e) => { e.preventDefault(); const code = input.trim().split("token=").pop(); if (code) router.push(`/report/status?token=${encodeURIComponent(code)}`); }}>
+            <p className="text-sm text-muted-foreground">{t("public.status.pasteHint")}</p>
+            <Input value={input} onChange={(e) => setInput(e.target.value)} placeholder={t("public.status.codePlaceholder")} autoCapitalize="none" />
+            <Button type="submit" size="lg" disabled={input.trim().length < 10}>{t("public.status.check")}</Button>
           </form>
         </CardContent>
       </Card>
     );
   }
   if (loading) return <Skeleton className="h-80" />;
-  if (error || !data) return <Card><CardContent className="py-10 text-center text-sm">{error?.message ?? "Not found"}</CardContent></Card>;
+  if (error || !data) return <Card><CardContent className="py-10 text-center text-sm">{error?.message ?? t("public.status.notFound")}</CardContent></Card>;
 
   const idx = data.status === "reopened" ? 0 : STEPS.indexOf(data.status === "acknowledged" ? "open" : data.status === "on_hold" ? "in_progress" : data.status);
   return (
@@ -71,7 +73,7 @@ export function IssueStatus() {
               {STEPS.map((s, i) => (
                 <li key={s} className="flex flex-1 flex-col items-center gap-1 text-center text-[11px]">
                   {i <= idx ? <CheckCircle2 className="size-5 text-primary" /> : <Circle className="size-5 text-muted-foreground/40" />}
-                  <span className={cn(i <= idx ? "font-medium" : "text-muted-foreground")}>{humanize(s)}</span>
+                  <span className={cn(i <= idx ? "font-medium" : "text-muted-foreground")}>{t(`status.${s}`, undefined, humanize(s))}</span>
                 </li>
               ))}
             </ol>
@@ -79,13 +81,13 @@ export function IssueStatus() {
         </Card>
       )}
       <Card>
-        <CardHeader><CardTitle>Updates</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("public.status.updates")}</CardTitle></CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
-          <div><span className="text-xs text-muted-foreground">{fmt(data.created_at)}</span><p>Reported</p></div>
+          <div><span className="text-xs text-muted-foreground">{fmt(data.created_at)}</span><p>{t("public.status.reported")}</p></div>
           {data.updates.map((u, i) => (
             <div key={i}><span className="text-xs text-muted-foreground">{fmt(u.at)} · {u.by}</span><p className="whitespace-pre-wrap">{u.body}</p></div>
           ))}
-          {data.resolution_notes && <div><span className="text-xs text-muted-foreground">{data.resolved_at && fmt(data.resolved_at)} · Resolution</span><p>{data.resolution_notes}</p></div>}
+          {data.resolution_notes && <div><span className="text-xs text-muted-foreground">{data.resolved_at && fmt(data.resolved_at)} · {t("public.status.resolution")}</span><p>{data.resolution_notes}</p></div>}
         </CardContent>
       </Card>
       {["resolved", "closed"].includes(data.status) && <Feedback token={token} status={data} onDone={load} />}
@@ -94,6 +96,7 @@ export function IssueStatus() {
 }
 
 function Feedback({ token, status, onDone }: { token: string; status: Status; onDone: () => void }) {
+  const { t } = useT();
   const [rating, setRating] = useState(status.rating ?? 0);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState<"rate" | "reopen" | null>(null);
@@ -103,25 +106,25 @@ function Feedback({ token, status, onDone }: { token: string; status: Status; on
     const r = await fetch("/api/v1/public/issues/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, action, rating: action === "rate" ? rating : undefined, feedback: text || undefined }) });
     const j = await r.json().catch(() => null);
     setBusy(null);
-    setMsg(r.ok ? (action === "rate" ? "Thanks for the feedback!" : "Reopened — the team has been notified.") : j?.error?.message ?? "Something went wrong");
+    setMsg(r.ok ? (action === "rate" ? t("public.status.thanksFeedback") : t("public.status.reopened")) : j?.error?.message ?? t("public.status.somethingWrong"));
     if (r.ok) onDone();
   };
-  if (status.rating && status.status === "closed") return <p className="text-center text-sm text-muted-foreground">You rated this {status.rating}/5. Thank you!</p>;
+  if (status.rating && status.status === "closed") return <p className="text-center text-sm text-muted-foreground">{t("public.status.ratedThanks", { rating: status.rating })}</p>;
   return (
     <Card>
-      <CardHeader><CardTitle>Is it fixed?</CardTitle></CardHeader>
+      <CardHeader><CardTitle>{t("public.status.isFixed")}</CardTitle></CardHeader>
       <CardContent className="flex flex-col gap-3">
-        <div className="flex justify-center gap-1" role="radiogroup" aria-label="Rating">
+        <div className="flex justify-center gap-1" role="radiogroup" aria-label={t("public.status.rating")}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={`${n} star${n > 1 ? "s" : ""}`} onClick={() => setRating(n)} className="p-1.5">
+            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={t(n > 1 ? "public.status.starOther" : "public.status.starOne", { n })} onClick={() => setRating(n)} className="p-1.5">
               <Star className={cn("size-8", n <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
             </button>
           ))}
         </div>
-        <Textarea rows={2} placeholder="Anything to add? (optional)" value={text} onChange={(e) => setText(e.target.value)} />
+        <Textarea rows={2} placeholder={t("public.status.anythingToAdd")} value={text} onChange={(e) => setText(e.target.value)} />
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="lg" loading={busy === "reopen"} onClick={() => send("reopen")}><RotateCcw /> Not fixed</Button>
-          <Button size="lg" loading={busy === "rate"} disabled={!rating} onClick={() => send("rate")}>Rate</Button>
+          <Button variant="outline" size="lg" loading={busy === "reopen"} onClick={() => send("reopen")}><RotateCcw /> {t("public.status.notFixed")}</Button>
+          <Button size="lg" loading={busy === "rate"} disabled={!rating} onClick={() => send("rate")}>{t("public.status.rate")}</Button>
         </div>
         {msg && <p className="text-center text-sm">{msg}</p>}
       </CardContent>

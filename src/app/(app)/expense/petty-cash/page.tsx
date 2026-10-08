@@ -11,11 +11,14 @@ import { Money } from "@/components/shared/format";
 import { EmptyState, PageHeader } from "@/components/shared/page-header";
 import { ResourceFormDialog } from "@/components/shared/resource-form";
 import { api, apiList } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default function PettyCashPage() {
   const can = useCan();
+  const { t } = useT();
+  const [ofFloatBefore, ofFloatAfter = ""] = t("expense.pettyCash.ofFloat").split("{amount}");
   const { user, campuses } = useSession();
   const [selected, setSelected] = useState<string | null>(null);
   const [dialog, setDialog] = useState<"fund" | "expense" | "topup" | null>(null);
@@ -25,9 +28,9 @@ export default function PettyCashPage() {
   const canTopup = fund && can("petty_cash:update", { campusId: fund.campus_id, departmentId: fund.department_id }, "auto");
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="Petty cash" description="Imprest funds held by custodians. Expenses post to budgets automatically." actions={can("petty_cash:create") && <Button variant="outline" onClick={() => setDialog("fund")}><Plus /> New fund</Button>} />
+      <PageHeader title={t("expense.pettyCash.title")} description={t("expense.pettyCash.description")} actions={can("petty_cash:create") && <Button variant="outline" onClick={() => setDialog("fund")}><Plus /> {t("expense.pettyCash.newFund")}</Button>} />
       {funds.isLoading && <Skeleton className="h-40" />}
-      {funds.data?.data.length === 0 && <EmptyState title="No petty cash funds" description="Create a fund and assign a custodian." />}
+      {funds.data?.data.length === 0 && <EmptyState title={t("expense.pettyCash.emptyTitle")} description={t("expense.pettyCash.emptyDescription")} />}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {funds.data?.data.map((f) => (
           <button key={f.id} onClick={() => setSelected(f.id)} className={cn("rounded-lg border bg-card p-4 text-left transition-colors hover:border-foreground/20", fund?.id === f.id && "border-primary ring-1 ring-primary")}>
@@ -35,29 +38,29 @@ export default function PettyCashPage() {
             <p className="text-xs text-muted-foreground">{f.custodian?.full_name} · {f.campus?.name}</p>
             <p className={cn("mt-2 text-2xl font-semibold tabular", Number(f.balance) <= Number(f.low_balance_threshold) && "text-destructive")}><Money value={f.balance} /></p>
             <Progress value={(Number(f.balance) / Math.max(1, Number(f.float_amount))) * 100} className="mt-2" />
-            <p className="mt-1 text-xs text-muted-foreground">of <Money value={f.float_amount} /> float</p>
+            <p className="mt-1 text-xs text-muted-foreground">{ofFloatBefore}<Money value={f.float_amount} />{ofFloatAfter}</p>
           </button>
         ))}
       </div>
       {fund && (
         <Card className="mt-4">
           <CardHeader>
-            <CardTitle>{fund.name}: transactions</CardTitle>
+            <CardTitle>{t("expense.pettyCash.transactions", { name: fund.name })}</CardTitle>
             <div className="flex gap-2">
-              {(fund.custodian_id === user.id || canTopup) && <Button size="sm" onClick={() => setDialog("expense")}><ArrowUpRight /> Record expense</Button>}
-              {canTopup && <Button size="sm" variant="outline" onClick={() => setDialog("topup")}><ArrowDownLeft /> Top up</Button>}
+              {(fund.custodian_id === user.id || canTopup) && <Button size="sm" onClick={() => setDialog("expense")}><ArrowUpRight /> {t("expense.pettyCash.recordExpense")}</Button>}
+              {canTopup && <Button size="sm" variant="outline" onClick={() => setDialog("topup")}><ArrowDownLeft /> {t("expense.pettyCash.topUp")}</Button>}
             </div>
           </CardHeader>
           <CardContent className="divide-y p-0">
-            {txns.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">No transactions.</p>}
-            {txns.data?.map((t) => (
-              <div key={t.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                {t.direction > 0 ? <ArrowDownLeft className="size-4 text-primary" /> : <ArrowUpRight className="size-4 text-muted-foreground" />}
+            {txns.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("expense.pettyCash.noTransactions")}</p>}
+            {txns.data?.map((tx) => (
+              <div key={tx.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
+                {tx.direction > 0 ? <ArrowDownLeft className="size-4 text-primary" /> : <ArrowUpRight className="size-4 text-muted-foreground" />}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate">{t.description}</p>
-                  <p className="text-xs text-muted-foreground">{t.txn_date} · {t.category?.name ?? t.txn_type} · {t.creator?.full_name}</p>
+                  <p className="truncate">{tx.description}</p>
+                  <p className="text-xs text-muted-foreground">{tx.txn_date} · {tx.category?.name ?? t(`enum.txnType.${tx.txn_type}`, undefined, tx.txn_type)} · {tx.creator?.full_name}</p>
                 </div>
-                <Money value={t.amount * t.direction} className={cn(t.direction > 0 && "text-primary")} />
+                <Money value={tx.amount * tx.direction} className={cn(tx.direction > 0 && "text-primary")} />
               </div>
             ))}
           </CardContent>
@@ -66,15 +69,15 @@ export default function PettyCashPage() {
       <ResourceFormDialog
         open={dialog === "fund"}
         onOpenChange={(o) => !o && setDialog(null)}
-        title="New petty cash fund"
+        title={t("expense.pettyCash.newFundTitle")}
         endpoint="/petty-cash-funds"
         fields={[
-          { name: "name", label: "Name", required: true },
-          { name: "campus_id", label: "Campus", type: "campus", required: true },
-          { name: "department_id", label: "Department", type: "department", campusField: "campus_id" },
-          { name: "custodian_id", label: "Custodian", type: "user", required: true },
-          { name: "float_amount", label: "Float (imprest) amount", type: "money", required: true },
-          { name: "low_balance_threshold", label: "Alert below", type: "money" },
+          { name: "name", label: t("ui.name"), required: true },
+          { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
+          { name: "department_id", label: t("ui.department"), type: "department", campusField: "campus_id" },
+          { name: "custodian_id", label: t("expense.pettyCash.custodian"), type: "user", required: true },
+          { name: "float_amount", label: t("expense.pettyCash.floatAmount"), type: "money", required: true },
+          { name: "low_balance_threshold", label: t("expense.pettyCash.alertBelow"), type: "money" },
         ]}
         defaultValues={{ campus_id: campuses.length === 1 ? campuses[0].id : "" }}
         invalidate={["/petty-cash-funds"]}
@@ -83,13 +86,13 @@ export default function PettyCashPage() {
         <ResourceFormDialog
           open={dialog === "expense" || dialog === "topup"}
           onOpenChange={(o) => !o && setDialog(null)}
-          title={dialog === "topup" ? "Top up fund" : "Record petty cash expense"}
+          title={dialog === "topup" ? t("expense.pettyCash.topUpTitle") : t("expense.pettyCash.recordExpenseTitle")}
           endpoint={`/petty-cash-funds/${fund.id}/transactions`}
           fields={[
-            { name: "amount", label: "Amount", type: "money", required: true },
-            { name: "txn_date", label: "Date", type: "date" },
-            ...(dialog === "expense" ? [{ name: "category_id", label: "Category", type: "resource" as const, endpoint: "/expense-categories", required: true }] : []),
-            { name: "description", label: "Description", required: true, full: true },
+            { name: "amount", label: t("ui.amount"), type: "money", required: true },
+            { name: "txn_date", label: t("ui.date"), type: "date" },
+            ...(dialog === "expense" ? [{ name: "category_id", label: t("ui.category"), type: "resource" as const, endpoint: "/expense-categories", required: true }] : []),
+            { name: "description", label: t("ui.description"), required: true, full: true },
           ]}
           defaultValues={{ txn_date: new Date().toISOString().slice(0, 10) }}
           transform={(b) => ({ ...b, txn_type: dialog === "topup" ? "topup" : "expense" })}

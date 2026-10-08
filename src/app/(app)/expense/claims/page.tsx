@@ -9,21 +9,23 @@ import { DateTime, Money } from "@/components/shared/format";
 import { UserChip } from "@/components/shared/fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
-
-const opt = (v: string) => ({ value: v, label: humanize(v) });
 
 export default function ClaimsPage() {
   const can = useCan();
+  const { t } = useT();
+  const statusOpt = (v: string) => ({ value: v, label: t(`status.${v}`, undefined, humanize(v)) });
+  const typeOpt = (v: string) => ({ value: v, label: t(`enum.claimType.${v}`, undefined, humanize(v)) });
   return (
     <div>
       <PageHeader
-        title="Expense claims"
-        description="Reimbursements, advance settlements and vendor-direct expenses."
+        title={t("expense.claims.title")}
+        description={t("expense.claims.description")}
         actions={
           <>
-            <Button variant="outline" asChild><Link href="/expense/recurring"><Repeat /> Recurring</Link></Button>
-            {can("expense:submit") && <Button asChild><Link href="/expense/claims/new"><Plus /> New claim</Link></Button>}
+            <Button variant="outline" asChild><Link href="/expense/recurring"><Repeat /> {t("expense.claims.recurring")}</Link></Button>
+            {can("expense:submit") && <Button asChild><Link href="/expense/claims/new"><Plus /> {t("expense.claims.newClaim")}</Link></Button>}
           </>
         }
       />
@@ -35,19 +37,19 @@ export default function ClaimsPage() {
           rowHref={(r) => `/expense/claims/${r.id}`}
           columns={[
             { key: "number", header: "#", sortable: true, className: "whitespace-nowrap font-mono text-xs text-muted-foreground" },
-            { key: "title", header: "Claim", pinned: true, render: (r) => <span className="font-medium">{r.title}</span> },
-            { key: "claimant", header: "Claimant", render: (r) => <UserChip name={r.claimant?.full_name} /> },
-            { key: "claim_type", header: "Type", render: (r) => humanize(r.claim_type), defaultHidden: true },
-            { key: "department", header: "Department", render: (r) => r.department?.name ?? r.campus?.name },
-            { key: "total_amount", header: "Amount", sortable: true, align: "right", render: (r) => <Money value={r.total_amount} /> },
-            { key: "status", header: "Status", render: (r) => <StatusBadge status={r.status} /> },
-            { key: "submitted_at", header: "Submitted", sortable: true, render: (r) => <DateTime value={r.submitted_at} relative /> },
+            { key: "title", header: t("expense.claims.claim"), pinned: true, render: (r) => <span className="font-medium">{r.title}</span> },
+            { key: "claimant", header: t("expense.claims.claimant"), render: (r) => <UserChip name={r.claimant?.full_name} /> },
+            { key: "claim_type", header: t("ui.type"), render: (r) => t(`enum.claimType.${r.claim_type}`, undefined, humanize(r.claim_type)), defaultHidden: true },
+            { key: "department", header: t("ui.department"), render: (r) => r.department?.name ?? r.campus?.name },
+            { key: "total_amount", header: t("ui.amount"), sortable: true, align: "right", render: (r) => <Money value={r.total_amount} /> },
+            { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
+            { key: "submitted_at", header: t("expense.claims.submitted"), sortable: true, render: (r) => <DateTime value={r.submitted_at} relative /> },
           ]}
           filters={[
-            { key: "status", label: "Status", type: "multi", options: ["draft", "pending_approval", "approved", "rejected", "paid", "cancelled"].map(opt) },
-            { key: "claimant_id", label: "Claimant", type: "select", options: [{ value: "me", label: "Me" }] },
-            { key: "claim_type", label: "Type", type: "select", options: ["reimbursement", "advance_settlement", "petty_cash_replenishment", "vendor_direct"].map(opt) },
-            { key: "submitted_at", label: "Submitted", type: "date-range" },
+            { key: "status", label: t("ui.status"), type: "multi", options: ["draft", "pending_approval", "approved", "rejected", "paid", "cancelled"].map(statusOpt) },
+            { key: "claimant_id", label: t("expense.claims.claimant"), type: "select", options: [{ value: "me", label: t("expense.claims.me") }] },
+            { key: "claim_type", label: t("ui.type"), type: "select", options: ["reimbursement", "advance_settlement", "petty_cash_replenishment", "vendor_direct"].map(typeOpt) },
+            { key: "submitted_at", label: t("expense.claims.submitted"), type: "date-range" },
           ]}
           mobileCard={(r) => (
             <div className="flex items-center gap-3">

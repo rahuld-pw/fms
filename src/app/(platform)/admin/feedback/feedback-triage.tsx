@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DateTime } from "@/components/shared/format";
 import { EmptyState, PageHeader } from "@/components/shared/page-header";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -22,6 +23,7 @@ const TONE: Record<string, "neutral" | "blue" | "amber" | "green" | "violet" | "
 };
 
 export function FeedbackTriage() {
+  const { t } = useT();
   const [status, setStatus] = useState(OPEN);
   const [kind, setKind] = useState("");
   const { data, isLoading } = useQuery({
@@ -30,22 +32,22 @@ export function FeedbackTriage() {
   });
   return (
     <div className="flex flex-col gap-4">
-      <PageHeader title="Feedback" description="Bug reports and feature requests from users and visitors." />
+      <PageHeader title={t("admin.feedback.title")} description={t("admin.feedback.description")} />
       <div className="flex flex-wrap gap-2">
-        <NativeSelect value={status} onChange={(e) => setStatus(e.target.value)} className="w-auto" aria-label="Status">
-          <option value={OPEN}>Open</option>
-          <option value="">All</option>
-          {STATUSES.map((s) => <option key={s} value={s}>{humanize(s)}</option>)}
+        <NativeSelect value={status} onChange={(e) => setStatus(e.target.value)} className="w-auto" aria-label={t("ui.status")}>
+          <option value={OPEN}>{t("admin.feedback.open")}</option>
+          <option value="">{t("ui.all")}</option>
+          {STATUSES.map((s) => <option key={s} value={s}>{t(`status.${s}`, undefined, humanize(s))}</option>)}
         </NativeSelect>
-        <NativeSelect value={kind} onChange={(e) => setKind(e.target.value)} className="w-auto" aria-label="Type">
-          <option value="">Bugs and features</option>
-          <option value="bug">Bugs</option>
-          <option value="feature">Feature requests</option>
-          <option value="other">Other</option>
+        <NativeSelect value={kind} onChange={(e) => setKind(e.target.value)} className="w-auto" aria-label={t("ui.type")}>
+          <option value="">{t("admin.feedback.bugsAndFeatures")}</option>
+          <option value="bug">{t("admin.feedback.bugs")}</option>
+          <option value="feature">{t("admin.feedback.featureRequests")}</option>
+          <option value="other">{t("admin.feedback.other")}</option>
         </NativeSelect>
       </div>
       <Card>
-        {isLoading ? <div className="p-4"><Skeleton className="h-40" /></div> : !data?.length ? <div className="p-4"><EmptyState title="Nothing here" description="New reports appear here as they come in." /></div> : (
+        {isLoading ? <div className="p-4"><Skeleton className="h-40" /></div> : !data?.length ? <div className="p-4"><EmptyState title={t("admin.feedback.emptyTitle")} description={t("admin.feedback.emptyDescription")} /></div> : (
           <ul className="divide-y">{data.map((f) => <Item key={f.id} f={f} />)}</ul>
         )}
       </Card>
@@ -55,13 +57,14 @@ export function FeedbackTriage() {
 
 function Item({ f }: { f: any }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(f.admin_notes ?? "");
   const Icon = ICON[f.kind as keyof typeof ICON] ?? MessageSquare;
   const save = async (body: Record<string, unknown>) => {
     try {
       await api(`/admin/feedback/${f.id}`, { method: "PATCH", body });
-      toast.success("Updated");
+      toast.success(t("admin.feedback.updated"));
       qc.invalidateQueries({ queryKey: ["admin", "feedback"] });
     } catch (e) { toast.error(errorMessage(e)); }
   };
@@ -73,26 +76,26 @@ function Item({ f }: { f: any }) {
         <span className="min-w-0 flex-1">
           <span className="block font-medium">{f.title}</span>
           <span className="block truncate text-xs text-muted-foreground">
-            {f.user?.full_name ?? f.email ?? "Anonymous"}{f.organisation?.name && ` · ${f.organisation.name}`} · <DateTime value={f.created_at} relative />
+            {f.user?.full_name ?? f.email ?? t("admin.feedback.anonymous")}{f.organisation?.name && ` · ${f.organisation.name}`} · <DateTime value={f.created_at} relative />
           </span>
         </span>
-        <Badge tone={TONE[f.status]}>{humanize(f.status)}</Badge>
+        <Badge tone={TONE[f.status]}>{t(`status.${f.status}`, undefined, humanize(f.status))}</Badge>
       </button>
       {open && (
         <div className="mt-3 ml-7 flex flex-col gap-3 text-sm">
           <p className="whitespace-pre-wrap">{f.description}</p>
           <dl className="grid gap-1 text-xs text-muted-foreground">
-            {(f.user?.email ?? f.email) && <div><dt className="inline">Contact: </dt><dd className="inline"><a className="underline" href={`mailto:${f.user?.email ?? f.email}`}>{f.user?.email ?? f.email}</a></dd></div>}
-            {f.page_url && <div className="truncate"><dt className="inline">Page: </dt><dd className="inline">{f.page_url}</dd></div>}
-            {f.user_agent && <div className="truncate"><dt className="inline">Browser: </dt><dd className="inline">{f.user_agent}</dd></div>}
+            {(f.user?.email ?? f.email) && <div><dt className="inline">{t("admin.feedback.contact")}</dt><dd className="inline"><a className="underline" href={`mailto:${f.user?.email ?? f.email}`}>{f.user?.email ?? f.email}</a></dd></div>}
+            {f.page_url && <div className="truncate"><dt className="inline">{t("admin.feedback.page")}</dt><dd className="inline">{f.page_url}</dd></div>}
+            {f.user_agent && <div className="truncate"><dt className="inline">{t("admin.feedback.browser")}</dt><dd className="inline">{f.user_agent}</dd></div>}
           </dl>
           <div className="flex flex-wrap items-center gap-2">
-            <NativeSelect value={f.status} onChange={(e) => save({ status: e.target.value })} className="w-auto" aria-label="Status">
-              {STATUSES.map((s) => <option key={s} value={s}>{humanize(s)}</option>)}
+            <NativeSelect value={f.status} onChange={(e) => save({ status: e.target.value })} className="w-auto" aria-label={t("ui.status")}>
+              {STATUSES.map((s) => <option key={s} value={s}>{t(`status.${s}`, undefined, humanize(s))}</option>)}
             </NativeSelect>
           </div>
-          <Textarea rows={2} placeholder="Internal notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-          {notes !== (f.admin_notes ?? "") && <Button size="sm" className="self-start" onClick={() => save({ admin_notes: notes || null })}>Save notes</Button>}
+          <Textarea rows={2} placeholder={t("admin.feedback.internalNotes")} value={notes} onChange={(e) => setNotes(e.target.value)} />
+          {notes !== (f.admin_notes ?? "") && <Button size="sm" className="self-start" onClick={() => save({ admin_notes: notes || null })}>{t("admin.feedback.saveNotes")}</Button>}
         </div>
       )}
     </li>

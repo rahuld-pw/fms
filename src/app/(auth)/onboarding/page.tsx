@@ -3,8 +3,12 @@ import { getSessionContext, getSessionUser } from "@/lib/auth/context";
 import { isPlatformAdmin } from "@/lib/auth/session-data";
 import { createUserClient } from "@/lib/supabase/server";
 import { WorkspaceChoice } from "./workspace-choice";
+import { getT } from "@/lib/i18n/server";
 
-export const metadata = { title: "Welcome" };
+export async function generateMetadata() {
+  const { t } = await getT();
+  return { title: t("onboarding.pageTitle") };
+}
 
 /**
  * First stop after sign-up for users without an organisation. Organisations are

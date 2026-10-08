@@ -9,9 +9,11 @@ import { Input, Textarea } from "@/components/ui/input";
 import { CampusSelect, DepartmentSelect, Field, ResourcePicker } from "@/components/shared/fields";
 import { PageHeader } from "@/components/shared/page-header";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { emptyLine, LinesEditor, poLinePayload, type LineDraft } from "../../lines-editor";
 
 export default function NewPoPage() {
+  const { t } = useT();
   const router = useRouter();
   const { campuses } = useSession();
   const [campus, setCampus] = useState<string | null>(campuses.length === 1 ? campuses[0].id : null);
@@ -26,8 +28,8 @@ export default function NewPoPage() {
   const [busy, setBusy] = useState<"draft" | "submit" | null>(null);
 
   const save = async (submit: boolean) => {
-    if (!campus || !vendor) return toast.error("Choose a campus and vendor");
-    if (!lines.length) return toast.error("Add at least one line");
+    if (!campus || !vendor) return toast.error(t("po.newOrder.chooseCampusVendor"));
+    if (!lines.length) return toast.error(t("po.common.addOneLine"));
     setBusy(submit ? "submit" : "draft");
     try {
       const po = await api<{ id: string }>("/purchase-orders", {
@@ -40,8 +42,8 @@ export default function NewPoPage() {
       });
       if (submit) {
         const r = await api<{ result: { status: string } }>(`/purchase-orders/${po.id}/submit`, { body: {} });
-        toast.success(r.result?.status === "approved" ? "Submitted and auto-approved" : "Submitted for approval");
-      } else toast.success("Draft saved");
+        toast.success(r.result?.status === "approved" ? t("po.common.submittedAutoApproved") : t("po.common.submittedForApproval"));
+      } else toast.success(t("po.common.draftSaved"));
       router.push(`/po/orders/${po.id}`);
     } catch (e) {
       toast.error(errorMessage(e));
@@ -51,33 +53,33 @@ export default function NewPoPage() {
 
   return (
     <div className="mx-auto max-w-5xl">
-      <PageHeader title="New purchase order" breadcrumbs={[{ label: "Purchase orders", href: "/po/orders" }, { label: "New" }]} />
+      <PageHeader title={t("po.newOrder.title")} breadcrumbs={[{ label: t("po.common.purchaseOrders"), href: "/po/orders" }, { label: t("po.common.new") }]} />
       <form onSubmit={(e) => { e.preventDefault(); save(true); }} className="flex flex-col gap-4">
         <Card>
           <CardContent className="grid gap-4 pt-4 sm:grid-cols-2">
-            <Field label="Vendor" required className="sm:col-span-2">
+            <Field label={t("ui.vendor")} required className="sm:col-span-2">
               <ResourcePicker endpoint="/vendors?status=approved" hintKey="code" value={vendor} onChange={(v) => setVendor(v as string | null)} />
             </Field>
-            <Field label="Campus" required hint="PO number series and GST type follow the campus"><CampusSelect value={campus} onChange={setCampus} /></Field>
-            <Field label="Department"><DepartmentSelect value={dept} onChange={setDept} campusId={campus} /></Field>
-            <Field label="Budget category">
-              <ResourcePicker endpoint="/expense-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder="Optional" />
+            <Field label={t("ui.campus")} required hint={t("po.newOrder.campusHint")}><CampusSelect value={campus} onChange={setCampus} /></Field>
+            <Field label={t("ui.department")}><DepartmentSelect value={dept} onChange={setDept} campusId={campus} /></Field>
+            <Field label={t("po.common.budgetCategory")}>
+              <ResourcePicker endpoint="/expense-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder={t("ui.optional")} />
             </Field>
-            <Field label="Expected delivery"><Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} /></Field>
-            <Field label="Deliver to">
-              <ResourcePicker endpoint="/locations" value={location} onChange={(v) => setLocation(v as string | null)} placeholder="Optional" />
+            <Field label={t("po.common.expectedDelivery")}><Input type="date" value={expected} onChange={(e) => setExpected(e.target.value)} /></Field>
+            <Field label={t("po.newOrder.deliverTo")}>
+              <ResourcePicker endpoint="/locations" value={location} onChange={(v) => setLocation(v as string | null)} placeholder={t("ui.optional")} />
             </Field>
-            <Field label="Payment terms"><Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} /></Field>
-            <Field label="Notes to vendor" className="sm:col-span-2"><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
+            <Field label={t("po.common.paymentTerms")}><Input value={paymentTerms} onChange={(e) => setPaymentTerms(e.target.value)} /></Field>
+            <Field label={t("po.newOrder.notesToVendor")} className="sm:col-span-2"><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Lines</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("ui.lines")}</CardTitle></CardHeader>
           <CardContent><LinesEditor lines={lines} onChange={setLines} mode="po" /></CardContent>
         </Card>
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" onClick={() => save(false)} loading={busy === "draft"} disabled={!!busy}>Save draft</Button>
-          <Button type="submit" loading={busy === "submit"} disabled={!!busy}>Submit for approval</Button>
+          <Button type="button" variant="outline" onClick={() => save(false)} loading={busy === "draft"} disabled={!!busy}>{t("po.common.saveDraft")}</Button>
+          <Button type="submit" loading={busy === "submit"} disabled={!!busy}>{t("ui.submitForApproval")}</Button>
         </div>
       </form>
     </div>

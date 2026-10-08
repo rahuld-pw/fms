@@ -3,6 +3,7 @@ import { LOCALES, matchAcceptLanguage } from "@/lib/i18n/config";
 import { loadMessages } from "@/lib/i18n/load";
 import { flatten, makeT, type Dict } from "@/lib/i18n/translate";
 import en from "@/lib/i18n/messages/en";
+import { AREAS, englishAreas } from "@/lib/i18n/messages/areas";
 
 const placeholders = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -34,4 +35,18 @@ describe("i18n", () => {
     const merged = await loadMessages(code);
     expect(merged["nav./"]).toBe(dict["nav./"]);
   });
+
+  it.each(LOCALES.filter((l) => l.code !== "en").flatMap((l) => AREAS.map((a, i) => [l.code, a, i] as const)))(
+    "%s translates the %s area completely",
+    async (code, area, i) => {
+      const source = flatten(englishAreas[i]);
+      const mod = (await import(`@/lib/i18n/messages/areas/${area}/${code}.ts`)) as { default: Dict };
+      const dict = flatten(mod.default);
+      expect(Object.keys(dict).sort()).toEqual(Object.keys(source).sort());
+      for (const [k, v] of Object.entries(dict)) {
+        expect(v.trim(), `${code}:${k}`).not.toBe("");
+        expect(placeholders(v), `${code}:${k}`).toEqual(placeholders(source[k]));
+      }
+    },
+  );
 });

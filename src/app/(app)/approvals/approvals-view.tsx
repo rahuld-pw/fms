@@ -10,6 +10,7 @@ import { DateTime, Money } from "@/components/shared/format";
 import { EmptyState } from "@/components/shared/page-header";
 import { StatusBadge } from "@/components/shared/status";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 import { entityHref } from "../home-widgets";
 
@@ -28,6 +29,7 @@ interface Req {
 
 export function ApprovalsView() {
   const qc = useQueryClient();
+  const { t } = useT();
   const inbox = useQuery({ queryKey: ["approvals-inbox"], queryFn: () => api<Req[]>("/approvals/inbox") });
   const mine = useQuery({ queryKey: ["approvals-mine"], queryFn: () => api<Req[]>("/approvals?mine=true") });
   const all = useQuery({ queryKey: ["approvals-all"], queryFn: () => api<Req[]>("/approvals?status=approved,rejected,cancelled") });
@@ -37,14 +39,14 @@ export function ApprovalsView() {
     <Tabs defaultValue="inbox">
       <TabsList>
         <TabsTrigger value="inbox">
-          Waiting for me {inbox.data?.length ? <span className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">{inbox.data.length}</span> : null}
+          {t("approvals.view.waitingForMe")} {inbox.data?.length ? <span className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">{inbox.data.length}</span> : null}
         </TabsTrigger>
-        <TabsTrigger value="mine">My requests</TabsTrigger>
-        <TabsTrigger value="history">Decided</TabsTrigger>
+        <TabsTrigger value="mine">{t("approvals.view.myRequests")}</TabsTrigger>
+        <TabsTrigger value="history">{t("approvals.view.decided")}</TabsTrigger>
       </TabsList>
       <TabsContent value="inbox" className="flex flex-col gap-3">
         {inbox.isLoading && <Skeleton className="h-28" />}
-        {inbox.data?.length === 0 && <EmptyState icon={Inbox} title="You're all caught up" description="New requests that need your approval will appear here." />}
+        {inbox.data?.length === 0 && <EmptyState icon={Inbox} title={t("approvals.view.caughtUpTitle")} description={t("approvals.view.caughtUpDescription")} />}
         {inbox.data?.map((r) => {
           const current = r.steps?.find((s) => s.status === "pending");
           return (
@@ -54,8 +56,8 @@ export function ApprovalsView() {
                   {r.title}
                 </Link>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {humanize(r.entity_type)} · by {r.requester?.full_name} · <DateTime value={r.submitted_at} relative />
-                  {current && <> · step {current.step_order}: {current.name}</>}
+                  {t(`enum.entityType.${r.entity_type}`, undefined, humanize(r.entity_type))} · {t("approvals.view.by", { name: r.requester?.full_name ?? "" })} · <DateTime value={r.submitted_at} relative />
+                  {current && <> · {t("approvals.view.step", { n: current.step_order, name: current.name })}</>}
                 </p>
               </div>
               {r.amount !== null && <Money value={r.amount} className="text-base font-semibold" />}
@@ -75,8 +77,9 @@ export function ApprovalsView() {
 }
 
 function RequestList({ rows, loading }: { rows?: Req[]; loading: boolean }) {
+  const { t } = useT();
   if (loading) return <Skeleton className="h-40" />;
-  if (!rows?.length) return <p className="py-8 text-center text-sm text-muted-foreground">No requests.</p>;
+  if (!rows?.length) return <p className="py-8 text-center text-sm text-muted-foreground">{t("approvals.view.noRequests")}</p>;
   return (
     <Card className="divide-y">
       {rows.map((r) => (
@@ -84,7 +87,7 @@ function RequestList({ rows, loading }: { rows?: Req[]; loading: boolean }) {
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{r.title}</p>
             <p className="text-xs text-muted-foreground">
-              {humanize(r.entity_type)} · {r.requester?.full_name} · <DateTime value={r.submitted_at} relative />
+              {t(`enum.entityType.${r.entity_type}`, undefined, humanize(r.entity_type))} · {r.requester?.full_name} · <DateTime value={r.submitted_at} relative />
             </p>
           </div>
           {r.amount !== null && <Money value={r.amount} className="text-sm" />}

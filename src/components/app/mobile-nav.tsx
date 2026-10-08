@@ -20,7 +20,7 @@ export function MobileNav() {
     { href: "/tasks", label: "Tasks", icon: CheckSquare, show: modules.includes("tasks") && can("task:read") },
   ].filter((i) => i.show);
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden" aria-label="Quick">
+    <nav className="fixed inset-x-0 bottom-0 z-30 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden" aria-label={t("shared.nav.quick")}>
       {items.map(({ href, label, icon: Icon }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (

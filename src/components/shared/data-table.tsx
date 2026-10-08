@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { apiList } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -77,6 +78,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
+  const { t } = useT();
   const page = Number(params.get("page") ?? 1);
   const sort = params.get("sort") ?? defaultSort ?? "";
   const q = params.get("q") ?? "";
@@ -113,8 +115,8 @@ export function DataTable<T extends Row>(props: Props<T>) {
   // debounce search into the URL
   useEffect(() => {
     if (search === q) return;
-    const t = setTimeout(() => setParams({ q: search || null }), 300);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setParams({ q: search || null }), 300);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
@@ -180,9 +182,9 @@ export function DataTable<T extends Row>(props: Props<T>) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={props.searchPlaceholder ?? "Search…"}
+            placeholder={props.searchPlaceholder ?? t("ui.search")}
             className="pl-8"
-            aria-label="Search"
+            aria-label={t("shared.table.search")}
           />
         </div>
         {filters.map((f) => (
@@ -194,20 +196,20 @@ export function DataTable<T extends Row>(props: Props<T>) {
             size="sm"
             onClick={() => setParams(Object.fromEntries(filters.flatMap((f) => [[f.key, null], [`${f.key}_from`, null], [`${f.key}_to`, null]])))}
           >
-            <X /> Clear
+            <X /> {t("ui.clear")}
           </Button>
         )}
         <div className="ml-auto flex items-center gap-2">
           {isFetching && !isLoading && <span className="size-3 animate-spin rounded-full border-2 border-muted-foreground/40 border-r-transparent" />}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" aria-label="Columns">
+              <Button variant="outline" size="sm" aria-label={t("shared.table.columns")}>
                 <Columns3 />
-                <span className="hidden sm:inline">Columns</span>
+                <span className="hidden sm:inline">{t("shared.table.columns")}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
-              <DropdownMenuLabel>Show columns</DropdownMenuLabel>
+              <DropdownMenuLabel>{t("shared.table.showColumns")}</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {columns
                 .filter((c) => !c.pinned)
@@ -222,7 +224,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
             <Button variant="outline" size="sm" asChild>
               <a href={exportHref} download>
                 <Download />
-                <span className="hidden sm:inline">Export</span>
+                <span className="hidden sm:inline">{t("ui.export")}</span>
               </a>
             </Button>
           )}
@@ -232,7 +234,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
 
       {props.selectable && selectedRows.length > 0 && props.bulkActions && (
         <div className="flex items-center gap-2 rounded-md border bg-accent/40 px-3 py-2 text-sm">
-          <span className="font-medium">{selectedRows.length} selected</span>
+          <span className="font-medium">{t("ui.rowsSelected", { n: selectedRows.length })}</span>
           <div className="ml-auto flex gap-2">{props.bulkActions(selectedRows, () => setSelected(new Set()))}</div>
         </div>
       )}
@@ -257,7 +259,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
               {props.selectable && (
                 <TH className="w-8">
                   <Checkbox
-                    aria-label="Select all"
+                    aria-label={t("ui.selectAll")}
                     checked={rows.length > 0 && rows.every((r) => selected.has(r.id))}
                     onCheckedChange={(v) => setSelected(v ? new Set(rows.map((r) => r.id)) : new Set())}
                   />
@@ -299,7 +301,7 @@ export function DataTable<T extends Row>(props: Props<T>) {
                   {props.selectable && (
                     <TD onClick={(e) => e.stopPropagation()}>
                       <Checkbox
-                        aria-label="Select row"
+                        aria-label={t("shared.table.selectRow")}
                         checked={selected.has(r.id)}
                         onCheckedChange={(v) => {
                           const next = new Set(selected);
@@ -321,23 +323,23 @@ export function DataTable<T extends Row>(props: Props<T>) {
         </Table>
         {!isLoading && rows.length === 0 && (
           <div className="px-4 py-12 text-center text-sm text-muted-foreground">
-            {error ? `Could not load: ${(error as Error).message}` : (props.empty ?? "Nothing here yet.")}
+            {error ? t("shared.table.couldNotLoad", { message: (error as Error).message }) : (props.empty ?? t("ui.nothingHere"))}
           </div>
         )}
       </div>
 
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>
-          {total > 0 ? `${(page - 1) * pageSize + 1}–${Math.min(page * pageSize, total)} of ${total.toLocaleString("en-IN")}` : "0 results"}
+          {total > 0 ? t("shared.table.range", { from: (page - 1) * pageSize + 1, to: Math.min(page * pageSize, total), total: total.toLocaleString("en-IN") }) : t("shared.table.noResults")}
         </span>
         <div className="flex items-center gap-1">
-          <Button variant="outline" size="icon-sm" disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) }, false)} aria-label="Previous page">
+          <Button variant="outline" size="icon-sm" disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) }, false)} aria-label={t("shared.table.previousPage")}>
             <ChevronLeft />
           </Button>
           <span className="px-2">
-            Page {page} of {pages}
+            {t("ui.pageOf", { n: page, total: pages })}
           </span>
-          <Button variant="outline" size="icon-sm" disabled={page >= pages} onClick={() => setParams({ page: String(page + 1) }, false)} aria-label="Next page">
+          <Button variant="outline" size="icon-sm" disabled={page >= pages} onClick={() => setParams({ page: String(page + 1) }, false)} aria-label={t("shared.table.nextPage")}>
             <ChevronRight />
           </Button>
         </div>
@@ -347,9 +349,10 @@ export function DataTable<T extends Row>(props: Props<T>) {
 }
 
 function FilterControl({ def, params, onChange }: { def: FilterDef; params: URLSearchParams; onChange: (p: Record<string, string | null>) => void }) {
+  const { t } = useT();
   const value = params.get(def.key) ?? "";
   if (def.type === "select" || def.type === "boolean") {
-    const options = def.type === "boolean" ? [{ value: "true", label: "Yes" }, { value: "false", label: "No" }] : (def.options ?? []);
+    const options = def.type === "boolean" ? [{ value: "true", label: t("ui.yes") }, { value: "false", label: t("ui.no") }] : (def.options ?? []);
     const current = options.find((o) => o.value === value);
     return (
       <DropdownMenu>
@@ -415,11 +418,11 @@ function FilterControl({ def, params, onChange }: { def: FilterDef; params: URLS
       </PopoverTrigger>
       <PopoverContent className="flex w-64 flex-col gap-2">
         <label className="text-xs text-muted-foreground">
-          From
+          {t("ui.from")}
           <Input type="date" value={from.slice(0, 10)} onChange={(e) => onChange({ [`${def.key}_from`]: e.target.value || null })} />
         </label>
         <label className="text-xs text-muted-foreground">
-          To
+          {t("ui.to")}
           <Input type="date" value={to.slice(0, 10)} onChange={(e) => onChange({ [`${def.key}_to`]: e.target.value ? `${e.target.value}T23:59:59` : null })} />
         </label>
       </PopoverContent>

@@ -10,6 +10,7 @@ import { useMoney } from "@/components/shared/format";
 import { Field, ResourcePicker, UserPicker } from "@/components/shared/fields";
 import { useAction } from "@/components/shared/resource-form";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -18,6 +19,7 @@ const today = () => new Date().toISOString().slice(0, 10);
 
 /** Goods receipt: one row per open PO line; posts immediately (draft → posted). */
 export function ReceiveDialog({ po, open, onOpenChange, onDone, onAssets }: Props & { po: any; onAssets: (c: AssetCandidate[]) => void }) {
+  const { t } = useT();
   const open_ = (po.lines ?? []).filter((l: any) => Number(l.received_qty) < Number(l.quantity));
   const [rows, setRows] = useState(() => open_.map((l: any) => {
     const rem = String(Number(l.quantity) - Number(l.received_qty));
@@ -34,10 +36,10 @@ export function ReceiveDialog({ po, open, onOpenChange, onDone, onAssets }: Prop
       const lines = rows.filter((r: any) => Number(r.received_qty) > 0).map((r: any) => ({
         po_line_id: r.po_line_id, received_qty: Number(r.received_qty), accepted_qty: Number(r.accepted_qty), remarks: r.remarks || undefined,
       }));
-      if (!lines.length) throw new Error("Enter a received quantity");
+      if (!lines.length) throw new Error(t("po.dialogs.enterReceivedQty"));
       const grn = await api<{ id: string }>("/grns", { body: { po_id: po.id, received_date: date, delivery_note_number: dn || undefined, vehicle_number: vehicle || undefined, lines }, idempotencyKey: crypto.randomUUID() });
       const res = await api<{ asset_candidates: AssetCandidate[] }>(`/grns/${grn.id}/post`, { body: {} });
-      toast.success("Goods received");
+      toast.success(t("po.dialogs.goodsReceived"));
       onOpenChange(false);
       onDone();
       if (res.asset_candidates?.length) onAssets(res.asset_candidates);
@@ -51,21 +53,21 @@ export function ReceiveDialog({ po, open, onOpenChange, onDone, onAssets }: Prop
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent wide>
         <DialogHeader>
-          <DialogTitle>Receive goods</DialogTitle>
-          <DialogDescription>Record what arrived. Rejected units (received − accepted) are not billable.</DialogDescription>
+          <DialogTitle>{t("po.dialogs.receiveTitle")}</DialogTitle>
+          <DialogDescription>{t("po.dialogs.receiveDescription")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Received on"><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
-          <Field label="Delivery note #"><Input value={dn} onChange={(e) => setDn(e.target.value)} /></Field>
-          <Field label="Vehicle #"><Input value={vehicle} onChange={(e) => setVehicle(e.target.value)} /></Field>
+          <Field label={t("po.dialogs.receivedOn")}><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label={t("po.dialogs.deliveryNoteNo")}><Input value={dn} onChange={(e) => setDn(e.target.value)} /></Field>
+          <Field label={t("po.dialogs.vehicleNo")}><Input value={vehicle} onChange={(e) => setVehicle(e.target.value)} /></Field>
         </div>
         <div className="-mx-4 overflow-x-auto sm:mx-0">
           <Table>
-            <THead><TR><TH>Line</TH><TH className="w-24">Received</TH><TH className="w-24">Accepted</TH></TR></THead>
+            <THead><TR><TH>{t("ui.line")}</TH><TH className="w-24">{t("po.common.received")}</TH><TH className="w-24">{t("po.dialogs.accepted")}</TH></TR></THead>
             <TBody>
               {rows.map((r: any, i: number) => (
                 <TR key={r.po_line_id}>
-                  <TD>{r.description}<span className="block text-xs text-muted-foreground">{r.remaining} {r.unit} pending</span></TD>
+                  <TD>{r.description}<span className="block text-xs text-muted-foreground">{t("po.dialogs.pending", { qty: r.remaining, unit: r.unit })}</span></TD>
                   <TD><Input type="number" inputMode="decimal" min="0" max={r.remaining} step="any" value={r.received_qty} onChange={(e) => set(i, { received_qty: e.target.value, accepted_qty: e.target.value })} /></TD>
                   <TD><Input type="number" inputMode="decimal" min="0" max={r.received_qty} step="any" value={r.accepted_qty} onChange={(e) => set(i, { accepted_qty: e.target.value })} /></TD>
                 </TR>
@@ -73,7 +75,7 @@ export function ReceiveDialog({ po, open, onOpenChange, onDone, onAssets }: Prop
             </TBody>
           </Table>
         </div>
-        <DialogFooter><Button loading={busy} onClick={save} disabled={!rows.length}>Post receipt</Button></DialogFooter>
+        <DialogFooter><Button loading={busy} onClick={save} disabled={!rows.length}>{t("po.dialogs.postReceipt")}</Button></DialogFooter>
       </DialogContent>
     </Dialog>
   );
@@ -83,6 +85,7 @@ export interface AssetCandidate { grn_line_id: string; description: string; acce
 
 /** After a GRN with asset lines, offer to register them in the asset register. */
 export function CreateAssetsDialog({ candidates, onClose }: { candidates: AssetCandidate[]; onClose: () => void }) {
+  const { t } = useT();
   const [location, setLocation] = useState<string | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [custodian, setCustodian] = useState<string | null>(null);
@@ -96,7 +99,7 @@ export function CreateAssetsDialog({ candidates, onClose }: { candidates: AssetC
         const r = await api<{ created: number }>(`/grns/lines/${c.grn_line_id}/assets`, { body: { location_id: location ?? undefined, category_id: category ?? undefined, custodian_id: custodian ?? undefined } });
         n += r.created;
       }
-      toast.success(`${n} asset${n === 1 ? "" : "s"} added to the register`);
+      toast.success(t(n === 1 ? "po.dialogs.assetsAddedOne" : "po.dialogs.assetsAddedOther", { n }));
       onClose();
     } catch (e) {
       toast.error(errorMessage(e));
@@ -108,15 +111,15 @@ export function CreateAssetsDialog({ candidates, onClose }: { candidates: AssetC
     <Dialog open={candidates.length > 0} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Register {total} asset{total === 1 ? "" : "s"}?</DialogTitle>
-          <DialogDescription>{candidates.map((c) => `${Math.floor(Number(c.accepted_qty))} × ${c.description}`).join(", ")}. Each unit gets its own tag and QR code.</DialogDescription>
+          <DialogTitle>{t(total === 1 ? "po.dialogs.registerAssetsOne" : "po.dialogs.registerAssetsOther", { n: total })}</DialogTitle>
+          <DialogDescription>{t("po.dialogs.registerDescription", { list: candidates.map((c) => `${Math.floor(Number(c.accepted_qty))} × ${c.description}`).join(", ") })}</DialogDescription>
         </DialogHeader>
-        <Field label="Location"><ResourcePicker endpoint="/locations" value={location} onChange={(v) => setLocation(v as string | null)} placeholder="Optional" /></Field>
-        <Field label="Asset category" hint="Defaults to the PO line's category"><ResourcePicker endpoint="/asset-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder="Optional" /></Field>
-        <Field label="Custodian"><UserPicker value={custodian} onChange={(v) => setCustodian(v as string | null)} placeholder="Leave in stock" /></Field>
+        <Field label={t("ui.location")}><ResourcePicker endpoint="/locations" value={location} onChange={(v) => setLocation(v as string | null)} placeholder={t("ui.optional")} /></Field>
+        <Field label={t("po.common.assetCategory")} hint={t("po.dialogs.assetCategoryHint")}><ResourcePicker endpoint="/asset-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder={t("ui.optional")} /></Field>
+        <Field label={t("po.dialogs.custodian")}><UserPicker value={custodian} onChange={(v) => setCustodian(v as string | null)} placeholder={t("po.dialogs.leaveInStock")} /></Field>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>Later</Button>
-          <Button loading={busy} onClick={create}>Create assets</Button>
+          <Button variant="outline" onClick={onClose}>{t("po.dialogs.later")}</Button>
+          <Button loading={busy} onClick={create}>{t("po.dialogs.createAssets")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -125,6 +128,7 @@ export function CreateAssetsDialog({ candidates, onClose }: { candidates: AssetC
 
 /** Vendor invoice against the PO; the 3-way match runs on save. */
 export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: any }) {
+  const { t } = useT();
   const fmt = useMoney();
   const [number, setNumber] = useState("");
   const [date, setDate] = useState(today());
@@ -141,8 +145,8 @@ export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: 
   const total = rows.reduce((s: number, r: any) => s + Number(r.quantity) * Number(r.unit_price) + tax(r), 0);
   const act = useAction<{ match_status: string }>({
     onSuccess: (inv) => {
-      if (inv.match_status === "matched") toast.success("Invoice recorded — 3-way match passed");
-      else toast.warning(`Invoice recorded — match: ${inv.match_status.replace(/_/g, " ")}`);
+      if (inv.match_status === "matched") toast.success(t("po.dialogs.invoiceMatched"));
+      else toast.warning(t("po.dialogs.invoiceMismatch", { status: t(`status.${inv.match_status}`, undefined, inv.match_status.replace(/_/g, " ")) }));
       onOpenChange(false);
       onDone();
     },
@@ -151,20 +155,20 @@ export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent wide>
         <DialogHeader>
-          <DialogTitle>Record vendor invoice</DialogTitle>
-          <DialogDescription>Quantities default to received but not yet invoiced. Prices are checked against the PO.</DialogDescription>
+          <DialogTitle>{t("po.dialogs.invoiceTitle")}</DialogTitle>
+          <DialogDescription>{t("po.dialogs.invoiceDescription")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-3">
-          <Field label="Vendor invoice #" required><Input value={number} onChange={(e) => setNumber(e.target.value)} /></Field>
-          <Field label="Invoice date" required><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
-          <Field label="Due date"><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
+          <Field label={t("po.dialogs.vendorInvoiceNo")} required><Input value={number} onChange={(e) => setNumber(e.target.value)} /></Field>
+          <Field label={t("po.common.invoiceDate")} required><Input type="date" value={date} onChange={(e) => setDate(e.target.value)} /></Field>
+          <Field label={t("ui.dueDate")}><Input type="date" value={due} onChange={(e) => setDue(e.target.value)} /></Field>
         </div>
         {rows.length === 0 ? (
-          <p className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">Nothing received yet is left to invoice.</p>
+          <p className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">{t("po.dialogs.nothingToInvoice")}</p>
         ) : (
           <div className="-mx-4 overflow-x-auto sm:mx-0">
             <Table>
-              <THead><TR><TH>Line</TH><TH className="w-24">Qty</TH><TH className="w-28">Rate</TH><TH className="text-right">GST</TH></TR></THead>
+              <THead><TR><TH>{t("ui.line")}</TH><TH className="w-24">{t("ui.qty")}</TH><TH className="w-28">{t("ui.rate")}</TH><TH className="text-right">{t("po.common.gst")}</TH></TR></THead>
               <TBody>
                 {rows.map((r: any, i: number) => (
                   <TR key={r.po_line_id}>
@@ -179,7 +183,7 @@ export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: 
           </div>
         )}
         <DialogFooter className="items-center">
-          <span className="mr-auto text-sm">Total <span className="font-semibold tabular">{fmt(total)}</span></span>
+          <span className="mr-auto text-sm">{t("ui.total")} <span className="font-semibold tabular">{fmt(total)}</span></span>
           <Button
             disabled={!number.trim() || !rows.length}
             loading={act.isPending}
@@ -191,7 +195,7 @@ export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: 
               },
             })}
           >
-            Save invoice
+            {t("po.dialogs.saveInvoice")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -201,13 +205,14 @@ export function InvoiceDialog({ po, open, onOpenChange, onDone }: Props & { po: 
 
 /** Asks for a reason, then POSTs it (amend / cancel). */
 export function ReasonDialog({ title, description, path, cta, destructive, open, onOpenChange, onDone }: Props & { title: string; description: string; path: string; cta: string; destructive?: boolean }) {
+  const { t } = useT();
   const [reason, setReason] = useState("");
-  const act = useAction({ success: "Done", onSuccess: () => { setReason(""); onOpenChange(false); onDone(); } });
+  const act = useAction({ success: t("ui.done"), onSuccess: () => { setReason(""); onOpenChange(false); onDone(); } });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader><DialogTitle>{title}</DialogTitle><DialogDescription>{description}</DialogDescription></DialogHeader>
-        <Field label="Reason" required><Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
+        <Field label={t("po.dialogs.reason")} required><Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} /></Field>
         <DialogFooter>
           <Button variant={destructive ? "destructive" : "default"} disabled={reason.trim().length < 3} loading={act.isPending} onClick={() => act.mutate({ path, body: { reason: reason.trim() } })}>{cta}</Button>
         </DialogFooter>
@@ -218,23 +223,24 @@ export function ReasonDialog({ title, description, path, cta, destructive, open,
 
 /** Close the PO and rate the vendor (feeds the vendor's rating). */
 export function CloseDialog({ id, open, onOpenChange, onDone }: Props & { id: string }) {
+  const { t } = useT();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
-  const act = useAction({ success: "PO closed", onSuccess: () => { onOpenChange(false); onDone(); } });
+  const act = useAction({ success: t("po.dialogs.poClosed"), onSuccess: () => { onOpenChange(false); onDone(); } });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
-        <DialogHeader><DialogTitle>Close purchase order</DialogTitle><DialogDescription>Releases any remaining budget commitment. Rate the vendor&apos;s performance on this order.</DialogDescription></DialogHeader>
-        <div className="flex gap-1" role="radiogroup" aria-label="Vendor rating">
+        <DialogHeader><DialogTitle>{t("po.dialogs.closeTitle")}</DialogTitle><DialogDescription>{t("po.dialogs.closeDescription")}</DialogDescription></DialogHeader>
+        <div className="flex gap-1" role="radiogroup" aria-label={t("po.dialogs.vendorRating")}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={`${n} star${n > 1 ? "s" : ""}`} onClick={() => setRating(n)} className="p-1">
+            <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={t(n === 1 ? "po.dialogs.starOne" : "po.dialogs.starOther", { n })} onClick={() => setRating(n)} className="p-1">
               <Star className={cn("size-7", n <= rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground")} />
             </button>
           ))}
         </div>
-        <Field label="Feedback"><Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} /></Field>
+        <Field label={t("po.dialogs.feedback")}><Textarea rows={2} value={comment} onChange={(e) => setComment(e.target.value)} /></Field>
         <DialogFooter>
-          <Button loading={act.isPending} onClick={() => act.mutate({ path: `/purchase-orders/${id}/close`, body: { rating: rating || undefined, comment: comment || undefined } })}>Close PO</Button>
+          <Button loading={act.isPending} onClick={() => act.mutate({ path: `/purchase-orders/${id}/close`, body: { rating: rating || undefined, comment: comment || undefined } })}>{t("po.order.closePo")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

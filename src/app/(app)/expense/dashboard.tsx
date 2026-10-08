@@ -11,6 +11,7 @@ import { BudgetBars, ColumnChart } from "@/components/shared/charts";
 import { Money, useMoney } from "@/components/shared/format";
 import { Stat } from "@/components/shared/page-header";
 import { api, apiList } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 interface FY { id: string; label: string; start_date: string; end_date: string }
@@ -26,6 +27,9 @@ export function currentFy(fys: FY[] | undefined) {
 
 export function ExpenseDashboard() {
   const fmt = useMoney();
+  const { t, locale } = useT();
+  const groupLabel = { department: t("ui.department"), category: t("ui.category"), campus: t("ui.campus") };
+  const utilisationTitle = { department: t("expense.dashboard.utilisationByDepartment"), category: t("expense.dashboard.utilisationByCategory"), campus: t("expense.dashboard.utilisationByCampus") };
   const { data: fys } = useFiscalYears();
   const [fyId, setFyId] = useState<string | null>(null);
   const [groupBy, setGroupBy] = useState<"department" | "category" | "campus">("department");
@@ -36,25 +40,25 @@ export function ExpenseDashboard() {
     enabled: !!fy,
   });
   const totals = (data?.groups ?? []).reduce(
-    (t, g) => ({ budget: t.budget + Number(g.total_budget), committed: t.committed + Number(g.committed), actual: t.actual + Number(g.actual) }),
+    (sum, g) => ({ budget: sum.budget + Number(g.total_budget), committed: sum.committed + Number(g.committed), actual: sum.actual + Number(g.actual) }),
     { budget: 0, committed: 0, actual: 0 },
   );
   const available = totals.budget - totals.committed - totals.actual;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <NativeSelect className="w-40" value={fy ?? ""} onChange={(e) => setFyId(e.target.value)} aria-label="Fiscal year">
+        <NativeSelect className="w-40" value={fy ?? ""} onChange={(e) => setFyId(e.target.value)} aria-label={t("expense.dashboard.fiscalYear")}>
           {fys?.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
         </NativeSelect>
-        <div className="flex rounded-md border p-0.5" role="tablist" aria-label="Group by">
+        <div className="flex rounded-md border p-0.5" role="tablist" aria-label={t("expense.dashboard.groupBy")}>
           {(["department", "category", "campus"] as const).map((g) => (
             <button key={g} role="tab" aria-selected={groupBy === g} onClick={() => setGroupBy(g)} className={cn("rounded px-2.5 py-1 text-sm capitalize", groupBy === g ? "bg-muted font-medium" : "text-muted-foreground")}>
-              {g}
+              {groupLabel[g]}
             </button>
           ))}
         </div>
         <Button variant="outline" size="sm" className="ml-auto" asChild>
-          <a href={`/api/v1/budget-summary/export?fiscal_year_id=${fy}`}><Download /> Export</a>
+          <a href={`/api/v1/budget-summary/export?fiscal_year_id=${fy}`}><Download /> {t("ui.export")}</a>
         </Button>
       </div>
       {isLoading || !data ? (
@@ -62,17 +66,17 @@ export function ExpenseDashboard() {
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat label="Total budget" value={<Money value={totals.budget} compact />} />
-            <Stat label="Committed (open POs)" value={<Money value={totals.committed} compact />} />
-            <Stat label="Actual spend" value={<Money value={totals.actual} compact />} hint={totals.budget ? `${Math.round((totals.actual / totals.budget) * 100)}% of budget` : undefined} />
-            <Stat label="Available" value={<Money value={available} compact />} tone={available < 0 ? "danger" : "good"} />
+            <Stat label={t("expense.dashboard.totalBudget")} value={<Money value={totals.budget} compact />} />
+            <Stat label={t("expense.dashboard.committedOpenPos")} value={<Money value={totals.committed} compact />} />
+            <Stat label={t("expense.dashboard.actualSpend")} value={<Money value={totals.actual} compact />} hint={totals.budget ? t("expense.dashboard.pctOfBudget", { pct: Math.round((totals.actual / totals.budget) * 100) }) : undefined} />
+            <Stat label={t("expense.dashboard.available")} value={<Money value={available} compact />} tone={available < 0 ? "danger" : "good"} />
           </div>
           <div className="grid gap-4 lg:grid-cols-5">
             <Card className="lg:col-span-3">
               <CardHeader>
                 <div>
-                  <CardTitle>Budget utilisation by {groupBy}</CardTitle>
-                  <CardDescription>Hover a row for amounts. The tick marks the budget.</CardDescription>
+                  <CardTitle>{utilisationTitle[groupBy]}</CardTitle>
+                  <CardDescription>{t("expense.dashboard.utilisationHint")}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
@@ -85,20 +89,20 @@ export function ExpenseDashboard() {
             <Card className="lg:col-span-2">
               <CardHeader>
                 <div>
-                  <CardTitle>Monthly spend</CardTitle>
-                  <CardDescription>Actual and new commitments per month</CardDescription>
+                  <CardTitle>{t("expense.dashboard.monthlySpend")}</CardTitle>
+                  <CardDescription>{t("expense.dashboard.monthlySpendDescription")}</CardDescription>
                 </div>
               </CardHeader>
               <CardContent>
                 <ColumnChart
-                  ariaLabel="Monthly actual spend and commitments"
+                  ariaLabel={t("expense.dashboard.monthlyChartAria")}
                   data={data.monthly.map((m) => ({ month: m.month, actual: Number(m.actual ?? 0), committed: Number(m.committed ?? 0) }))}
                   x="month"
                   series={[
-                    { key: "actual", label: "Actual", color: "var(--chart-1)" },
-                    { key: "committed", label: "Committed", color: "var(--chart-2)" },
+                    { key: "actual", label: t("expense.dashboard.actual"), color: "var(--chart-1)" },
+                    { key: "committed", label: t("expense.dashboard.committed"), color: "var(--chart-2)" },
                   ]}
-                  formatX={(d) => new Date(d).toLocaleDateString("en-IN", { month: "short" })}
+                  formatX={(d) => new Date(d).toLocaleDateString(locale, { month: "short" })}
                   formatY={(v) => fmt(v, true)}
                 />
               </CardContent>
@@ -108,12 +112,12 @@ export function ExpenseDashboard() {
             <Table>
               <THead>
                 <TR>
-                  <TH className="capitalize">{groupBy}</TH>
-                  <TH className="text-right">Budget</TH>
-                  <TH className="text-right">Committed</TH>
-                  <TH className="text-right">Actual</TH>
-                  <TH className="text-right">Available</TH>
-                  <TH className="text-right">Used</TH>
+                  <TH className="capitalize">{groupLabel[groupBy]}</TH>
+                  <TH className="text-right">{t("ui.budget")}</TH>
+                  <TH className="text-right">{t("expense.dashboard.committed")}</TH>
+                  <TH className="text-right">{t("expense.dashboard.actual")}</TH>
+                  <TH className="text-right">{t("expense.dashboard.available")}</TH>
+                  <TH className="text-right">{t("expense.dashboard.used")}</TH>
                 </TR>
               </THead>
               <TBody>

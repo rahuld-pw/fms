@@ -23,7 +23,7 @@ interface Notification {
 }
 
 export function NotificationBell() {
-  const { locale } = useT();
+  const { t, locale } = useT();
   const qc = useQueryClient();
   const { user } = useSession();
   const { data } = useQuery({
@@ -62,7 +62,7 @@ export function NotificationBell() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon-sm" aria-label={`Notifications${unread ? ` (${unread} unread)` : ""}`} className="relative">
+        <Button variant="ghost" size="icon-sm" aria-label={unread ? t("shared.notifications.labelUnread", { n: unread }) : t("shared.notifications.title")} className="relative">
           <Bell />
           {unread > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-4 font-semibold text-primary-foreground">
@@ -73,15 +73,15 @@ export function NotificationBell() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(92vw,380px)] p-0">
         <div className="flex items-center justify-between border-b px-3 py-2">
-          <span className="text-sm font-semibold">Notifications</span>
+          <span className="text-sm font-semibold">{t("shared.notifications.title")}</span>
           {unread > 0 && (
             <Button variant="ghost" size="xs" onClick={() => markRead.mutate(undefined)}>
-              <CheckCheck /> Mark all read
+              <CheckCheck /> {t("shared.notifications.markAllRead")}
             </Button>
           )}
         </div>
         <div className="max-h-[60dvh] overflow-y-auto scrollbar-thin">
-          {items.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">You&apos;re all caught up.</p>}
+          {items.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">{t("shared.notifications.caughtUp")}</p>}
           {items.map((n) => (
             <Link
               key={n.id}
@@ -99,7 +99,7 @@ export function NotificationBell() {
           ))}
         </div>
         <Link href="/notifications" className="block border-t px-3 py-2 text-center text-xs font-medium text-primary hover:bg-muted/60">
-          View all
+          {t("common.viewAll")}
         </Link>
       </PopoverContent>
     </Popover>

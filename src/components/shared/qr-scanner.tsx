@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Camera, CameraOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useT } from "@/lib/i18n/client";
 
 /** Extracts the QR token from a scanned value (full /q/<token> URL or the bare token). */
 export function tokenFromScan(raw: string) {
@@ -21,6 +22,7 @@ interface Detector {
 const noop = () => () => {};
 
 export function QrScanner({ onScan, paused }: { onScan: (token: string) => void; paused?: boolean }) {
+  const { t } = useT();
   const video = useRef<HTMLVideoElement>(null);
   const [active, setActive] = useState(false);
   const [cameraFailed, setCameraFailed] = useState(false);
@@ -70,7 +72,7 @@ export function QrScanner({ onScan, paused }: { onScan: (token: string) => void;
     return () => {
       stopped = true;
       cancelAnimationFrame(raf);
-      stream?.getTracks().forEach((t) => t.stop());
+      stream?.getTracks().forEach((track) => track.stop());
     };
   }, [active, paused, onScan]);
 
@@ -82,7 +84,7 @@ export function QrScanner({ onScan, paused }: { onScan: (token: string) => void;
           {!active && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Button onClick={() => setActive(true)}>
-                <Camera /> Start camera
+                <Camera /> {t("shared.qr.start")}
               </Button>
             </div>
           )}
@@ -91,7 +93,7 @@ export function QrScanner({ onScan, paused }: { onScan: (token: string) => void;
       )}
       {active && (
         <Button variant="outline" size="sm" onClick={() => setActive(false)} className="self-start">
-          <CameraOff /> Stop camera
+          <CameraOff /> {t("shared.qr.stop")}
         </Button>
       )}
       <form
@@ -102,8 +104,8 @@ export function QrScanner({ onScan, paused }: { onScan: (token: string) => void;
           setManual("");
         }}
       >
-        <Input value={manual} onChange={(e) => setManual(e.target.value)} placeholder={supported ? "…or type / paste the code" : "Type or paste the code under the QR"} />
-        <Button type="submit" variant="outline">Go</Button>
+        <Input value={manual} onChange={(e) => setManual(e.target.value)} placeholder={supported ? t("shared.qr.orType") : t("shared.qr.type")} />
+        <Button type="submit" variant="outline">{t("shared.qr.go")}</Button>
       </form>
     </div>
   );

@@ -18,12 +18,14 @@ import { DetailGrid, PageHeader } from "@/components/shared/page-header";
 import { useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 import { ItemsEditor, toPayload, type ItemDraft } from "../items-editor";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function ClaimDetail({ id }: { id: string }) {
   const qc = useQueryClient();
+  const { t } = useT();
   const can = useCan();
   const { user } = useSession();
   const { data: c, isLoading } = useQuery({ queryKey: ["claim", id], queryFn: () => api<any>(`/expense-claims/${id}`) });
@@ -38,11 +40,11 @@ export function ClaimDetail({ id }: { id: string }) {
   const submit = useAction<{ status: string; budget_checks: { result: string; message?: string }[] }>({
     onSuccess: (r) => {
       const warn = r.budget_checks?.find((b) => b.result === "warning");
-      toast.success(r.status === "approved" ? "Auto-approved" : "Submitted for approval", { description: warn?.message });
+      toast.success(r.status === "approved" ? t("expense.claimDetail.autoApproved") : t("expense.claimDetail.submittedForApproval"), { description: warn?.message });
       refresh();
     },
   });
-  const cancel = useAction({ success: "Claim cancelled", onSuccess: refresh });
+  const cancel = useAction({ success: t("expense.claimDetail.cancelled"), onSuccess: refresh });
   if (isLoading || !c) return <Skeleton className="h-96" />;
 
   const mine = c.claimant_id === user.id || c.created_by === user.id;
@@ -61,7 +63,7 @@ export function ClaimDetail({ id }: { id: string }) {
         if (it.id) await api(`/expense-claims/${id}/items/${it.id}`, { method: "PATCH", body: toPayload(it) });
         else await api(`/expense-claims/${id}/items`, { body: toPayload(it) });
       }
-      toast.success("Items saved");
+      toast.success(t("expense.claimDetail.itemsSaved"));
       setEditing(null);
       refresh();
     } catch (e) {
@@ -74,12 +76,12 @@ export function ClaimDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-5xl">
       <PageHeader
-        breadcrumbs={[{ label: "Claims", href: "/expense/claims" }, { label: c.number }]}
+        breadcrumbs={[{ label: t("expense.claims.breadcrumb"), href: "/expense/claims" }, { label: c.number }]}
         title={c.title}
         meta={
           <>
             <StatusBadge status={c.status} />
-            <span className="text-sm text-muted-foreground">{humanize(c.claim_type)}</span>
+            <span className="text-sm text-muted-foreground">{t(`enum.claimType.${c.claim_type}`, undefined, humanize(c.claim_type))}</span>
             <Money value={c.total_amount} className="text-sm font-semibold" />
           </>
         }
@@ -88,16 +90,16 @@ export function ClaimDetail({ id }: { id: string }) {
             {canEdit && (
               <>
                 <Button size="sm" onClick={() => submit.mutate({ path: `/expense-claims/${id}/submit` })} loading={submit.isPending} disabled={!!editing}>
-                  <Send /> {c.status === "rejected" ? "Resubmit" : "Submit"}
+                  <Send /> {c.status === "rejected" ? t("expense.claimDetail.resubmit") : t("ui.submit")}
                 </Button>
                 <Button size="sm" variant="ghost" onClick={() => cancel.mutate({ path: `/expense-claims/${id}/cancel` })}>
-                  <XCircle /> Cancel claim
+                  <XCircle /> {t("expense.claimDetail.cancelClaim")}
                 </Button>
               </>
             )}
             {canPay && (
               <Button size="sm" onClick={() => setPayOpen(true)}>
-                <Banknote /> Mark reimbursed
+                <Banknote /> {t("expense.claimDetail.markReimbursed")}
               </Button>
             )}
           </>
@@ -112,10 +114,10 @@ export function ClaimDetail({ id }: { id: string }) {
         <div className="flex min-w-0 flex-col gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Items</CardTitle>
+              <CardTitle>{t("ui.items")}</CardTitle>
               {canEdit && !editing && (
                 <Button size="xs" variant="outline" onClick={() => setEditing(c.items.map((i: any) => ({ id: i.id, category_id: i.category_id, expense_date: i.expense_date, description: i.description, merchant: i.merchant ?? "", amount: String(i.amount), tax_amount: String(i.tax_amount) })))}>
-                  <Pencil /> Edit items
+                  <Pencil /> {t("expense.claimDetail.editItems")}
                 </Button>
               )}
             </CardHeader>
@@ -123,19 +125,19 @@ export function ClaimDetail({ id }: { id: string }) {
               <CardContent className="flex flex-col gap-3">
                 <ItemsEditor items={editing} onChange={setEditing} />
                 <div className="flex justify-end gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>Discard</Button>
-                  <Button size="sm" onClick={saveItems} loading={savingItems}>Save items</Button>
+                  <Button variant="outline" size="sm" onClick={() => setEditing(null)}>{t("expense.claimDetail.discard")}</Button>
+                  <Button size="sm" onClick={saveItems} loading={savingItems}>{t("expense.claimDetail.saveItems")}</Button>
                 </div>
               </CardContent>
             ) : (
               <Table>
                 <THead>
                   <TR>
-                    <TH>Date</TH>
-                    <TH>Description</TH>
-                    <TH>Category</TH>
-                    <TH className="text-right">Amount</TH>
-                    <TH className="text-right">Tax</TH>
+                    <TH>{t("ui.date")}</TH>
+                    <TH>{t("ui.description")}</TH>
+                    <TH>{t("ui.category")}</TH>
+                    <TH className="text-right">{t("ui.amount")}</TH>
+                    <TH className="text-right">{t("ui.tax")}</TH>
                   </TR>
                 </THead>
                 <TBody>
@@ -152,7 +154,7 @@ export function ClaimDetail({ id }: { id: string }) {
                     </TR>
                   ))}
                   <TR>
-                    <TD colSpan={3} className="text-right font-medium">Total</TD>
+                    <TD colSpan={3} className="text-right font-medium">{t("ui.total")}</TD>
                     <TD colSpan={2} className="text-right font-semibold"><Money value={c.total_amount} /></TD>
                   </TR>
                 </TBody>
@@ -161,10 +163,10 @@ export function ClaimDetail({ id }: { id: string }) {
           </Card>
           <Tabs defaultValue="approval">
             <TabsList>
-              <TabsTrigger value="approval">Approval</TabsTrigger>
-              <TabsTrigger value="receipts">Receipts</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="approval">{t("expense.claimDetail.tabApproval")}</TabsTrigger>
+              <TabsTrigger value="receipts">{t("expense.claimDetail.tabReceipts")}</TabsTrigger>
+              <TabsTrigger value="comments">{t("ui.comments")}</TabsTrigger>
+              <TabsTrigger value="history">{t("ui.history")}</TabsTrigger>
             </TabsList>
             <TabsContent value="approval"><ApprovalPanel entityType="expense_claim" entityId={id} onDecided={refresh} /></TabsContent>
             <TabsContent value="receipts"><Attachments entityType="expense_claim" entityId={id} kind="receipt" canUpload={canEdit} /></TabsContent>
@@ -176,15 +178,15 @@ export function ClaimDetail({ id }: { id: string }) {
           <CardContent className="pt-4">
             <DetailGrid
               items={[
-                { label: "Claimant", value: <UserChip name={c.claimant?.full_name} />, wide: true },
-                { label: "Campus", value: c.campus?.name },
-                { label: "Department", value: c.department?.name },
-                { label: "Submitted", value: <DateTime value={c.submitted_at} /> },
-                { label: "Approved", value: <DateTime value={c.approved_at} /> },
-                { label: "Paid", value: <DateTime value={c.paid_at} /> },
-                { label: "Payment ref", value: c.payment_reference ? `${humanize(c.payment_method)} · ${c.payment_reference}` : null },
-                ...(c.advance ? [{ label: "Settles advance", value: `${c.advance.number} (${c.advance.amount})`, wide: true }] : []),
-                ...(c.description ? [{ label: "Notes", value: c.description, wide: true }] : []),
+                { label: t("expense.claimDetail.claimant"), value: <UserChip name={c.claimant?.full_name} />, wide: true },
+                { label: t("ui.campus"), value: c.campus?.name },
+                { label: t("ui.department"), value: c.department?.name },
+                { label: t("expense.claimDetail.submitted"), value: <DateTime value={c.submitted_at} /> },
+                { label: t("expense.claimDetail.approved"), value: <DateTime value={c.approved_at} /> },
+                { label: t("expense.claimDetail.paid"), value: <DateTime value={c.paid_at} /> },
+                { label: t("expense.claimDetail.paymentRef"), value: c.payment_reference ? `${t(`enum.paymentMethod.${c.payment_method}`, undefined, humanize(c.payment_method))} · ${c.payment_reference}` : null },
+                ...(c.advance ? [{ label: t("expense.claimDetail.settlesAdvance"), value: `${c.advance.number} (${c.advance.amount})`, wide: true }] : []),
+                ...(c.description ? [{ label: t("ui.notes"), value: c.description, wide: true }] : []),
               ]}
             />
           </CardContent>
@@ -198,22 +200,23 @@ export function ClaimDetail({ id }: { id: string }) {
 function PayDialog({ id, open, onOpenChange, onDone }: { id: string; open: boolean; onOpenChange: (o: boolean) => void; onDone: () => void }) {
   const [reference, setReference] = useState("");
   const [method, setMethod] = useState("bank_transfer");
-  const act = useAction({ success: "Marked as reimbursed", onSuccess: () => { onDone(); onOpenChange(false); } });
+  const { t } = useT();
+  const act = useAction({ success: t("expense.claimDetail.markedReimbursed"), onSuccess: () => { onDone(); onOpenChange(false); } });
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Record reimbursement</DialogTitle>
-          <DialogDescription>The claimant is notified.</DialogDescription>
+          <DialogTitle>{t("expense.claimDetail.payTitle")}</DialogTitle>
+          <DialogDescription>{t("expense.claimDetail.payDescription")}</DialogDescription>
         </DialogHeader>
-        <Field label="Method">
+        <Field label={t("expense.claimDetail.method")}>
           <NativeSelect value={method} onChange={(e) => setMethod(e.target.value)}>
-            {["bank_transfer", "upi", "cheque", "cash", "payroll"].map((m) => <option key={m} value={m}>{humanize(m)}</option>)}
+            {["bank_transfer", "upi", "cheque", "cash", "payroll"].map((m) => <option key={m} value={m}>{t(`enum.paymentMethod.${m}`, undefined, humanize(m))}</option>)}
           </NativeSelect>
         </Field>
-        <Field label="Reference (UTR / cheque no.)" required><Input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
+        <Field label={t("expense.claimDetail.reference")} required><Input value={reference} onChange={(e) => setReference(e.target.value)} /></Field>
         <DialogFooter>
-          <Button disabled={!reference.trim()} loading={act.isPending} onClick={() => act.mutate({ path: `/expense-claims/${id}/pay`, body: { reference, method } })}>Save</Button>
+          <Button disabled={!reference.trim()} loading={act.isPending} onClick={() => act.mutate({ path: `/expense-claims/${id}/pay`, body: { reference, method } })}>{t("ui.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

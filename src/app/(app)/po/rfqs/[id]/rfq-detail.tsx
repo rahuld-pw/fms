@@ -20,6 +20,7 @@ import { DetailGrid, EmptyState, PageHeader } from "@/components/shared/page-hea
 import { useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -30,6 +31,7 @@ interface CompRow {
 }
 
 export function RfqDetail({ id }: { id: string }) {
+  const { t } = useT();
   const qc = useQueryClient();
   const router = useRouter();
   const can = useCan();
@@ -61,23 +63,23 @@ export function RfqDetail({ id }: { id: string }) {
   return (
     <div className="mx-auto max-w-6xl">
       <PageHeader
-        breadcrumbs={[{ label: "Requisitions", href: "/po/requisitions" }, ...(rfq.requisition ? [{ label: rfq.requisition.number, href: `/po/requisitions/${rfq.requisition.id}` }] : []), { label: rfq.number }]}
+        breadcrumbs={[{ label: t("po.common.requisitions"), href: "/po/requisitions" }, ...(rfq.requisition ? [{ label: rfq.requisition.number, href: `/po/requisitions/${rfq.requisition.id}` }] : []), { label: rfq.number }]}
         title={rfq.title}
-        meta={<><StatusBadge status={rfq.status} />{rfq.due_date && <span className="text-sm text-muted-foreground">Due <DateTime value={rfq.due_date} dateOnly /></span>}</>}
-        actions={canQuote && <Button size="sm" variant="outline" onClick={() => setQuoteFor("")}><Plus /> Record quote</Button>}
+        meta={<><StatusBadge status={rfq.status} />{rfq.due_date && <span className="text-sm text-muted-foreground">{t("ui.due")} <DateTime value={rfq.due_date} dateOnly /></span>}</>}
+        actions={canQuote && <Button size="sm" variant="outline" onClick={() => setQuoteFor("")}><Plus /> {t("po.rfq.recordQuote")}</Button>}
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <div className="flex min-w-0 flex-col gap-4">
           <Card>
-            <CardHeader><CardTitle>Quote comparison</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("po.rfq.comparison")}</CardTitle></CardHeader>
             {matrix.vendors.length === 0 ? (
-              <CardContent><EmptyState icon={Clock} title="No quotes yet" description="Quotes appear here as vendors respond through the portal or you record them." /></CardContent>
+              <CardContent><EmptyState icon={Clock} title={t("po.rfq.noQuotes")} description={t("po.rfq.noQuotesDescription")} /></CardContent>
             ) : (
               <div className="overflow-x-auto">
                 <Table>
                   <THead>
                     <TR>
-                      <TH className="min-w-48">Line</TH>
+                      <TH className="min-w-48">{t("ui.line")}</TH>
                       {matrix.vendors.map(([vid, v]) => (
                         <TH key={vid} className="min-w-36 text-right">
                           <span className="block">{v.name}</span>
@@ -89,7 +91,7 @@ export function RfqDetail({ id }: { id: string }) {
                   <TBody>
                     {matrix.lines.map((l, i) => (
                       <TR key={i}>
-                        <TD>{l.description}<span className="block text-xs text-muted-foreground">Qty {Number(l.quantity)}</span></TD>
+                        <TD>{l.description}<span className="block text-xs text-muted-foreground">{t("po.rfq.qtyN", { n: Number(l.quantity) })}</span></TD>
                         {matrix.vendors.map(([vid]) => {
                           const c = l.cells.get(vid);
                           return (
@@ -97,7 +99,7 @@ export function RfqDetail({ id }: { id: string }) {
                               {c ? (
                                 <>
                                   <Money value={c.unit_price} className={cn(c.is_lowest_line && "font-semibold text-primary")} />
-                                  <span className="block text-xs text-muted-foreground">GST {Number(c.tax_rate)}%</span>
+                                  <span className="block text-xs text-muted-foreground">{t("po.common.gstRate", { rate: Number(c.tax_rate) })}</span>
                                 </>
                               ) : <span className="text-muted-foreground">—</span>}
                             </TD>
@@ -106,17 +108,17 @@ export function RfqDetail({ id }: { id: string }) {
                       </TR>
                     ))}
                     <TR>
-                      <TD className="font-medium">Total incl. GST</TD>
+                      <TD className="font-medium">{t("po.common.totalInclGst")}</TD>
                       {matrix.vendors.map(([vid, v]) => (
                         <TD key={vid} className="text-right">
                           <Money value={v.total} className={cn("font-semibold", v.lowest && "text-primary")} />
-                          {v.lowest && <Badge tone="green" className="ml-1">Lowest</Badge>}
+                          {v.lowest && <Badge tone="green" className="ml-1">{t("po.rfq.lowest")}</Badge>}
                         </TD>
                       ))}
                     </TR>
                     <TR>
-                      <TD className="text-muted-foreground">Delivery</TD>
-                      {matrix.vendors.map(([vid, v]) => <TD key={vid} className="text-right text-muted-foreground">{v.delivery != null ? `${v.delivery} days` : "—"}</TD>)}
+                      <TD className="text-muted-foreground">{t("po.rfq.delivery")}</TD>
+                      {matrix.vendors.map(([vid, v]) => <TD key={vid} className="text-right text-muted-foreground">{v.delivery != null ? t("po.rfq.days", { n: v.delivery }) : "—"}</TD>)}
                     </TR>
                     {canAward && (
                       <TR>
@@ -124,7 +126,7 @@ export function RfqDetail({ id }: { id: string }) {
                         {matrix.vendors.map(([vid, v]) => (
                           <TD key={vid} className="text-right">
                             <Button size="xs" variant={v.lowest ? "default" : "outline"} onClick={() => setAwarding({ quote_id: v.quote_id, name: v.name, total: v.total, lowest: v.lowest })}>
-                              <Award /> Award
+                              <Award /> {t("po.rfq.award")}
                             </Button>
                           </TD>
                         ))}
@@ -137,8 +139,8 @@ export function RfqDetail({ id }: { id: string }) {
           </Card>
           <Tabs defaultValue="comments">
             <TabsList>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="comments">{t("ui.comments")}</TabsTrigger>
+              <TabsTrigger value="history">{t("ui.history")}</TabsTrigger>
             </TabsList>
             <TabsContent value="comments"><Comments entityType="rfq" entityId={id} /></TabsContent>
             <TabsContent value="history"><ActivityFeed entityType="rfq" entityId={id} /></TabsContent>
@@ -146,7 +148,7 @@ export function RfqDetail({ id }: { id: string }) {
         </div>
         <div className="flex flex-col gap-4">
           <Card>
-            <CardHeader><CardTitle>Invited vendors</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{t("po.rfq.invitedVendors")}</CardTitle></CardHeader>
             <CardContent className="flex flex-col gap-2 text-sm">
               {(rfq.vendors ?? []).map((v: any) => {
                 const q: any = quoteByVendor.get(v.vendor_id);
@@ -154,8 +156,8 @@ export function RfqDetail({ id }: { id: string }) {
                   <div key={v.vendor_id} className="flex items-center gap-2">
                     {v.responded_at ? <CheckCircle2 className="size-4 text-primary" /> : <Clock className="size-4 text-muted-foreground" />}
                     <Link href={`/facility/vendors/${v.vendor_id}`} className="flex-1 truncate hover:underline">{v.vendor?.name}</Link>
-                    {q ? <StatusBadge status={q.status} /> : v.declined ? <Badge tone="neutral">Declined</Badge> : canQuote && (
-                      <Button size="xs" variant="ghost" onClick={() => setQuoteFor(v.vendor_id)}>Enter quote</Button>
+                    {q ? <StatusBadge status={q.status} /> : v.declined ? <Badge tone="neutral">{t("po.rfq.declined")}</Badge> : canQuote && (
+                      <Button size="xs" variant="ghost" onClick={() => setQuoteFor(v.vendor_id)}>{t("po.rfq.enterQuote")}</Button>
                     )}
                   </div>
                 );
@@ -165,9 +167,9 @@ export function RfqDetail({ id }: { id: string }) {
           <Card>
             <CardContent className="pt-4">
               <DetailGrid items={[
-                { label: "Created", value: <DateTime value={rfq.created_at} /> },
-                { label: "Due", value: <DateTime value={rfq.due_date} dateOnly /> },
-                ...(rfq.terms ? [{ label: "Terms", value: <span className="whitespace-pre-wrap">{rfq.terms}</span>, wide: true }] : []),
+                { label: t("ui.created"), value: <DateTime value={rfq.created_at} /> },
+                { label: t("ui.due"), value: <DateTime value={rfq.due_date} dateOnly /> },
+                ...(rfq.terms ? [{ label: t("po.common.terms"), value: <span className="whitespace-pre-wrap">{rfq.terms}</span>, wide: true }] : []),
               ]} />
             </CardContent>
           </Card>
@@ -182,6 +184,7 @@ export function RfqDetail({ id }: { id: string }) {
 }
 
 function QuoteDialog({ rfq, vendorId, existing, onClose, onDone }: { rfq: any; vendorId: string; existing?: any; onClose: () => void; onDone: () => void }) {
+  const { t } = useT();
   const fmt = useMoney();
   const reqLines: any[] = [...(rfq.requisition?.lines ?? [])].sort((a, b) => a.position - b.position);
   const [vendor, setVendor] = useState(vendorId);
@@ -195,30 +198,30 @@ function QuoteDialog({ rfq, vendorId, existing, onClose, onDone }: { rfq: any; v
       return { requisition_line_id: l.id, description: l.description, quantity: String(l.quantity), unit_price: prev ? String(prev.unit_price) : "", tax_rate: prev ? String(Number(prev.tax_rate)) : "18" };
     }),
   );
-  const act = useAction({ success: "Quote recorded", onSuccess: onDone });
+  const act = useAction({ success: t("po.rfq.quoteRecorded"), onSuccess: onDone });
   const total = lines.reduce((s, l) => s + Number(l.quantity) * Number(l.unit_price || 0) * (1 + Number(l.tax_rate) / 100), 0);
   const set = (i: number, p: Partial<(typeof lines)[number]>) => setLines(lines.map((l, j) => (j === i ? { ...l, ...p } : l)));
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent wide>
         <DialogHeader>
-          <DialogTitle>Record quote</DialogTitle>
-          <DialogDescription>Enter the vendor&apos;s rates per line. Recording again replaces the previous quote.</DialogDescription>
+          <DialogTitle>{t("po.rfq.recordQuote")}</DialogTitle>
+          <DialogDescription>{t("po.rfq.recordQuoteDescription")}</DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="Vendor" required>
+          <Field label={t("ui.vendor")} required>
             <NativeSelect value={vendor} onChange={(e) => setVendor(e.target.value)}>
-              <option value="">Choose…</option>
+              <option value="">{t("po.rfq.choose")}</option>
               {(rfq.vendors ?? []).map((v: any) => <option key={v.vendor_id} value={v.vendor_id}>{v.vendor?.name}</option>)}
             </NativeSelect>
           </Field>
-          <Field label="Quote reference"><Input value={ref} onChange={(e) => setRef(e.target.value)} /></Field>
-          <Field label="Valid until"><Input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></Field>
-          <Field label="Delivery (days)"><Input type="number" min="0" value={delivery} onChange={(e) => setDelivery(e.target.value)} /></Field>
-          <Field label="Payment terms" className="sm:col-span-2"><Textarea rows={2} value={terms} onChange={(e) => setTerms(e.target.value)} /></Field>
+          <Field label={t("po.rfq.quoteReference")}><Input value={ref} onChange={(e) => setRef(e.target.value)} /></Field>
+          <Field label={t("po.rfq.validUntil")}><Input type="date" value={validUntil} onChange={(e) => setValidUntil(e.target.value)} /></Field>
+          <Field label={t("po.rfq.deliveryDays")}><Input type="number" min="0" value={delivery} onChange={(e) => setDelivery(e.target.value)} /></Field>
+          <Field label={t("po.common.paymentTerms")} className="sm:col-span-2"><Textarea rows={2} value={terms} onChange={(e) => setTerms(e.target.value)} /></Field>
         </div>
         <Table>
-          <THead><TR><TH>Line</TH><TH className="w-20 text-right">Qty</TH><TH className="w-32">Rate</TH><TH className="w-24">GST %</TH></TR></THead>
+          <THead><TR><TH>{t("ui.line")}</TH><TH className="w-20 text-right">{t("ui.qty")}</TH><TH className="w-32">{t("ui.rate")}</TH><TH className="w-24">{t("po.common.gstPct")}</TH></TR></THead>
           <TBody>
             {lines.map((l, i) => (
               <TR key={l.requisition_line_id}>
@@ -235,7 +238,7 @@ function QuoteDialog({ rfq, vendorId, existing, onClose, onDone }: { rfq: any; v
           </TBody>
         </Table>
         <DialogFooter className="items-center">
-          <span className="mr-auto text-sm">Total incl. GST <span className="font-semibold tabular">{fmt(total)}</span></span>
+          <span className="mr-auto text-sm">{t("po.common.totalInclGst")} <span className="font-semibold tabular">{fmt(total)}</span></span>
           <Button
             disabled={!vendor || lines.some((l) => l.unit_price === "")}
             loading={act.isPending}
@@ -248,7 +251,7 @@ function QuoteDialog({ rfq, vendorId, existing, onClose, onDone }: { rfq: any; v
               },
             })}
           >
-            Save quote
+            {t("po.rfq.saveQuote")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -257,24 +260,26 @@ function QuoteDialog({ rfq, vendorId, existing, onClose, onDone }: { rfq: any; v
 }
 
 function AwardDialog({ award, onClose, onDone }: { award: { quote_id: string; name: string; total: number; lowest: boolean } | null; onClose: () => void; onDone: (poId: string) => void }) {
+  const { t } = useT();
   const [category, setCategory] = useState<string | null>(null);
-  const act = useAction<{ id: string }>({ success: "Quote awarded — draft PO created", onSuccess: (po) => onDone(po.id) });
+  const [descBefore, descAfter] = t("po.rfq.awardDescription").split("{amount}");
+  const act = useAction<{ id: string }>({ success: t("po.rfq.awarded"), onSuccess: (po) => onDone(po.id) });
   return (
     <Dialog open={!!award} onOpenChange={(o) => !o && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Award to {award?.name}</DialogTitle>
+          <DialogTitle>{t("po.rfq.awardTo", { name: award?.name ?? "" })}</DialogTitle>
           <DialogDescription>
-            Other quotes are rejected and a draft purchase order is created at <Money value={award?.total} />.
-            {award && !award.lowest && " This is not the lowest quote — add a justification in the comments."}
+            {descBefore}<Money value={award?.total} />{descAfter}
+            {award && !award.lowest && ` ${t("po.rfq.notLowest")}`}
           </DialogDescription>
         </DialogHeader>
-        <Field label="Budget category" hint="Defaults to the requisition's category">
-          <ResourcePicker endpoint="/expense-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder="Optional" />
+        <Field label={t("po.common.budgetCategory")} hint={t("po.rfq.categoryHint")}>
+          <ResourcePicker endpoint="/expense-categories" value={category} onChange={(v) => setCategory(v as string | null)} placeholder={t("ui.optional")} />
         </Field>
         <DialogFooter>
           <Button loading={act.isPending} onClick={() => award && act.mutate({ path: `/quotes/${award.quote_id}/award`, body: { category_id: category ?? undefined } })}>
-            <Award /> Award and create PO
+            <Award /> {t("po.rfq.awardAndCreate")}
           </Button>
         </DialogFooter>
       </DialogContent>

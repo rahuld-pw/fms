@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input, NativeSelect } from "@/components/ui/input";
 import { useMoney } from "@/components/shared/format";
 import { api } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 
 export interface ItemDraft {
   id?: string;
@@ -29,6 +30,7 @@ export function useExpenseCategories() {
 export function ItemsEditor({ items, onChange }: { items: ItemDraft[]; onChange: (items: ItemDraft[]) => void }) {
   const { data: cats = [] } = useExpenseCategories();
   const fmt = useMoney();
+  const { t } = useT();
   const set = (i: number, patch: Partial<ItemDraft>) => onChange(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
   const total = items.reduce((s, i) => s + (Number(i.amount) || 0) + (Number(i.tax_amount) || 0), 0);
   return (
@@ -40,38 +42,38 @@ export function ItemsEditor({ items, onChange }: { items: ItemDraft[]; onChange:
         return (
           <div key={i} className="grid grid-cols-2 gap-2 rounded-md border p-3 sm:grid-cols-[1.2fr_0.9fr_1.6fr_1fr_0.8fr_0.7fr_auto] sm:items-end sm:border-0 sm:p-0">
             <label className="col-span-2 text-xs text-muted-foreground sm:col-span-1">
-              Category
+              {t("ui.category")}
               <NativeSelect value={it.category_id} onChange={(e) => set(i, { category_id: e.target.value })} required>
-                <option value="">Select…</option>
+                <option value="">{t("ui.select")}</option>
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </NativeSelect>
             </label>
             <label className="text-xs text-muted-foreground">
-              Date
+              {t("ui.date")}
               <Input type="date" value={it.expense_date} onChange={(e) => set(i, { expense_date: e.target.value })} required />
             </label>
             <label className="col-span-2 text-xs text-muted-foreground sm:col-span-1">
-              Description
+              {t("ui.description")}
               <Input value={it.description} onChange={(e) => set(i, { description: e.target.value })} required />
             </label>
             <label className="text-xs text-muted-foreground">
-              Merchant
+              {t("expense.itemsEditor.merchant")}
               <Input value={it.merchant} onChange={(e) => set(i, { merchant: e.target.value })} />
             </label>
             <label className="text-xs text-muted-foreground">
-              Amount
+              {t("ui.amount")}
               <Input type="number" step="0.01" min="0.01" inputMode="decimal" value={it.amount} onChange={(e) => set(i, { amount: e.target.value })} required />
             </label>
             <label className="text-xs text-muted-foreground">
-              Tax
+              {t("ui.tax")}
               <Input type="number" step="0.01" min="0" inputMode="decimal" value={it.tax_amount} onChange={(e) => set(i, { tax_amount: e.target.value })} />
             </label>
-            <Button type="button" variant="ghost" size="icon-sm" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item" className="justify-self-end">
+            <Button type="button" variant="ghost" size="icon-sm" onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label={t("expense.itemsEditor.removeItem")} className="justify-self-end">
               <Trash2 />
             </Button>
             {overLimit && (
               <p className="col-span-full text-xs text-amber-600">
-                Above the {cat!.name} per-claim limit of {fmt(cat!.per_claim_limit)} ({cat!.limit_mode === "hard" ? "will be blocked" : "warning only"}).
+                {t(cat!.limit_mode === "hard" ? "expense.itemsEditor.overLimitHard" : "expense.itemsEditor.overLimitSoft", { category: cat!.name, limit: fmt(cat!.per_claim_limit) })}
               </p>
             )}
           </div>
@@ -79,10 +81,10 @@ export function ItemsEditor({ items, onChange }: { items: ItemDraft[]; onChange:
       })}
       <div className="flex items-center justify-between">
         <Button type="button" variant="outline" size="sm" onClick={() => onChange([...items, emptyItem()])}>
-          <Plus /> Add item
+          <Plus /> {t("expense.itemsEditor.addItem")}
         </Button>
         <span className="text-sm">
-          Total <span className="font-semibold tabular">{fmt(total)}</span>
+          {t("ui.total")} <span className="font-semibold tabular">{fmt(total)}</span>
         </span>
       </div>
     </div>

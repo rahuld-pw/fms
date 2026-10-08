@@ -14,6 +14,7 @@ import { ActivityFeed, Attachments, Comments } from "@/components/shared/collabo
 import { Field, ResourcePicker, UserPicker } from "@/components/shared/fields";
 import { StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
+import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { humanize } from "@/lib/utils/format";
 
@@ -21,6 +22,7 @@ import { humanize } from "@/lib/utils/format";
 const LINK_URL: Record<string, string> = { issue: "/facility/issues/", work_order: "/facility/work-orders/", purchase_order: "/po/orders/", requisition: "/po/requisitions/", asset: "/facility/assets/", vendor: "/facility/vendors/", expense_claim: "/expense/claims/" };
 
 export function TaskDetail({ id }: { id: string }) {
+  const { t: tr } = useT();
   const qc = useQueryClient();
   const { user } = useSession();
   const key = ["tasks", "detail", id];
@@ -63,17 +65,17 @@ export function TaskDetail({ id }: { id: string }) {
   const removeLink = useMutation({ mutationFn: (linkId: string) => api(`/tasks/${id}/links/${linkId}`, { method: "DELETE" }), onSuccess: refresh });
 
   if (isLoading) return <Skeleton className="h-96" />;
-  if (error || !t) return <p className="text-sm text-muted-foreground">Task not found or you don&apos;t have access.</p>;
+  if (error || !t) return <p className="text-sm text-muted-foreground">{tr("tasks.detail.notFound")}</p>;
   const done = t.status === "done";
   const following = (t.followers ?? []).some((f: any) => f.user_id === user.id);
   return (
     <div className="mx-auto max-w-5xl">
       <nav className="mb-2 flex items-center gap-1 text-xs text-muted-foreground">
-        {t.project ? <Link href={`/tasks/projects/${t.project.id}`} className="hover:text-foreground">{t.project.name}</Link> : <Link href="/tasks" className="hover:text-foreground">My tasks</Link>}
+        {t.project ? <Link href={`/tasks/projects/${t.project.id}`} className="hover:text-foreground">{t.project.name}</Link> : <Link href="/tasks" className="hover:text-foreground">{tr("tasks.detail.myTasks")}</Link>}
         {t.parent && <> › <Link href={`/tasks/t/${t.parent.id}`} className="hover:text-foreground">{t.parent.title}</Link></>}
       </nav>
       <div className="mb-4 flex items-start gap-3">
-        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} className="hit-area mt-1.5" aria-label={done ? "Mark incomplete" : "Mark complete"}>
+        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} className="hit-area mt-1.5" aria-label={done ? tr("tasks.common.markIncomplete") : tr("tasks.common.markComplete")}>
           {done ? <CheckCircle2 className="size-6 text-primary" /> : <Circle className="size-6 text-muted-foreground hover:text-primary" />}
         </button>
         <input
@@ -81,21 +83,21 @@ export function TaskDetail({ id }: { id: string }) {
           onChange={(e) => setTitle(e.target.value)}
           onBlur={() => title.trim() && title !== t.title && patch.mutate({ title })}
           className={cn("w-full bg-transparent text-xl font-semibold tracking-tight outline-none focus:rounded focus:ring-2 focus:ring-ring/30", done && "text-muted-foreground line-through")}
-          aria-label="Task title"
+          aria-label={tr("tasks.detail.taskTitle")}
         />
         <Button variant={following ? "secondary" : "outline"} size="sm" onClick={() => api(`/tasks/${id}/follow`, { body: { follow: !following } }).then(refresh)}>
-          {following ? "Following" : "Follow"}
+          {following ? tr("tasks.detail.following") : tr("tasks.detail.follow")}
         </Button>
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <div className="flex min-w-0 flex-col gap-4">
-          <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (t.description ?? "") && patch.mutate({ description: desc || null })} placeholder="Add a description…" rows={4} />
+          <Textarea value={desc} onChange={(e) => setDesc(e.target.value)} onBlur={() => desc !== (t.description ?? "") && patch.mutate({ description: desc || null })} placeholder={tr("tasks.detail.descriptionPlaceholder")} rows={4} />
           <Card>
-            <CardHeader><CardTitle>Subtasks</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{tr("tasks.detail.subtasks")}</CardTitle></CardHeader>
             <div className="border-t">
               {(t.subtasks ?? []).sort((a: any, b: any) => a.position - b.position).map((s: any) => (
                 <div key={s.id} className="flex items-center gap-2 border-b px-4 py-2 text-sm">
-                  <button onClick={() => api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } }).then(refresh)} aria-label="Toggle subtask" className="hit-area">
+                  <button onClick={() => api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } }).then(refresh)} aria-label={tr("tasks.detail.toggleSubtask")} className="hit-area">
                     {s.status === "done" ? <CheckCircle2 className="size-4 text-primary" /> : <Circle className="size-4 text-muted-foreground" />}
                   </button>
                   <Link href={`/tasks/t/${s.id}`} className={cn("flex-1 hover:underline", s.status === "done" && "text-muted-foreground line-through")}>{s.title}</Link>
@@ -107,9 +109,9 @@ export function TaskDetail({ id }: { id: string }) {
           </Card>
           <Tabs defaultValue="comments">
             <TabsList>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
-              <TabsTrigger value="files">Files</TabsTrigger>
-              <TabsTrigger value="history">History</TabsTrigger>
+              <TabsTrigger value="comments">{tr("tasks.detail.tabComments")}</TabsTrigger>
+              <TabsTrigger value="files">{tr("tasks.detail.tabFiles")}</TabsTrigger>
+              <TabsTrigger value="history">{tr("tasks.detail.tabHistory")}</TabsTrigger>
             </TabsList>
             <TabsContent value="comments"><Comments entityType="task" entityId={id} /></TabsContent>
             <TabsContent value="files"><Attachments entityType="task" entityId={id} /></TabsContent>
@@ -119,35 +121,35 @@ export function TaskDetail({ id }: { id: string }) {
         <div className="flex flex-col gap-4">
           <Card>
             <CardContent className="flex flex-col gap-3 pt-4">
-              <Field label="Status">
+              <Field label={tr("tasks.detail.status")}>
                 <NativeSelect value={t.status} onChange={(e) => patch.mutate({ status: e.target.value })}>
-                  {["todo", "in_progress", "blocked", "done", "cancelled"].map((s) => <option key={s} value={s}>{humanize(s)}</option>)}
+                  {["todo", "in_progress", "blocked", "done", "cancelled"].map((s) => <option key={s} value={s}>{tr(`status.${s}`, undefined, humanize(s))}</option>)}
                 </NativeSelect>
               </Field>
-              <Field label="Assignees">
+              <Field label={tr("tasks.detail.assignees")}>
                 <UserPicker multiple value={(t.assignees ?? []).map((a: any) => a.user_id)} onChange={(v) => put.mutate({ path: `/tasks/${id}/assignees`, body: { user_ids: v ?? [] } })} />
               </Field>
               <div className="grid grid-cols-2 gap-2">
-                <Field label="Start"><Input type="date" defaultValue={t.start_date ?? ""} onBlur={(e) => e.target.value !== (t.start_date ?? "") && patch.mutate({ start_date: e.target.value || null })} /></Field>
-                <Field label="Due"><Input type="date" defaultValue={t.due_date ?? ""} onBlur={(e) => e.target.value !== (t.due_date ?? "") && patch.mutate({ due_date: e.target.value || null })} /></Field>
+                <Field label={tr("tasks.detail.start")}><Input type="date" defaultValue={t.start_date ?? ""} onBlur={(e) => e.target.value !== (t.start_date ?? "") && patch.mutate({ start_date: e.target.value || null })} /></Field>
+                <Field label={tr("tasks.detail.due")}><Input type="date" defaultValue={t.due_date ?? ""} onBlur={(e) => e.target.value !== (t.due_date ?? "") && patch.mutate({ due_date: e.target.value || null })} /></Field>
               </div>
-              <Field label="Priority">
+              <Field label={tr("tasks.detail.priority")}>
                 <NativeSelect value={t.priority} onChange={(e) => patch.mutate({ priority: e.target.value })}>
-                  {["low", "medium", "high", "urgent"].map((p) => <option key={p} value={p}>{humanize(p)}</option>)}
+                  {["low", "medium", "high", "urgent"].map((p) => <option key={p} value={p}>{tr(`priority.${p}`, undefined, humanize(p))}</option>)}
                 </NativeSelect>
               </Field>
-              <Field label="Repeats">
+              <Field label={tr("tasks.detail.repeats")}>
                 <NativeSelect
                   value={(t.recurrence as any)?.freq ?? ""}
                   onChange={(e) => patch.mutate({ recurrence: e.target.value ? { freq: e.target.value, interval: 1 } : null })}
                 >
-                  <option value="">Does not repeat</option>
-                  {["daily", "weekly", "monthly", "yearly"].map((f) => <option key={f} value={f}>{humanize(f)}</option>)}
+                  <option value="">{tr("tasks.detail.doesNotRepeat")}</option>
+                  {["daily", "weekly", "monthly", "yearly"].map((f) => <option key={f} value={f}>{tr(`enum.recurrence.${f}`, undefined, humanize(f))}</option>)}
                 </NativeSelect>
               </Field>
-              <Field label="Estimate (hours)"><Input type="number" defaultValue={t.estimated_hours ?? ""} onBlur={(e) => patch.mutate({ estimated_hours: e.target.value ? Number(e.target.value) : null })} /></Field>
+              <Field label={tr("tasks.detail.estimate")}><Input type="number" defaultValue={t.estimated_hours ?? ""} onBlur={(e) => patch.mutate({ estimated_hours: e.target.value ? Number(e.target.value) : null })} /></Field>
               {t.project_id && (
-                <Field label="Blocked by" hint="Tasks that must finish first">
+                <Field label={tr("tasks.detail.blockedBy")} hint={tr("tasks.detail.blockedByHint")}>
                   <ResourcePicker
                     multiple
                     endpoint={`/tasks?project_id=${t.project_id}`}
@@ -163,21 +165,21 @@ export function TaskDetail({ id }: { id: string }) {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader><CardTitle>Linked records</CardTitle></CardHeader>
+            <CardHeader><CardTitle>{tr("tasks.detail.linkedRecords")}</CardTitle></CardHeader>
             <CardContent className="flex flex-col gap-2">
               {(t.links ?? []).map((l: any) => (
                 <div key={l.id} className="flex items-center gap-2 text-sm">
                   <Link2 className="size-4 text-muted-foreground" />
-                  <Link href={`${LINK_URL[l.entity_type] ?? "#"}${l.entity_id}`} className="flex-1 text-primary hover:underline">{humanize(l.entity_type)}</Link>
-                  <button onClick={() => removeLink.mutate(l.id)} aria-label="Remove link"><Trash2 className="size-3.5 text-muted-foreground" /></button>
+                  <Link href={`${LINK_URL[l.entity_type] ?? "#"}${l.entity_id}`} className="flex-1 text-primary hover:underline">{tr(`enum.sourceType.${l.entity_type}`, undefined, humanize(l.entity_type))}</Link>
+                  <button onClick={() => removeLink.mutate(l.id)} aria-label={tr("tasks.detail.removeLink")}><Trash2 className="size-3.5 text-muted-foreground" /></button>
                 </div>
               ))}
               <div className="flex flex-col gap-2 border-t pt-2">
                 <NativeSelect value={linkType} onChange={(e) => { setLinkType(e.target.value); setLinkId(null); }}>
-                  <option value="issue">Issue</option>
-                  <option value="work_order">Work order</option>
-                  <option value="purchase_order">Purchase order</option>
-                  <option value="requisition">Requisition</option>
+                  <option value="issue">{tr("tasks.detail.linkIssue")}</option>
+                  <option value="work_order">{tr("tasks.detail.linkWorkOrder")}</option>
+                  <option value="purchase_order">{tr("tasks.detail.linkPurchaseOrder")}</option>
+                  <option value="requisition">{tr("tasks.detail.linkRequisition")}</option>
                 </NativeSelect>
                 <ResourcePicker
                   endpoint={{ issue: "/issues", work_order: "/work-orders", purchase_order: "/purchase-orders", requisition: "/requisitions" }[linkType]!}
@@ -186,7 +188,7 @@ export function TaskDetail({ id }: { id: string }) {
                   value={linkId}
                   onChange={(v) => setLinkId(v as string | null)}
                 />
-                <Button size="sm" variant="outline" disabled={!linkId} onClick={() => addLink.mutate()}>Link</Button>
+                <Button size="sm" variant="outline" disabled={!linkId} onClick={() => addLink.mutate()}>{tr("tasks.detail.link")}</Button>
               </div>
             </CardContent>
           </Card>
@@ -197,6 +199,7 @@ export function TaskDetail({ id }: { id: string }) {
 }
 
 function SubtaskAdd({ parentId, projectId, onAdded }: { parentId: string; projectId: string | null; onAdded: () => void }) {
+  const { t } = useT();
   const [title, setTitle] = useState("");
   const add = useMutation({
     mutationFn: () => api("/tasks", { body: { title, parent_task_id: parentId, project_id: projectId ?? undefined } }),
@@ -205,7 +208,7 @@ function SubtaskAdd({ parentId, projectId, onAdded }: { parentId: string; projec
   });
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (title.trim()) add.mutate(); }} className="px-4 py-2">
-      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="+ Add subtask" className="h-8 border-dashed shadow-none" />
+      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("tasks.detail.addSubtask")} className="h-8 border-dashed shadow-none" />
     </form>
   );
 }
