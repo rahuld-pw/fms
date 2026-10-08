@@ -4,6 +4,14 @@ import { unwrap } from "@/lib/api/errors";
 import { hasApprovals } from "@/lib/nav";
 import { getT } from "@/lib/i18n/server";
 import { HomeWidgets } from "./home-widgets";
+import { PendingSurvey } from "./pending-survey";
+
+// "Dr. Kavita Rao" → "Kavita", "Anita Sharma" → "Anita"
+function firstName(full: string | null | undefined) {
+  const parts = (full ?? "").trim().split(/\s+/).filter(Boolean);
+  const name = parts.find((p) => !/^(dr|mr|mrs|ms|prof|shri|smt|sri)\.?$/i.test(p));
+  return name ?? parts[0] ?? null;
+}
 
 export const metadata = { title: "Home" };
 
@@ -16,7 +24,7 @@ export default async function HomePage() {
   const m = new Set(data.modules);
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title={t(greeting, { name: data.user.full_name?.split(" ")[0] ?? t("home.there") })} description={ctx.org.name} />
+      <PageHeader title={t(greeting, { name: firstName(data.user.full_name) ?? t("home.there") })} description={ctx.org.name} />
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {hasApprovals(data.modules) && (
           <Stat label={t("home.waitingApproval")} value={stats.my_approvals ?? 0} href="/approvals" tone={stats.my_approvals ? "warning" : "default"} />
@@ -35,6 +43,7 @@ export default async function HomePage() {
         )}
         {m.has("expense") && <Stat label={t("home.myClaims")} value={stats.my_claims_pending ?? 0} href="/expense/claims?claimant_id=me" />}
       </div>
+      <PendingSurvey />
       <HomeWidgets />
     </div>
   );

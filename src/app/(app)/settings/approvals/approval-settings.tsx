@@ -150,9 +150,11 @@ function PolicyDialog({ policy, roles, onClose }: { policy: any; roles: { id: st
       setSaving(false);
     }
   };
+  const [removing, setRemoving] = useState(false);
   const remove = async () => {
-    if (!confirm(t("settings.approvals.confirmDelete"))) return;
-    try { await api(`/approval-policies/${policy.id}`, { method: "DELETE" }); toast.success(t("settings.approvals.deleted")); qc.invalidateQueries({ queryKey: ["/approval-policies"] }); onClose(); } catch (e) { toast.error(errorMessage(e)); }
+    if (removing || !confirm(t("settings.approvals.confirmDelete"))) return;
+    setRemoving(true);
+    try { await api(`/approval-policies/${policy.id}`, { method: "DELETE" }); toast.success(t("settings.approvals.deleted")); qc.invalidateQueries({ queryKey: ["/approval-policies"] }); onClose(); } catch (e) { toast.error(errorMessage(e)); } finally { setRemoving(false); }
   };
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
@@ -220,9 +222,9 @@ function PolicyDialog({ policy, roles, onClose }: { policy: any; roles: { id: st
           </div>
         )}
         <DialogFooter className="gap-2">
-          {!isNew && <Button variant="ghost" className="mr-auto text-destructive" onClick={remove}><Trash2 /> {t("ui.delete")}</Button>}
+          {!isNew && <Button variant="ghost" className="mr-auto text-destructive" loading={removing} disabled={saving} onClick={() => { void remove(); }}>{!removing && <Trash2 />} {t("ui.delete")}</Button>}
           <Button variant="outline" onClick={onClose}>{t("ui.cancel")}</Button>
-          <Button onClick={save} loading={saving} disabled={!name.trim() || (!autoApprove && steps.length === 0)}>{t("settings.approvals.savePolicy")}</Button>
+          <Button onClick={save} loading={saving} disabled={removing || !name.trim() || (!autoApprove && steps.length === 0)}>{t("settings.approvals.savePolicy")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

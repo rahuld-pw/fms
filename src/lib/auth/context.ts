@@ -7,7 +7,7 @@ import { createAdminClient, createUserClient, type DB } from "@/lib/supabase/ser
 import { grantsAllow, permissionScopes, scopeAllows, type Grant, type Scope, type ScopeMode } from "./permissions";
 
 export const ORG_COOKIE = "co_org";
-export const MODULES = ["facility", "expense", "tasks", "po"] as const;
+export const MODULES = ["facility", "expense", "tasks", "po", "surveys"] as const;
 export type Module = (typeof MODULES)[number];
 
 export interface OrgInfo {

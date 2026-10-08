@@ -34,6 +34,7 @@ export function NewIssueForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     if (!campusId && !locationId) return toast.error(t("facility.issues.new.chooseCampus"));
     setBusy(true);
     try {
@@ -118,13 +119,13 @@ export function NewIssueForm() {
               <span key={i} className="relative size-20 overflow-hidden rounded-md border">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={URL.createObjectURL(p)} alt="" className="size-full object-cover" />
-                <button type="button" onClick={() => setPhotos(photos.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 rounded-full bg-black/60 p-0.5 text-white" aria-label={t("facility.issues.new.removePhoto")}>
+                <button type="button" disabled={busy} onClick={() => setPhotos(photos.filter((_, j) => j !== i))} className="absolute top-0.5 right-0.5 rounded-full bg-black/60 p-0.5 text-white" aria-label={t("facility.issues.new.removePhoto")}>
                   <X className="size-3" />
                 </button>
               </span>
             ))}
             {photos.length < 3 && (
-              <button type="button" onClick={() => file.current?.click()} className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-muted">
+              <button type="button" disabled={busy} onClick={() => file.current?.click()} className="flex size-20 flex-col items-center justify-center gap-1 rounded-md border border-dashed text-xs text-muted-foreground hover:bg-muted">
                 <Camera className="size-5" /> {t("ui.add")}
               </button>
             )}

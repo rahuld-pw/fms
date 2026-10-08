@@ -15,7 +15,7 @@ import { ActivityFeed, Attachments, Comments } from "@/components/shared/collabo
 import { DateTime, DueDate, Money } from "@/components/shared/format";
 import { CampusSelect, Field, ResourcePicker, UserChip, UserPicker } from "@/components/shared/fields";
 import { DetailGrid, PageHeader } from "@/components/shared/page-header";
-import { ResourceFormDialog, useAction } from "@/components/shared/resource-form";
+import { isActing, ResourceFormDialog, useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api, apiList } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
@@ -230,8 +230,8 @@ function TransfersList({ rows, onDone }: { rows: any[]; onDone: () => void }) {
           <StatusBadge status={tr.status} />
           {tr.status === "pending" && can("asset:transfer", { campusId: tr.to_campus_id }, "auto") && (
             <div className="flex gap-1">
-              <Button size="xs" onClick={() => decide.mutate({ path: `/asset-transfers/${tr.id}/decide`, body: { status: "completed" } })}>{t("facility.assets.detail.receive")}</Button>
-              <Button size="xs" variant="outline" onClick={() => decide.mutate({ path: `/asset-transfers/${tr.id}/decide`, body: { status: "rejected" } })}>{t("ui.reject")}</Button>
+              <Button size="xs" disabled={decide.isPending} loading={isActing(decide, `/asset-transfers/${tr.id}/decide`, { status: "completed" })} onClick={() => decide.mutate({ path: `/asset-transfers/${tr.id}/decide`, body: { status: "completed" } })}>{t("facility.assets.detail.receive")}</Button>
+              <Button size="xs" variant="outline" disabled={decide.isPending} loading={isActing(decide, `/asset-transfers/${tr.id}/decide`, { status: "rejected" })} onClick={() => decide.mutate({ path: `/asset-transfers/${tr.id}/decide`, body: { status: "rejected" } })}>{t("ui.reject")}</Button>
             </div>
           )}
         </div>

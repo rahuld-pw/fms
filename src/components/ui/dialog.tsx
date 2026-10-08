@@ -21,9 +21,9 @@ export function DialogContent({
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px] data-[state=open]:animate-in" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed z-50 grid max-h-[92dvh] w-full gap-4 overflow-y-auto border bg-popover p-5 shadow-xl data-[state=open]:animate-in",
+          "fixed z-50 grid max-h-[92dvh] w-full max-w-[100vw] gap-4 overflow-x-hidden overflow-y-auto border bg-popover p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl data-[state=open]:animate-in [&>*]:min-w-0",
           "inset-x-0 bottom-0 rounded-t-xl sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-xl",
-          wide ? "sm:max-w-2xl" : "sm:max-w-lg",
+          wide ? "sm:max-w-2xl sm:w-[calc(100vw-2rem)]" : "sm:max-w-lg sm:w-[calc(100vw-2rem)]",
           className,
         )}
         {...props}
@@ -59,7 +59,7 @@ export function SheetContent({ className, children, side = "right", ...props }: 
       <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/30" />
       <DialogPrimitive.Content
         className={cn(
-          "fixed inset-y-0 z-50 flex w-full flex-col overflow-y-auto border-l bg-background shadow-xl data-[state=open]:animate-in sm:max-w-xl",
+          "fixed inset-y-0 z-50 flex w-full flex-col gap-4 overflow-x-hidden overflow-y-auto border-l bg-background p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl data-[state=open]:animate-in sm:max-w-xl sm:p-6",
           side === "right" ? "right-0" : "left-0 border-r border-l-0 sm:max-w-xs",
           className,
         )}

@@ -3087,6 +3087,7 @@ export type Database = {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          resolved_by: string | null
         }
         Insert: {
           id?: string
@@ -3126,6 +3127,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          resolved_by?: string | null
         }
         Update: {
           id?: string
@@ -3165,6 +3167,7 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          resolved_by?: string | null
         }
         Relationships: [
           {
@@ -3226,6 +3229,13 @@ export type Database = {
           {
             foreignKeyName: "issues_reporter_id_fkey"
             columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_resolved_by_fkey"
+            columns: ["resolved_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -5769,6 +5779,175 @@ export type Database = {
           },
         ]
       }
+      survey_responses: {
+        Row: {
+          id: string
+          org_id: string
+          survey_id: string
+          score: number
+          comment: string | null
+          segment: string | null
+          respondent_id: string | null
+          respondent_name: string | null
+          respondent_email: string | null
+          campus_id: string | null
+          source: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          survey_id: string
+          score: number
+          comment?: string | null
+          segment?: string | null
+          respondent_id?: string | null
+          respondent_name?: string | null
+          respondent_email?: string | null
+          campus_id?: string | null
+          source?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          survey_id?: string
+          score?: number
+          comment?: string | null
+          segment?: string | null
+          respondent_id?: string | null
+          respondent_name?: string | null
+          respondent_email?: string | null
+          campus_id?: string | null
+          source?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_respondent_id_fkey"
+            columns: ["respondent_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          id: string
+          org_id: string
+          campus_id: string | null
+          title: string
+          description: string | null
+          kind: string
+          question: string
+          follow_up: string | null
+          audience: string
+          status: string
+          anonymous: boolean
+          public_token: string
+          closes_at: string | null
+          created_by: string | null
+          updated_by: string | null
+          created_at: string
+          updated_at: string
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          campus_id?: string | null
+          title: string
+          description?: string | null
+          kind?: string
+          question: string
+          follow_up?: string | null
+          audience?: string
+          status?: string
+          anonymous?: boolean
+          public_token?: string
+          closes_at?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          campus_id?: string | null
+          title?: string
+          description?: string | null
+          kind?: string
+          question?: string
+          follow_up?: string | null
+          audience?: string
+          status?: string
+          anonymous?: boolean
+          public_token?: string
+          closes_at?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+          deleted_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveys_campus_id_fkey"
+            columns: ["campus_id"]
+            isOneToOne: false
+            referencedRelation: "campuses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveys_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "surveys_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       taggings: {
         Row: {
           tag_id: string
@@ -7574,6 +7753,8 @@ export type Database = {
         | { Args: { p_org: string; p_user?: string }; Returns: string[] }
       my_pending_invitations:
         | { Args: never; Returns: { org_name: string; expires_at: string }[] }
+      my_pending_surveys:
+        | { Args: { p_org: string }; Returns: { id: string; title: string; description: string; kind: string; question: string; follow_up: string; anonymous: boolean }[] }
       my_permissions:
         | { Args: { p_org: string }; Returns: { permission_key: string; scope_type: string; campus_id: string; department_id: string }[] }
       org_analytics:
@@ -7602,10 +7783,16 @@ export type Database = {
         | { Args: { p_tracking_token: string; p_action: string; p_rating?: number; p_feedback?: string }; Returns: string }
       public_issue_status:
         | { Args: { p_tracking_token: string }; Returns: Json }
+      public_survey:
+        | { Args: { p_token: string }; Returns: Json }
+      public_survey_respond:
+        | { Args: { p_token: string; p_score: number; p_comment?: string; p_segment?: string; p_name?: string; p_email?: string }; Returns: string }
       rate_limit_hit:
         | { Args: { p_bucket: string; p_limit: number; p_window_seconds?: number }; Returns: { allowed: boolean; remaining: number; reset_at: string }[] }
       requisition_submit:
         | { Args: { p_requisition_id: string }; Returns: Json }
+      resolution_feedback:
+        | { Args: { p_org: string; p_days?: number; p_campus?: string }; Returns: Json }
       resolve_api_key:
         | { Args: { p_key_hash: string }; Returns: { id: string; org_id: string; scopes: string[]; rate_limit_per_minute: number; created_by: string }[] }
       resolve_qr:
@@ -7616,6 +7803,12 @@ export type Database = {
         | { Args: { p_requisition_id: string; p_vendor_ids: string[]; p_due_date?: string; p_terms?: string }; Returns: string }
       submit_public_issue:
         | { Args: { p_qr_token: string; p_title: string; p_description: string; p_category_id?: string; p_priority?: string; p_campus_id?: string; p_org_slug?: string }; Returns: { issue_id: string; issue_number: string; tracking_token: string }[] }
+      survey_overview:
+        | { Args: { p_org: string }; Returns: { id: string; title: string; kind: string; audience: string; status: string; anonymous: boolean; campus_id: string; closes_at: string; created_at: string; responses: number; score: number; last_response_at: string }[] }
+      survey_respond:
+        | { Args: { p_survey: string; p_score: number; p_comment?: string }; Returns: string }
+      survey_results:
+        | { Args: { p_survey: string; p_days?: number }; Returns: Json }
       task_from_template:
         | { Args: { p_template_id: string; p_project_id?: string; p_section_id?: string; p_start?: string }; Returns: string }
       task_rollup:

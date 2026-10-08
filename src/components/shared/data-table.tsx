@@ -17,7 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { apiList } from "@/lib/client/api";
+import { apiList, downloadFile, errorMessage } from "@/lib/client/api";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
@@ -221,11 +222,9 @@ export function DataTable<T extends Row>(props: Props<T>) {
             </DropdownMenuContent>
           </DropdownMenu>
           {props.exportable !== false && (
-            <Button variant="outline" size="sm" asChild>
-              <a href={exportHref} download>
-                <Download />
-                <span className="hidden sm:inline">{t("ui.export")}</span>
-              </a>
+            <Button variant="outline" size="sm" onClick={() => downloadFile(exportHref, "export.csv").catch((e) => toast.error(errorMessage(e)))}>
+              <Download />
+              <span className="hidden sm:inline">{t("ui.export")}</span>
             </Button>
           )}
           {props.toolbar}

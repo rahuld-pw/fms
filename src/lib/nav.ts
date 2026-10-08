@@ -14,11 +14,13 @@ import {
   Layers,
   type LucideIcon,
   MapPin,
+  MessageSquareHeart,
   PackageCheck,
   Receipt,
   Settings,
   ShieldCheck,
   ShoppingCart,
+  Star,
   Truck,
   Users,
   Wallet,
@@ -36,7 +38,7 @@ export interface NavItem {
   href: string;
   icon: LucideIcon;
   /** Shown only when the module is enabled. */
-  module?: "facility" | "expense" | "tasks" | "po";
+  module?: "facility" | "expense" | "tasks" | "po" | "surveys";
   /** Shown only when the user holds ANY of these permissions (at any scope). */
   anyOf?: string[];
   /** Shown only when a module that uses approvals is enabled. */
@@ -68,6 +70,7 @@ export const NAV: NavSection[] = [
       { label: "Locations", href: "/facility/locations", icon: MapPin, anyOf: ["location:read"] },
       { label: "Maintenance", href: "/facility/maintenance", icon: CalendarClock, anyOf: ["pm:read", "amc:read", "compliance:read"] },
       { label: "Vendors", href: "/facility/vendors", icon: Truck, anyOf: ["vendor:read"] },
+      { label: "Resolution feedback", href: "/facility/feedback", icon: Star, anyOf: ["issue:read"] },
     ],
   },
   {
@@ -102,6 +105,12 @@ export const NAV: NavSection[] = [
     ],
   },
 ];
+
+NAV.push({
+  title: "Feedback & NPS",
+  module: "surveys",
+  items: [{ label: "Surveys & NPS", href: "/surveys", icon: MessageSquareHeart, anyOf: ["survey:read", "survey:manage"] }],
+});
 
 export const SETTINGS_NAV: NavItem[] = [
   { label: "Organisation", href: "/settings", icon: Building2, anyOf: ["org:manage"] },

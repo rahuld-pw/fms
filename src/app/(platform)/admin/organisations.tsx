@@ -21,7 +21,7 @@ interface Org {
   id: string; name: string; slug: string; kind: "organisation" | "personal"; status: "active" | "suspended"; plan: string;
   licensed_modules: string[]; enabled_modules: string[]; members: number; owners: string[]; pending_invites: number; created_at: string; notes: string | null;
 }
-const MODULES = ["facility", "expense", "tasks", "po"];
+const MODULES = ["facility", "expense", "tasks", "po", "surveys"];
 const label = (t: TFunction, m: string) => (MODULES.includes(m) ? t(`modules.${m}`) : m);
 
 /** Purchasing relies on Expenses (budgets, approvals): selecting it selects Expenses too. */
@@ -100,7 +100,7 @@ export function Organisations() {
             {rows.map((o) => (
               <li key={o.id}>
                 <button type="button" onClick={() => setSelected(o.id)} className="flex w-full flex-wrap items-center gap-x-3 gap-y-1 px-4 py-3 text-left hover:bg-muted/40">
-                  <span className="min-w-0 flex-1">
+                  <span className="min-w-0 basis-full sm:basis-0 sm:flex-1">
                     <span className="block truncate font-medium">{o.name}</span>
                     <span className="block truncate text-xs text-muted-foreground">
                       {o.slug} · {t(o.members === 1 ? "admin.orgs.membersOne" : "admin.orgs.membersOther", { n: o.members })} · {o.owners.length ? o.owners.join(", ") : o.pending_invites ? t("admin.orgs.adminInvited") : t("admin.orgs.noAdminYet")}
@@ -125,7 +125,7 @@ function CreateOrgDialog({ open, onOpenChange }: { open: boolean; onOpenChange: 
   const { t } = useT();
   const empty = { name: "", slug: "", admin_email: "", admin_name: "", campus_name: "Main Campus", campus_code: "MAIN", timezone: "Asia/Kolkata", currency: "INR", plan: "standard" };
   const [f, setF] = useState(empty);
-  const [modules, setModules] = useState(["facility", "expense", "tasks", "po"]);
+  const [modules, setModules] = useState(["facility", "expense", "tasks", "po", "surveys"]);
   const [slugTouched, setSlugTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<string | null>(null);
@@ -204,9 +204,9 @@ function OrgSheet({ org }: { org: Org }) {
       <div className="mt-5 flex flex-col gap-5">
         <section className="flex flex-col gap-2 text-sm">
           <div className="flex justify-between"><span className="text-muted-foreground">{t("admin.orgs.members")}</span><span>{org.members}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-muted-foreground">{t("admin.orgs.admins")}</span><span className="text-right">{org.owners.join(", ") || "—"}</span></div>
+          <div className="flex justify-between gap-4"><span className="shrink-0 text-muted-foreground">{t("admin.orgs.admins")}</span><span className="min-w-0 text-right break-all">{org.owners.join(", ") || "—"}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">{t("admin.orgs.pendingInvitations")}</span><span>{org.pending_invites}</span></div>
-          <div className="flex justify-between gap-4"><span className="text-muted-foreground">{t("admin.orgs.modulesOn")}</span><span className="text-right">{org.enabled_modules.map((m) => label(t, m)).join(", ") || "—"}</span></div>
+          <div className="flex justify-between gap-4"><span className="shrink-0 text-muted-foreground">{t("admin.orgs.modulesOn")}</span><span className="min-w-0 text-right">{org.enabled_modules.map((m) => label(t, m)).join(", ") || "—"}</span></div>
         </section>
         <section className="flex flex-col gap-3">
           <h3 className="text-sm font-semibold">{t("admin.orgs.licence")}</h3>
@@ -222,7 +222,7 @@ function OrgSheet({ org }: { org: Org }) {
           <section className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold">{t("admin.orgs.inviteAdmin")}</h3>
             {link ? <InviteLink link={link} /> : (
-              <div className="flex gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Input type="email" inputMode="email" autoCapitalize="none" placeholder={t("admin.orgs.inviteEmailPlaceholder")} value={email} onChange={(e) => setEmail(e.target.value)} />
                 <Button variant="outline" disabled={busy || !email.includes("@")} onClick={() => run(async () => {
                   const r = await api<{ invite_link: string }>(`/admin/organisations/${org.id}/owner-invitations`, { body: { email } });

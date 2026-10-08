@@ -44,6 +44,7 @@ export function QrReport({ token }: { token: string }) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {

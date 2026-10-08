@@ -9,6 +9,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Spinner } from "@/components/ui/spinner";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { api, errorMessage, uploadToSigned } from "@/lib/client/api";
 import type { TFunction } from "@/lib/i18n/translate";
@@ -81,6 +82,7 @@ export function Comments({ entityType, entityId, allowInternal }: { entityType: 
         className="flex flex-col gap-2"
         onSubmit={(e) => {
           e.preventDefault();
+          if (add.isPending) return;
           if (body.trim()) add.mutate();
         }}
       >
@@ -121,7 +123,7 @@ export function Attachments({ entityType, entityId, kind, canUpload = true }: { 
   const [busy, setBusy] = useState(false);
   const { data = [] } = useQuery({ queryKey: key, queryFn: () => api<Attachment[]>(`/attachments?entity_type=${entityType}&entity_id=${entityId}`) });
   const upload = async (files: FileList | null) => {
-    if (!files?.length) return;
+    if (!files?.length || busy) return;
     setBusy(true);
     try {
       for (const file of Array.from(files)) {
@@ -139,12 +141,16 @@ export function Attachments({ entityType, entityId, kind, canUpload = true }: { 
       if (input.current) input.current.value = "";
     }
   };
+  const [opening, setOpening] = useState<string | null>(null);
   const open = async (a: Attachment, download = false) => {
+    setOpening(a.id);
     try {
       const { url } = await api<{ url: string }>(`/attachments/${a.id}/url${download ? "?download=true" : ""}`);
       window.open(url, "_blank", "noopener");
     } catch (e) {
       toast.error(errorMessage(e));
+    } finally {
+      setOpening(null);
     }
   };
   const remove = useMutation({
@@ -159,16 +165,17 @@ export function Attachments({ entityType, entityId, kind, canUpload = true }: { 
         {data.map((a) => (
           <li key={a.id} className="flex items-center gap-2 px-3 py-2 text-sm">
             {a.mime_type?.startsWith("image/") ? <ImageIcon className="size-4 text-muted-foreground" /> : <FileText className="size-4 text-muted-foreground" />}
-            <button className="min-w-0 flex-1 truncate text-left hover:underline" onClick={() => open(a)}>
-              {a.file_name}
+            <button className="flex min-w-0 flex-1 items-center gap-1.5 text-left hover:underline disabled:opacity-50" disabled={opening === a.id} aria-busy={opening === a.id || undefined} onClick={() => open(a)}>
+              <span className="truncate">{a.file_name}</span>
+              {opening === a.id && <Spinner />}
             </button>
             <span className="hidden text-xs text-muted-foreground sm:inline">{a.size_bytes ? t("shared.attachments.kb", { n: Math.ceil(a.size_bytes / 1024) }) : ""}</span>
             <Button variant="ghost" size="icon-sm" onClick={() => open(a, true)} aria-label={t("ui.download")}>
               <Download />
             </Button>
             {canUpload && (
-              <Button variant="ghost" size="icon-sm" onClick={() => remove.mutate(a.id)} aria-label={t("ui.remove")}>
-                <Trash2 />
+              <Button variant="ghost" size="icon-sm" disabled={remove.isPending} loading={remove.isPending && remove.variables === a.id} onClick={() => remove.mutate(a.id)} aria-label={t("ui.remove")}>
+                {!(remove.isPending && remove.variables === a.id) && <Trash2 />}
               </Button>
             )}
           </li>

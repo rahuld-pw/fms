@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Field } from "@/components/shared/fields";
 import { StatusBadge } from "@/components/shared/status";
@@ -74,6 +75,7 @@ function PortalLogin() {
   const [busy, setBusy] = useState(false);
   const send = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     await fetch("/api/v1/portal/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, org_slug: org }) }).catch(() => null);
     setBusy(false);
@@ -102,19 +104,24 @@ function Registration({ token, data, onChange }: { token: string; data: any; onC
   const [busy, setBusy] = useState<string | null>(null);
   const set = (k: string, val: unknown) => setForm({ ...form, [k]: val });
   const keys = ["name", "legal_name", "contact_name", "phone", "website", "address", "city", "state", "pincode", "gstin", "pan", "msme_number", "bank_account_name", "bank_account_number", "bank_ifsc", "bank_name"];
-  const save = async () => {
-    setBusy("save");
+  // `inner`: called from submit(), which owns the busy state
+  const save = async (inner = false) => {
+    if (!inner) {
+      if (busy) return;
+      setBusy("save");
+    }
     try {
       const body: Record<string, unknown> = { service_category_ids: form.service_category_ids };
       for (const k of keys) body[k] = form[k] === "" ? null : form[k];
       await portal(token, "/profile", body, "PATCH");
       toast.success(t("public.vendor.detailsSaved"));
       onChange();
-    } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
+    } catch (e) { toast.error((e as Error).message); } finally { if (!inner) setBusy(null); }
   };
   const submit = async () => {
+    if (busy) return;
     setBusy("submit");
-    try { await save(); await portal(token, "/submit", {}); toast.success(t("public.vendor.submittedForVerification")); onChange(); } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
+    try { await save(true); await portal(token, "/submit", {}); toast.success(t("public.vendor.submittedForVerification")); onChange(); } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
   };
   const text = (k: string, label: string, props: React.ComponentProps<typeof Input> = {}) => (
     <Field label={label}><Input value={form[k] ?? ""} onChange={(e) => set(k, e.target.value)} {...props} /></Field>
@@ -163,7 +170,7 @@ function Registration({ token, data, onChange }: { token: string; data: any; onC
       <Documents token={token} docs={data.documents} onChange={onChange} />
       {!locked && (
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button variant="outline" size="lg" onClick={save} loading={busy === "save"} disabled={!!busy}>{t("public.vendor.saveDraft")}</Button>
+          <Button variant="outline" size="lg" onClick={() => save()} loading={busy === "save"} disabled={!!busy}>{t("public.vendor.saveDraft")}</Button>
           <Button size="lg" onClick={submit} loading={busy === "submit"} disabled={!!busy}><Send /> {t("public.vendor.submitForVerification")}</Button>
         </div>
       )}
@@ -178,6 +185,7 @@ function Documents({ token, docs, onChange }: { token: string; docs: any[]; onCh
   const [expires, setExpires] = useState("");
   const [busy, setBusy] = useState(false);
   const upload = async (file: File) => {
+    if (busy) return;
     setBusy(true);
     try {
       const r = await portal<{ upload: { url: string } }>(token, "/documents", { doc_type: type, doc_number: number || undefined, expires_on: expires || undefined, file_name: file.name, mime_type: file.type || "application/pdf", size_bytes: file.size });
@@ -203,8 +211,8 @@ function Documents({ token, docs, onChange }: { token: string; docs: any[]; onCh
           <Field label={t("public.vendor.number")}><Input value={number} onChange={(e) => setNumber(e.target.value)} /></Field>
           <Field label={t("public.vendor.validUntil")}><Input type="date" value={expires} onChange={(e) => setExpires(e.target.value)} /></Field>
           <label className={cn("inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border bg-background text-sm font-medium hover:bg-muted sm:col-span-3", busy && "pointer-events-none opacity-50")}>
-            <FileUp className="size-4" /> {busy ? t("public.vendor.uploading") : t("public.vendor.chooseFile")}
-            <input type="file" accept="application/pdf,image/*" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = ""; }} />
+            {busy ? <Spinner /> : <FileUp className="size-4" />} {busy ? t("public.vendor.uploading") : t("public.vendor.chooseFile")}
+            <input type="file" accept="application/pdf,image/*" className="sr-only" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); e.target.value = ""; }} />
           </label>
         </div>
       </CardContent>
@@ -217,13 +225,16 @@ function VisitCard({ token, wo, onChange }: { token: string; wo: any; onChange: 
   const [mode, setMode] = useState<"reschedule" | "report" | null>(null);
   const [when, setWhen] = useState("");
   const [note, setNote] = useState("");
-  const [busy, setBusy] = useState(false);
+  // which action is in flight (its control spins; the others are disabled)
+  const [busy, setBusy] = useState<string | null>(null);
   const act = async (action: string, extra: Record<string, unknown> = {}) => {
-    setBusy(true);
-    try { await portal(token, `/work-orders/${wo.id}/booking`, { action, note: note || undefined, ...extra }); toast.success(t("public.vendor.updated")); setMode(null); onChange(); } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+    if (busy) return;
+    setBusy(action);
+    try { await portal(token, `/work-orders/${wo.id}/booking`, { action, note: note || undefined, ...extra }); toast.success(t("public.vendor.updated")); setMode(null); onChange(); } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
   };
   const report = async (file: File) => {
-    setBusy(true);
+    if (busy) return;
+    setBusy("report");
     try {
       const r = await portal<{ upload: { url: string } }>(token, `/work-orders/${wo.id}/report`, { notes: note || undefined, file_name: file.name, mime_type: file.type || "application/pdf", size_bytes: file.size });
       await putSigned(r.upload.url, file);
@@ -231,7 +242,7 @@ function VisitCard({ token, wo, onChange }: { token: string; wo: any; onChange: 
       toast.success(t("public.vendor.reportUploaded"));
       setMode(null);
       onChange();
-    } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+    } catch (e) { toast.error((e as Error).message); } finally { setBusy(null); }
   };
   return (
     <Card>
@@ -248,21 +259,21 @@ function VisitCard({ token, wo, onChange }: { token: string; wo: any; onChange: 
         {mode === "reschedule" && <Field label={t("public.vendor.proposedTime")}><Input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} /></Field>}
         {mode && <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={mode === "report" ? t("public.vendor.workDonePlaceholder") : t("public.vendor.notePlaceholder")} />}
         {mode === "report" ? (
-          <label className="inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground">
-            <FileUp className="size-4" /> {busy ? t("public.vendor.uploading") : t("public.vendor.uploadAndDone")}
-            <input type="file" accept="application/pdf,image/*" capture="environment" className="sr-only" onChange={(e) => { const f = e.target.files?.[0]; if (f) void report(f); }} />
+          <label className={cn("inline-flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md bg-primary text-sm font-medium text-primary-foreground", busy && "pointer-events-none opacity-50")}>
+            {busy ? <Spinner /> : <FileUp className="size-4" />} {busy ? t("public.vendor.uploading") : t("public.vendor.uploadAndDone")}
+            <input type="file" accept="application/pdf,image/*" capture="environment" className="sr-only" disabled={!!busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) void report(f); }} />
           </label>
         ) : mode === "reschedule" ? (
           <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" onClick={() => setMode(null)}>{t("public.vendor.back")}</Button>
-            <Button loading={busy} disabled={!when} onClick={() => act("reschedule", { scheduled_for: new Date(when).toISOString() })}>{t("public.vendor.proposeTime")}</Button>
+            <Button variant="outline" disabled={!!busy} onClick={() => setMode(null)}>{t("public.vendor.back")}</Button>
+            <Button loading={busy === "reschedule"} disabled={!when || !!busy} onClick={() => act("reschedule", { scheduled_for: new Date(when).toISOString() })}>{t("public.vendor.proposeTime")}</Button>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <Button loading={busy} onClick={() => act("confirm")}>{t("public.vendor.confirm")}</Button>
-            <Button variant="outline" onClick={() => setMode("reschedule")}>{t("public.vendor.reschedule")}</Button>
-            <Button variant="outline" onClick={() => setMode("report")}>{t("public.vendor.uploadReport")}</Button>
-            <Button variant="ghost" className="text-destructive" onClick={() => confirm(t("public.vendor.confirmDecline")) && act("decline")}>{t("public.vendor.decline")}</Button>
+            <Button loading={busy === "confirm"} disabled={!!busy} onClick={() => { void act("confirm"); }}>{t("public.vendor.confirm")}</Button>
+            <Button variant="outline" disabled={!!busy} onClick={() => setMode("reschedule")}>{t("public.vendor.reschedule")}</Button>
+            <Button variant="outline" disabled={!!busy} onClick={() => setMode("report")}>{t("public.vendor.uploadReport")}</Button>
+            <Button variant="ghost" className="text-destructive" loading={busy === "decline"} disabled={!!busy} onClick={() => { if (confirm(t("public.vendor.confirmDecline"))) void act("decline"); }}>{t("public.vendor.decline")}</Button>
           </div>
         )}
       </CardContent>

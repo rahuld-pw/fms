@@ -21,7 +21,7 @@ interface Platform {
   top_organisations: { id: string; name: string; kind: string; members: number; activity: number }[];
 }
 
-const MODULE_ORDER = ["facility", "expense", "tasks", "po"];
+const MODULE_ORDER = ["facility", "expense", "tasks", "po", "surveys"];
 
 export function PlatformAnalytics() {
   const { t, locale } = useT();

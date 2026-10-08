@@ -27,6 +27,7 @@ export default function NewRequisitionPage() {
   const [busy, setBusy] = useState<"draft" | "submit" | null>(null);
 
   const save = async (submit: boolean) => {
+    if (busy) return;
     if (!campus) return toast.error(t("po.newRequisition.chooseCampus"));
     if (!lines.length) return toast.error(t("po.common.addOneLine"));
     setBusy(submit ? "submit" : "draft");

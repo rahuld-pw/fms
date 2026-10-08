@@ -236,7 +236,7 @@ export const approvalPolicies: ResourceSpec = {
   createSchema: z.object({
     name: z.string().trim().min(2).max(120),
     description: z.string().max(500).nullable().optional(),
-    module: z.enum(["facility", "expense", "tasks", "po"]),
+    module: z.enum(MODULES),
     entity_type: z.enum(["expense_claim", "expense_advance", "budget_amendment", "requisition", "purchase_order", "vendor"]),
     priority: z.number().int().min(0).max(10000).default(100),
     conditions: policyConditions.default({}),
@@ -287,7 +287,7 @@ export const delegations: ResourceSpec = {
   createSchema: z.object({
     delegator_id: z.uuid().optional(),
     delegate_id: z.uuid(),
-    module: z.enum(["facility", "expense", "tasks", "po"]).nullable().optional(),
+    module: z.enum(MODULES).nullable().optional(),
     starts_at: z.iso.datetime({ offset: true }).optional(),
     ends_at: z.iso.datetime({ offset: true }),
     reason: z.string().max(300).nullable().optional(),

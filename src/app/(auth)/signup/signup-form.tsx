@@ -21,16 +21,23 @@ export function SignupForm() {
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     const { data, error } = await supabaseBrowser().auth.signUp({
       email: form.email,
       password: form.password,
       options: { data: { full_name: form.name }, emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
-    setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    // with a session, stay busy until the navigation replaces this page
     if (data.session) router.replace(next);
-    else toast.success(t("auth.confirmEmail"));
+    else {
+      setLoading(false);
+      toast.success(t("auth.confirmEmail"));
+    }
   };
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">

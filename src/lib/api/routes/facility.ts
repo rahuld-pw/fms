@@ -111,7 +111,7 @@ export const issues: ResourceSpec = {
   select:
     "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names), assignee:profiles!issues_assignee_id_fkey(id, full_name), reporter:profiles!issues_reporter_id_fkey(id, full_name), vendor:vendors(id, name)",
   detailSelect:
-    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names, qr_token), asset:assets(id, name, asset_tag), assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email), vendor:vendors(id, name, phone), work_order:work_orders!issues_work_order_id_fkey(id, number, status)",
+    "*, campus:campuses(id, name, code), category:issue_categories(id, name), location:locations(id, name, path_names, qr_token), asset:assets(id, name, asset_tag), assignee:profiles!issues_assignee_id_fkey(id, full_name, email), reporter:profiles!issues_reporter_id_fkey(id, full_name, email), resolver:profiles!issues_resolved_by_fkey(id, full_name), vendor:vendors(id, name, phone), work_order:work_orders!issues_work_order_id_fkey(id, number, status)",
   filters: {
     status: "in",
     priority: "in",

@@ -95,11 +95,11 @@ export function RequisitionDetail({ id }: { id: string }) {
           <>
             {canEdit && (
               <>
-                <Button size="sm" onClick={() => submit.mutate({ path: `/requisitions/${id}/submit` })} loading={submit.isPending} disabled={!!editing || !lines.length}>
+                <Button size="sm" onClick={() => submit.mutate({ path: `/requisitions/${id}/submit` })} loading={submit.isPending} disabled={!!editing || !lines.length || remove.isPending}>
                   <Send /> {r.status === "rejected" ? t("po.common.resubmit") : t("ui.submit")}
                 </Button>
                 {r.status === "draft" && (
-                  <Button size="sm" variant="ghost" onClick={() => confirm(t("po.requisition.confirmDelete")) && remove.mutate({ path: `/requisitions/${id}`, method: "DELETE" })}>
+                  <Button size="sm" variant="ghost" loading={remove.isPending} disabled={submit.isPending} onClick={() => confirm(t("po.requisition.confirmDelete")) && remove.mutate({ path: `/requisitions/${id}`, method: "DELETE" })}>
                     <Trash2 /> {t("ui.delete")}
                   </Button>
                 )}

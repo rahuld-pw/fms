@@ -238,7 +238,9 @@ export function ResourceFormDialog<T = Record<string, unknown>>({
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : <DialogDescription className="sr-only">{title}</DialogDescription>}
         </DialogHeader>
-        <form onSubmit={form.handleSubmit((v) => save.mutate(v))} className="flex flex-col gap-5">
+        <form onSubmit={form.handleSubmit((v) => {
+          if (!save.isPending) save.mutate(v);
+        })} className="flex flex-col gap-5">
           <FormFields fields={fields} form={form as never} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
@@ -266,4 +268,15 @@ export function useAction<T = unknown>(opts: { invalidate?: string[]; success?: 
     },
     onError: (e) => toast.error(errorMessage(e)),
   });
+}
+
+/**
+ * True while a `useAction` mutation is running for `path` (and, when given, with
+ * these body fields), so only the clicked button of a shared action spins.
+ */
+export function isActing(action: { isPending: boolean; variables?: { path: string; body?: unknown } }, path: string, body?: Record<string, unknown>) {
+  if (!action.isPending || action.variables?.path !== path) return false;
+  if (!body) return true;
+  const sent = (action.variables.body ?? {}) as Record<string, unknown>;
+  return Object.entries(body).every(([k, v]) => sent[k] === v);
 }

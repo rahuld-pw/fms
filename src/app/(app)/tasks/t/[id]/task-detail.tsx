@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, NativeSelect, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActivityFeed, Attachments, Comments } from "@/components/shared/collaboration";
 import { Field, ResourcePicker, UserPicker } from "@/components/shared/fields";
@@ -55,6 +56,14 @@ export function TaskDetail({ id }: { id: string }) {
     onSuccess: refresh,
     onError: (e) => toast.error(errorMessage(e)),
   });
+  const [togglingSubtasks, setTogglingSubtasks] = useState<string[]>([]);
+  const toggleSubtask = (s: { id: string; status: string }) => {
+    if (togglingSubtasks.includes(s.id)) return;
+    setTogglingSubtasks((ids) => [...ids, s.id]);
+    return api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } })
+      .then(refresh)
+      .finally(() => setTogglingSubtasks((ids) => ids.filter((x) => x !== s.id)));
+  };
   const [linkType, setLinkType] = useState("issue");
   const [linkId, setLinkId] = useState<string | null>(null);
   const addLink = useMutation({
@@ -67,6 +76,7 @@ export function TaskDetail({ id }: { id: string }) {
   if (isLoading) return <Skeleton className="h-96" />;
   if (error || !t) return <p className="text-sm text-muted-foreground">{tr("tasks.detail.notFound")}</p>;
   const done = t.status === "done";
+  const statusPending = patch.isPending && !!patch.variables && "status" in patch.variables;
   const following = (t.followers ?? []).some((f: any) => f.user_id === user.id);
   return (
     <div className="mx-auto max-w-5xl">
@@ -75,8 +85,8 @@ export function TaskDetail({ id }: { id: string }) {
         {t.parent && <> › <Link href={`/tasks/t/${t.parent.id}`} className="hover:text-foreground">{t.parent.title}</Link></>}
       </nav>
       <div className="mb-4 flex items-start gap-3">
-        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} className="hit-area mt-1.5" aria-label={done ? tr("tasks.common.markIncomplete") : tr("tasks.common.markComplete")}>
-          {done ? <CheckCircle2 className="size-6 text-primary" /> : <Circle className="size-6 text-muted-foreground hover:text-primary" />}
+        <button onClick={() => patch.mutate({ status: done ? "todo" : "done" })} disabled={patch.isPending} aria-busy={statusPending || undefined} className="hit-area mt-1.5 flex size-6 items-center justify-center" aria-label={done ? tr("tasks.common.markIncomplete") : tr("tasks.common.markComplete")}>
+          {statusPending ? <Spinner className="size-5 text-muted-foreground" /> : done ? <CheckCircle2 className="size-6 text-primary" /> : <Circle className="size-6 text-muted-foreground hover:text-primary" />}
         </button>
         <input
           value={title}
@@ -97,8 +107,8 @@ export function TaskDetail({ id }: { id: string }) {
             <div className="border-t">
               {(t.subtasks ?? []).sort((a: any, b: any) => a.position - b.position).map((s: any) => (
                 <div key={s.id} className="flex items-center gap-2 border-b px-4 py-2 text-sm">
-                  <button onClick={() => api(`/tasks/${s.id}`, { method: "PATCH", body: { status: s.status === "done" ? "todo" : "done" } }).then(refresh)} aria-label={tr("tasks.detail.toggleSubtask")} className="hit-area">
-                    {s.status === "done" ? <CheckCircle2 className="size-4 text-primary" /> : <Circle className="size-4 text-muted-foreground" />}
+                  <button onClick={() => toggleSubtask(s)} disabled={togglingSubtasks.includes(s.id)} aria-busy={togglingSubtasks.includes(s.id) || undefined} aria-label={tr("tasks.detail.toggleSubtask")} className="hit-area flex size-4 items-center justify-center">
+                    {togglingSubtasks.includes(s.id) ? <Spinner className="text-muted-foreground" /> : s.status === "done" ? <CheckCircle2 className="size-4 text-primary" /> : <Circle className="size-4 text-muted-foreground" />}
                   </button>
                   <Link href={`/tasks/t/${s.id}`} className={cn("flex-1 hover:underline", s.status === "done" && "text-muted-foreground line-through")}>{s.title}</Link>
                   {s.due_date && <span className="text-xs text-muted-foreground">{s.due_date}</span>}
@@ -171,7 +181,7 @@ export function TaskDetail({ id }: { id: string }) {
                 <div key={l.id} className="flex items-center gap-2 text-sm">
                   <Link2 className="size-4 text-muted-foreground" />
                   <Link href={`${LINK_URL[l.entity_type] ?? "#"}${l.entity_id}`} className="flex-1 text-primary hover:underline">{tr(`enum.sourceType.${l.entity_type}`, undefined, humanize(l.entity_type))}</Link>
-                  <button onClick={() => removeLink.mutate(l.id)} aria-label={tr("tasks.detail.removeLink")}><Trash2 className="size-3.5 text-muted-foreground" /></button>
+                  <button onClick={() => removeLink.mutate(l.id)} disabled={removeLink.isPending} aria-busy={(removeLink.isPending && removeLink.variables === l.id) || undefined} aria-label={tr("tasks.detail.removeLink")}>{removeLink.isPending && removeLink.variables === l.id ? <Spinner className="text-muted-foreground" /> : <Trash2 className="size-3.5 text-muted-foreground" />}</button>
                 </div>
               ))}
               <div className="flex flex-col gap-2 border-t pt-2">
@@ -188,7 +198,7 @@ export function TaskDetail({ id }: { id: string }) {
                   value={linkId}
                   onChange={(v) => setLinkId(v as string | null)}
                 />
-                <Button size="sm" variant="outline" disabled={!linkId} onClick={() => addLink.mutate()}>{tr("tasks.detail.link")}</Button>
+                <Button size="sm" variant="outline" disabled={!linkId} loading={addLink.isPending} onClick={() => addLink.mutate()}>{tr("tasks.detail.link")}</Button>
               </div>
             </CardContent>
           </Card>
@@ -207,8 +217,8 @@ function SubtaskAdd({ parentId, projectId, onAdded }: { parentId: string; projec
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (title.trim()) add.mutate(); }} className="px-4 py-2">
-      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("tasks.detail.addSubtask")} className="h-8 border-dashed shadow-none" />
+    <form onSubmit={(e) => { e.preventDefault(); if (title.trim() && !add.isPending) add.mutate(); }} className="px-4 py-2">
+      <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("tasks.detail.addSubtask")} className="h-8 border-dashed shadow-none" disabled={add.isPending} />
     </form>
   );
 }

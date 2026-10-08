@@ -16,6 +16,7 @@ export default function AuditsPage() {
   const router = useRouter();
   const { campuses } = useSession();
   const [open, setOpen] = useState(false);
+  const [populating, setPopulating] = useState(false);
   return (
     <div>
       <PageHeader title={t("facility.assets.audits.title")} breadcrumbs={[{ label: t("facility.assets.title"), href: "/facility/assets" }, { label: t("facility.assets.auditsLabel") }]} description={t("facility.assets.audits.description")} />
@@ -33,7 +34,7 @@ export default function AuditsPage() {
             { key: "scheduled_for", header: t("facility.workOrders.scheduled"), sortable: true },
             { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
           ]}
-          toolbar={can("asset_audit:create") && <Button size="sm" onClick={() => setOpen(true)}><Plus /> {t("facility.assets.audits.newAudit")}</Button>}
+          toolbar={can("asset_audit:create") && <Button size="sm" loading={populating} onClick={() => setOpen(true)}><Plus /> {t("facility.assets.audits.newAudit")}</Button>}
         />
       </Suspense>
       <ResourceFormDialog
@@ -51,7 +52,12 @@ export default function AuditsPage() {
         defaultValues={{ campus_id: campuses.length === 1 ? campuses[0].id : "", scheduled_for: new Date().toISOString().slice(0, 10) }}
         invalidate={["/asset-audits"]}
         onSaved={async (r: { id: string }) => {
-          await fetch(`/api/v1/asset-audits/${r.id}/populate`, { method: "POST" });
+          setPopulating(true);
+          try {
+            await fetch(`/api/v1/asset-audits/${r.id}/populate`, { method: "POST" });
+          } finally {
+            setPopulating(false);
+          }
           router.push(`/facility/assets/audits/${r.id}`);
         }}
       />

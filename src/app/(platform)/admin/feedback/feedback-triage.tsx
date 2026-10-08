@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { NativeSelect, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { DateTime } from "@/components/shared/format";
 import { EmptyState, PageHeader } from "@/components/shared/page-header";
 import { api, errorMessage } from "@/lib/client/api";
@@ -61,12 +62,15 @@ function Item({ f }: { f: any }) {
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(f.admin_notes ?? "");
   const Icon = ICON[f.kind as keyof typeof ICON] ?? MessageSquare;
+  const [saving, setSaving] = useState<"status" | "notes" | null>(null);
   const save = async (body: Record<string, unknown>) => {
+    if (saving) return;
+    setSaving("status" in body ? "status" : "notes");
     try {
       await api(`/admin/feedback/${f.id}`, { method: "PATCH", body });
       toast.success(t("admin.feedback.updated"));
       qc.invalidateQueries({ queryKey: ["admin", "feedback"] });
-    } catch (e) { toast.error(errorMessage(e)); }
+    } catch (e) { toast.error(errorMessage(e)); } finally { setSaving(null); }
   };
   return (
     <li className="px-4 py-3">
@@ -90,12 +94,13 @@ function Item({ f }: { f: any }) {
             {f.user_agent && <div className="truncate"><dt className="inline">{t("admin.feedback.browser")}</dt><dd className="inline">{f.user_agent}</dd></div>}
           </dl>
           <div className="flex flex-wrap items-center gap-2">
-            <NativeSelect value={f.status} onChange={(e) => save({ status: e.target.value })} className="w-auto" aria-label={t("ui.status")}>
+            <NativeSelect value={f.status} disabled={!!saving} aria-busy={saving === "status" || undefined} onChange={(e) => { void save({ status: e.target.value }); }} className="w-auto" aria-label={t("ui.status")}>
               {STATUSES.map((s) => <option key={s} value={s}>{t(`status.${s}`, undefined, humanize(s))}</option>)}
             </NativeSelect>
+            {saving === "status" && <Spinner className="text-muted-foreground" />}
           </div>
           <Textarea rows={2} placeholder={t("admin.feedback.internalNotes")} value={notes} onChange={(e) => setNotes(e.target.value)} />
-          {notes !== (f.admin_notes ?? "") && <Button size="sm" className="self-start" onClick={() => save({ admin_notes: notes || null })}>{t("admin.feedback.saveNotes")}</Button>}
+          {notes !== (f.admin_notes ?? "") && <Button size="sm" className="self-start" disabled={!!saving} loading={saving === "notes"} onClick={() => { void save({ admin_notes: notes || null }); }}>{t("admin.feedback.saveNotes")}</Button>}
         </div>
       )}
     </li>

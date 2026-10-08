@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
@@ -25,7 +26,9 @@ export function LoginForm() {
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [codeSent, setCodeSent] = useState(false);
-  const [loading, setLoading] = useState(false);
+  // "resend" only spins the resend link; both block the form while in flight
+  const [pending, setPending] = useState<"submit" | "resend" | null>(null);
+  const loading = pending !== null;
   const { t } = useT();
 
   const done = () => {
@@ -33,10 +36,10 @@ export function LoginForm() {
     router.refresh();
   };
 
-  const sendCode = async () => {
-    setLoading(true);
+  const sendCode = async (resend = false) => {
+    setPending(resend ? "resend" : "submit");
     const { error } = await supabaseBrowser().auth.signInWithOtp({ email, options: { shouldCreateUser: false } });
-    setLoading(false);
+    setPending(null);
     if (error) return toast.error(error.message);
     setCodeSent(true);
     toast.success(t("auth.codeSent"));
@@ -44,19 +47,25 @@ export function LoginForm() {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     const sb = supabaseBrowser();
     if (method === "otp") {
       if (!codeSent) return sendCode();
-      setLoading(true);
+      setPending("submit");
       const { error } = await sb.auth.verifyOtp({ email, token: code.trim(), type: "email" });
-      setLoading(false);
-      if (error) return toast.error(error.message);
+      // on success stay busy until the navigation replaces this page
+      if (error) {
+        setPending(null);
+        return toast.error(error.message);
+      }
       return done();
     }
-    setLoading(true);
+    setPending("submit");
     const { error } = await sb.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      setPending(null);
+      return toast.error(error.message);
+    }
     done();
   };
 
@@ -89,12 +98,12 @@ export function LoginForm() {
           <Input id="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,10}" maxLength={10} required autoFocus
             className="text-center font-mono text-lg tracking-[0.4em]" value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} />
           <div className="flex justify-between text-xs">
-            <button type="button" className="text-muted-foreground hover:underline" onClick={() => { setCodeSent(false); setCode(""); }}>{t("auth.changeEmail")}</button>
-            <button type="button" className="text-primary hover:underline" disabled={loading} onClick={sendCode}>{t("auth.resendCode")}</button>
+            <button type="button" className="text-muted-foreground hover:underline disabled:opacity-50" disabled={loading} onClick={() => { setCodeSent(false); setCode(""); }}>{t("auth.changeEmail")}</button>
+            <button type="button" className="inline-flex items-center gap-1.5 text-primary hover:underline disabled:opacity-50" disabled={loading} aria-busy={pending === "resend" || undefined} onClick={() => sendCode(true)}>{pending === "resend" && <Spinner />}{t("auth.resendCode")}</button>
           </div>
         </div>
       )}
-      <Button type="submit" size="lg" loading={loading}>
+      <Button type="submit" size="lg" disabled={loading} loading={pending === "submit"}>
         {method === "password" ? t("auth.signIn") : codeSent ? t("auth.verify") : t("auth.emailMeCode")}
       </Button>
       <p className="text-center text-sm text-muted-foreground">

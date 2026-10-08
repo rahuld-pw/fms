@@ -30,6 +30,7 @@ export function WebhooksSettings() {
   const [selected, setSelected] = useState<string | null>(null);
   const [secret, setSecret] = useState<string | null>(null);
   const active = selected ?? data?.data[0]?.id ?? null;
+  const [deleting, setDeleting] = useState<string | null>(null);
   const act = async (fn: () => Promise<unknown>, msg: string) => {
     try { await fn(); toast.success(msg); qc.invalidateQueries({ queryKey: ["/webhooks"] }); } catch (e) { toast.error(errorMessage(e)); }
   };
@@ -59,7 +60,11 @@ export function WebhooksSettings() {
                     if (!confirm(t("settings.webhooks.confirmRotate"))) return;
                     try { const r = await api<{ secret: string }>(`/webhooks/${w.id}/rotate-secret`, { body: {} }); setSecret(r.secret); } catch (e) { toast.error(errorMessage(e)); }
                   }}><RotateCcw /> {t("settings.webhooks.secret")}</Button>
-                  <Button size="icon-sm" variant="ghost" aria-label={t("settings.webhooks.deleteEndpoint")} onClick={() => confirm(t("settings.webhooks.confirmDelete")) && act(() => api(`/webhooks/${w.id}`, { method: "DELETE" }), t("settings.webhooks.deleted"))}><Trash2 /></Button>
+                  <Button size="icon-sm" variant="ghost" aria-label={t("settings.webhooks.deleteEndpoint")} loading={deleting === w.id} onClick={() => {
+                    if (!confirm(t("settings.webhooks.confirmDelete"))) return;
+                    setDeleting(w.id);
+                    void act(() => api(`/webhooks/${w.id}`, { method: "DELETE" }), t("settings.webhooks.deleted")).finally(() => setDeleting(null));
+                  }}>{deleting !== w.id && <Trash2 />}</Button>
                 </div>
               </li>
             ))}

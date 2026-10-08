@@ -89,10 +89,10 @@ export function ClaimDetail({ id }: { id: string }) {
           <>
             {canEdit && (
               <>
-                <Button size="sm" onClick={() => submit.mutate({ path: `/expense-claims/${id}/submit` })} loading={submit.isPending} disabled={!!editing}>
+                <Button size="sm" onClick={() => submit.mutate({ path: `/expense-claims/${id}/submit` })} loading={submit.isPending} disabled={!!editing || cancel.isPending}>
                   <Send /> {c.status === "rejected" ? t("expense.claimDetail.resubmit") : t("ui.submit")}
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => cancel.mutate({ path: `/expense-claims/${id}/cancel` })}>
+                <Button size="sm" variant="ghost" loading={cancel.isPending} disabled={submit.isPending} onClick={() => cancel.mutate({ path: `/expense-claims/${id}/cancel` })}>
                   <XCircle /> {t("expense.claimDetail.cancelClaim")}
                 </Button>
               </>

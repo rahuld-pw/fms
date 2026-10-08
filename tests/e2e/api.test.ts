@@ -412,6 +412,28 @@ describe.runIf(process.env.E2E === "1")("API end-to-end", () => {
     await pool.query("delete from feedback where id = $1", [ok.json.data.id]);
   });
 
+  it("surveys: managers create and read results, members answer, the public link works with captcha off", async () => {
+    const created = await api("owner", "POST", "/surveys", { title: "E2E pulse", question: "How likely are you to recommend us?", status: "active", audience: "both" });
+    expect(created.status).toBe(201);
+    const id = created.json.data.id;
+    expect((await api("teacher", "POST", "/surveys", { title: "x", question: "Not allowed here?" })).status).toBe(403);
+    // API keys can't answer as a person; the public link can
+    expect((await api("teacher", "POST", `/surveys/${id}/responses`, { score: 9 })).status).toBe(400);
+    const { rows } = await pool.query("select public_token from surveys where id = $1", [id]);
+    const pub = await api("", "GET", `/public/surveys/${rows[0].public_token}`);
+    expect(pub.json.data.question).toContain("recommend");
+    const ans = await api("", "POST", `/public/surveys/${rows[0].public_token}/responses`, { score: 10, segment: "parent", comment: "Great" }, { "x-forwarded-for": "203.0.113.88" });
+    expect(ans.status).toBe(201);
+    const res = await api("owner", "GET", `/surveys/${id}/results`);
+    expect(res.json.data).toMatchObject({ responses: 1, promoters: 1 });
+    expect(Number(res.json.data.nps)).toBe(100);
+    expect(res.json.data.link).toContain(`/s/${rows[0].public_token}`);
+    expect((await api("teacher", "GET", `/surveys/${id}/results`)).status).toBe(403);
+    const fb = await api("fm", "GET", "/feedback/resolution?days=365");
+    expect(fb.status).toBe(200);
+    await pool.query("delete from surveys where id = $1", [id]);
+  });
+
   it("OpenAPI spec is generated from the route table", async () => {
     const spec = (await fetch(`${BASE}/openapi.json`).then((r) => r.json())) as { openapi: string; paths: Record<string, unknown> };
     expect(spec.openapi).toBe("3.1.0");

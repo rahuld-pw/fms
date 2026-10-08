@@ -111,9 +111,9 @@ function AddSection({ projectId }: { projectId: string }) {
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (name.trim()) add.mutate(); }} className="flex max-w-xs gap-2">
+    <form onSubmit={(e) => { e.preventDefault(); if (name.trim() && !add.isPending) add.mutate(); }} className="flex max-w-xs gap-2">
       <Input value={name} onChange={(e) => setName(e.target.value)} placeholder={t("tasks.project.newSection")} className="h-8" />
-      <Button type="submit" size="sm" variant="outline"><Plus /> {t("tasks.project.add")}</Button>
+      <Button type="submit" size="sm" variant="outline" loading={add.isPending}><Plus /> {t("tasks.project.add")}</Button>
     </form>
   );
 }

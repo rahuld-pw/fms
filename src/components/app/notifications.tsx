@@ -75,7 +75,7 @@ export function NotificationBell() {
         <div className="flex items-center justify-between border-b px-3 py-2">
           <span className="text-sm font-semibold">{t("shared.notifications.title")}</span>
           {unread > 0 && (
-            <Button variant="ghost" size="xs" onClick={() => markRead.mutate(undefined)}>
+            <Button variant="ghost" size="xs" disabled={markRead.isPending} loading={markRead.isPending && !markRead.variables} onClick={() => markRead.mutate(undefined)}>
               <CheckCheck /> {t("shared.notifications.markAllRead")}
             </Button>
           )}

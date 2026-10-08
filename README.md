@@ -14,6 +14,7 @@ Built with Next.js (App Router, TypeScript strict), Tailwind CSS, shadcn-style c
 - [Sign-in methods](#sign-in-methods)
 - [Organisations and access](#organisations-and-access)
 - [Analytics](#analytics)
+- [Feedback & NPS](#feedback--nps)
 - [Languages](#languages)
 - [Demo data](#demo-data)
 - [Configuration](#configuration)
@@ -155,6 +156,16 @@ More platform admins can be added from **/admin → Platform admins**.
 Every viewer gets "My performance" (tasks completed and on time, issues reported/closed, claims, approvals decided). Module sections (Facilities, Expenses, Purchasing, Tasks) appear only for modules the viewer can use, with KPIs, a trend chart (daily/weekly/monthly buckets by range) and breakdowns. API: `GET /api/v1/analytics?days=30&campus_id=…` (signed-in sessions).
 
 **/admin/analytics** (platform super admins) shows growth and usage across tenants: organisations, personal workspaces, users, active users (7/30 days), sign-ups over time, licences per module, most active organisations and feedback by status. It reports counts only; platform admins still can't read tenant analytics. API: `GET /api/v1/admin/analytics?days=90`.
+
+## Feedback & NPS
+
+A licensable module (`surveys`, shown as **Feedback & NPS**) plus feedback on resolved issues.
+
+- **Surveys:** NPS (0–10, "How likely are you to recommend…") or satisfaction (1–5). Audience: staff in the app, the public via a link / QR code (parents, students, alumni, visitors), or both. Optional campus, closing date and anonymous mode (names hidden from everyone, including managers).
+- **Answering:** staff get a one-tap card on Home for open surveys; the public answers at `/s/<token>` (captcha, rate limit, honeypot) and says who they are (parent, student…). Members can change their answer; one answer per member per survey.
+- **Results** (`/surveys/<id>`, needs `survey:read` or `survey:manage`): NPS = % promoters (9–10) − % detractors (0–6), score distribution, responses and NPS per week, results by respondent type, comments filterable by promoters/passives/detractors, share link and printable QR code.
+- **Resolution feedback** (`/facility/feedback`): when an issue is resolved the person who resolved it (`issues.resolved_by`, normally the assignee) is credited; reporters' 1–5 star ratings are reported overall and per person, with comments and reopen counts. People see their own average in Analytics → My performance, and managers see a rating column in Team workload.
+- Owners and admins have both survey permissions; add `survey:read` / `survey:manage` to other roles in **Settings → Roles**. Existing organisations got the module in their licence; the platform admin can remove it per organisation.
 
 ## Languages
 

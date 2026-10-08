@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/input";
 import { PageHeader } from "@/components/shared/page-header";
 import { api, errorMessage } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
+import { cn } from "@/lib/utils/cn";
 
 const TEMPLATE = "name,campus_code,category_code,location_code,asset_tag,make,model,serial_number,status,purchase_date,purchase_cost,warranty_until,custodian_email\nDell Latitude 5440,MAIN,IT,A-STF,,Dell,Latitude 5440,SN123,in_use,2025-06-10,72000,2028-06-09,teacher@greenfield.test\n";
 
@@ -18,9 +19,10 @@ export default function ImportAssetsPage() {
   const { t } = useT();
   const [csv, setCsv] = useState("");
   const [result, setResult] = useState<Result | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"validate" | "import" | null>(null);
   const run = async (dryRun: boolean) => {
-    setBusy(true);
+    if (busy) return;
+    setBusy(dryRun ? "validate" : "import");
     try {
       const r = await api<Result>("/assets/import", { body: { csv, dry_run: dryRun } });
       setResult(r);
@@ -28,7 +30,7 @@ export default function ImportAssetsPage() {
     } catch (e) {
       toast.error(errorMessage(e));
     } finally {
-      setBusy(false);
+      setBusy(null);
     }
   };
   return (
@@ -50,14 +52,14 @@ export default function ImportAssetsPage() {
           <CardTitle>{t("facility.assets.import.step2")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <label className="flex cursor-pointer items-center gap-2 self-start rounded-md border border-dashed px-4 py-3 text-sm hover:bg-muted">
+          <label className={cn("flex cursor-pointer items-center gap-2 self-start rounded-md border border-dashed px-4 py-3 text-sm hover:bg-muted", busy && "pointer-events-none opacity-50")}>
             <FileUp className="size-4" /> {t("facility.assets.import.chooseFile")}
-            <input type="file" accept=".csv,text/csv" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setCsv(await f.text()); setResult(null); } }} />
+            <input type="file" accept=".csv,text/csv" className="hidden" disabled={!!busy} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { setCsv(await f.text()); setResult(null); } }} />
           </label>
-          <Textarea value={csv} onChange={(e) => { setCsv(e.target.value); setResult(null); }} rows={8} className="font-mono text-xs" placeholder={t("facility.assets.import.pastePlaceholder")} />
+          <Textarea value={csv} readOnly={!!busy} onChange={(e) => { setCsv(e.target.value); setResult(null); }} rows={8} className="font-mono text-xs" placeholder={t("facility.assets.import.pastePlaceholder")} />
           <div className="flex gap-2">
-            <Button variant="outline" disabled={!csv.trim()} loading={busy} onClick={() => run(true)}>{t("facility.assets.import.validate")}</Button>
-            <Button disabled={!result || result.errors.length > 0 || result.dry_run === false} loading={busy} onClick={() => run(false)}>
+            <Button variant="outline" disabled={!csv.trim() || !!busy} loading={busy === "validate"} onClick={() => run(true)}>{t("facility.assets.import.validate")}</Button>
+            <Button disabled={!result || result.errors.length > 0 || result.dry_run === false || !!busy} loading={busy === "import"} onClick={() => run(false)}>
               {t("facility.assets.import.importN", { n: result?.valid_rows ?? "" })}
             </Button>
           </div>

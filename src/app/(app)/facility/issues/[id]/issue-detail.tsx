@@ -110,12 +110,12 @@ export function IssueDetail({ id }: { id: string }) {
                     <UserPlus /> {t("facility.issues.detail.assign")}
                   </DropdownMenuItem>
                   {!issue.work_order_id && can("work_order:create", { campusId: issue.campus_id }) && (
-                    <DropdownMenuItem onSelect={() => act.mutate({ path: `/issues/${id}/work-order`, body: {} })}>
+                    <DropdownMenuItem disabled={act.isPending} onSelect={() => act.mutate({ path: `/issues/${id}/work-order`, body: {} })}>
                       <Wrench /> {t("facility.issues.detail.createWorkOrder")}
                     </DropdownMenuItem>
                   )}
                   {tasksEnabled && !issue.task_id && (
-                    <DropdownMenuItem onSelect={() => act.mutate({ path: `/issues/${id}/task`, body: { assignee_ids: issue.assignee_id ? [issue.assignee_id] : [] } })}>
+                    <DropdownMenuItem disabled={act.isPending} onSelect={() => act.mutate({ path: `/issues/${id}/task`, body: { assignee_ids: issue.assignee_id ? [issue.assignee_id] : [] } })}>
                       <ListTodo /> {t("facility.issues.detail.createTask")}
                     </DropdownMenuItem>
                   )}
@@ -190,6 +190,7 @@ export function IssueDetail({ id }: { id: string }) {
                   { label: t("facility.issues.detail.reopened"), value: issue.reopened_count ? t("facility.issues.detail.times", { n: issue.reopened_count }) : "—" },
                   { label: t("facility.issues.detail.workOrder"), value: issue.work_order ? <Link className="text-primary hover:underline" href={`/facility/work-orders/${issue.work_order.id}`}>{issue.work_order.number}</Link> : null },
                   { label: t("facility.issues.detail.task"), value: issue.task_id ? <Link className="text-primary hover:underline" href={`/tasks/t/${issue.task_id}`}>{t("facility.issues.detail.openTask")}</Link> : null },
+                  ...(issue.resolver ? [{ label: t("surveys.issue.resolvedBy"), value: issue.resolver.full_name }] : []),
                   ...(issue.rating ? [{ label: t("facility.issues.detail.rating"), value: `${"★".repeat(issue.rating)}${"☆".repeat(5 - issue.rating)}${issue.feedback ? ` — “${issue.feedback}”` : ""}`, wide: true }] : []),
                 ]}
               />

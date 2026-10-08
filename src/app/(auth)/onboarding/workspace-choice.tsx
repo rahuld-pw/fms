@@ -12,6 +12,7 @@ export function WorkspaceChoice({ invites }: { invites: { org_name: string; expi
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const personal = async () => {
+    if (busy) return;
     setBusy(true);
     const { error } = await supabaseBrowser().rpc("create_personal_workspace");
     if (error) {

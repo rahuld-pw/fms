@@ -1,3 +1,4 @@
+"use client";
 import * as React from "react";
 import { Slot } from "radix-ui";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -33,15 +34,38 @@ export interface ButtonProps extends React.ComponentProps<"button">, VariantProp
   loading?: boolean;
 }
 
-export function Button({ className, variant, size, asChild, loading, disabled, children, ...props }: ButtonProps) {
+/**
+ * `loading` shows a spinner and disables the button. When `onClick` returns a
+ * promise the button does the same by itself until it settles, so async
+ * actions can't be triggered twice by double clicks.
+ */
+export function Button({ className, variant, size, asChild, loading, disabled, children, onClick, ...props }: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button";
+  const [pending, setPending] = React.useState(false);
+  const busy = !!loading || pending;
+  const handleClick = onClick
+    ? (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (busy) return e.preventDefault();
+        const result = (onClick as (e: React.MouseEvent<HTMLButtonElement>) => unknown)(e);
+        if (result && typeof (result as Promise<unknown>).then === "function") {
+          setPending(true);
+          (result as Promise<unknown>).finally(() => setPending(false)).catch(() => undefined);
+        }
+      }
+    : undefined;
   return (
-    <Comp className={cn(buttonVariants({ variant, size }), className)} disabled={disabled || loading} {...props}>
+    <Comp
+      className={cn(buttonVariants({ variant, size }), className)}
+      disabled={disabled || busy}
+      aria-busy={busy || undefined}
+      onClick={handleClick}
+      {...props}
+    >
       {asChild ? (
         children
       ) : (
         <>
-          {loading && <span className="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />}
+          {busy && <span className="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent" aria-hidden />}
           {children}
         </>
       )}

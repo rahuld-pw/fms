@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Building2, ClipboardList, ListChecks, ShoppingCart, User, Users, Wallet } from "lucide-react";
+import { Building2, ClipboardList, ListChecks, MessageSquareHeart, ShoppingCart, User, Users, Wallet } from "lucide-react";
 import { useSession } from "@/components/app/session";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { BreakdownBars, ColumnChart } from "@/components/shared/charts";
 import { CampusSelect } from "@/components/shared/fields";
 import { useMoney } from "@/components/shared/format";
 import { Stat } from "@/components/shared/page-header";
+import { NpsValue, Stars } from "@/components/shared/score-picker";
 import { api } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
@@ -24,7 +25,7 @@ export interface OrgAnalytics {
   modules: string[];
   me: {
     tasks_completed: number; tasks_on_time_pct: N; tasks_open: number; tasks_overdue: number;
-    issues_reported: N; issues_resolved: N; work_orders_completed: N; claims_amount: N; approvals_decided: number;
+    issues_reported: N; issues_resolved: N; work_orders_completed: N; claims_amount: N; approvals_decided: number; rating_avg?: N; rating_count?: N;
   };
   facility?: {
     issues_opened: number; issues_resolved: number; issues_open: number; issues_overdue: number; sla_met_pct: N;
@@ -37,7 +38,8 @@ export interface OrgAnalytics {
   };
   po?: { po_count: number; po_value: number; pending_count: number; avg_approval_hours: N; by_status: Record<string, number>; top_vendors: Breakdown; series: Point[] };
   tasks?: { created: number; completed: number; open: number; overdue: number; on_time_pct: N; by_status: Record<string, number>; series: Point[] };
-  people: { user_id: string; name: string | null; open_items: number; overdue_tasks: number; completed: number; direct_report: boolean }[];
+  people: { user_id: string; name: string | null; open_items: number; overdue_tasks: number; completed: number; rating_avg?: N; rating_count?: number; direct_report: boolean }[];
+  surveys?: { active: number; responses: number; nps: N };
 }
 
 export const RANGES = [7, 30, 90, 365] as const;
@@ -103,6 +105,7 @@ export function AnalyticsView() {
               {data.me.issues_resolved !== null && <Stat label={t("analytics.me.issuesResolved")} value={(data.me.issues_resolved ?? 0) + (data.me.work_orders_completed ?? 0)} hint={t("analytics.me.issuesResolvedHint")} />}
               {data.me.claims_amount !== null && <Stat label={t("analytics.me.claims")} value={money(data.me.claims_amount, true)} />}
               {data.me.approvals_decided > 0 && <Stat label={t("analytics.me.approvals")} value={data.me.approvals_decided} />}
+              {!!data.me.rating_count && <Stat label={t("analytics.me.rating")} value={<Stars value={data.me.rating_avg ?? null} />} hint={t("analytics.me.ratingHint", { n: data.me.rating_count })} href="/facility/feedback" />}
             </div>
           </Section>
 
@@ -117,6 +120,7 @@ export function AnalyticsView() {
                         <th className="px-4 py-2 text-right font-medium">{t("analytics.team.open")}</th>
                         <th className="px-4 py-2 text-right font-medium">{t("analytics.team.overdue")}</th>
                         <th className="px-4 py-2 text-right font-medium">{t("analytics.team.done", { n: data.range.days })}</th>
+                        {data.facility && <th className="px-4 py-2 text-right font-medium">{t("analytics.team.rating")}</th>}
                       </tr>
                     </thead>
                     <tbody className="divide-y">
@@ -129,6 +133,7 @@ export function AnalyticsView() {
                           <td className="px-4 py-2 text-right tabular">{p.open_items}</td>
                           <td className={`px-4 py-2 text-right tabular ${p.overdue_tasks ? "font-medium text-destructive" : ""}`}>{p.overdue_tasks}</td>
                           <td className="px-4 py-2 text-right tabular">{p.completed}</td>
+                          {data.facility && <td className="px-4 py-2 text-right whitespace-nowrap">{p.rating_count ? <><Stars value={p.rating_avg ?? null} /> <span className="text-xs text-muted-foreground">({p.rating_count})</span></> : "—"}</td>}
                         </tr>
                       ))}
                     </tbody>
@@ -212,6 +217,16 @@ export function AnalyticsView() {
                   <CardHeader><CardTitle>{t("analytics.po.topVendors")}</CardTitle></CardHeader>
                   <CardContent>{data.po.top_vendors.length ? <BreakdownBars rows={data.po.top_vendors.map((r) => ({ ...r, value: Number(r.value) }))} format={(v) => money(v, true)} /> : <Empty />}</CardContent>
                 </Card>
+              </div>
+            </Section>
+          )}
+
+          {data.surveys && (
+            <Section icon={MessageSquareHeart} title={t("modules.surveys")}>
+              <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+                <Stat label={t("surveys.nps")} value={<NpsValue value={data.surveys.nps} />} hint={t("analytics.surveys.npsHint")} href="/surveys" />
+                <Stat label={t("analytics.surveys.responses")} value={data.surveys.responses} />
+                <Stat label={t("analytics.surveys.active")} value={data.surveys.active} href="/surveys" />
               </div>
             </Section>
           )}

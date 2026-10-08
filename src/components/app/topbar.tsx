@@ -17,6 +17,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { api, errorMessage } from "@/lib/client/api";
+import { Spinner } from "@/components/ui/spinner";
+import { PostFormButton } from "@/components/shared/post-form";
 import { FeedbackDialog, type FeedbackKind } from "@/components/shared/feedback-form";
 import { LanguageSelect } from "@/components/shared/language-select";
 import { useT } from "@/lib/i18n/client";
@@ -47,7 +49,10 @@ export function Topbar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const [switching, setSwitching] = useState<string | null>(null);
   const switchOrg = async (id: string) => {
+    if (switching) return;
+    setSwitching(id);
     try {
       await api("/me/org", { body: { org_id: id } });
       qc.clear(); // cached data belongs to the previous org
@@ -55,6 +60,8 @@ export function Topbar() {
       router.refresh();
     } catch (e) {
       toast.error(errorMessage(e));
+    } finally {
+      setSwitching(null);
     }
   };
 
@@ -136,8 +143,8 @@ export function Topbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{t("common.organisations")}</DropdownMenuLabel>
                 {orgs.map((o) => (
-                  <DropdownMenuItem key={o.id} onSelect={() => o.id !== org.id && switchOrg(o.id)}>
-                    <Building2 /> <span className="truncate">{o.name}</span>
+                  <DropdownMenuItem key={o.id} disabled={!!switching} onSelect={() => o.id !== org.id && switchOrg(o.id)}>
+                    {switching === o.id ? <Spinner /> : <Building2 />} <span className="truncate">{o.name}</span>
                     {o.id === org.id && <Check className="ml-auto" />}
                   </DropdownMenuItem>
                 ))}
@@ -161,11 +168,9 @@ export function Topbar() {
               ))}
             </div>
             <DropdownMenuSeparator />
-            <form action="/auth/signout" method="post">
-              <button type="submit" className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-muted">
-                <LogOut className="size-4 text-muted-foreground" /> {t("common.signOut")}
-              </button>
-            </form>
+            <PostFormButton action="/auth/signout" className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-muted disabled:opacity-50">
+              <LogOut className="size-4 text-muted-foreground" /> {t("common.signOut")}
+            </PostFormButton>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

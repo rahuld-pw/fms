@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DataTable } from "@/components/shared/data-table";
 import { DueDate, Money } from "@/components/shared/format";
 import { UserChip } from "@/components/shared/fields";
-import { ResourceFormDialog, useAction, type FieldSpec } from "@/components/shared/resource-form";
+import { isActing, ResourceFormDialog, useAction, type FieldSpec } from "@/components/shared/resource-form";
 import { PriorityLabel, StatusBadge } from "@/components/shared/status";
 import { api } from "@/lib/client/api";
 import { cn } from "@/lib/utils/cn";
@@ -154,6 +154,8 @@ export function MaintenanceTabs() {
                     <Button
                       size="xs"
                       variant="outline"
+                      disabled={complete.isPending}
+                      loading={isActing(complete, `/compliance-items/${r.id}/complete`)}
                       onClick={(e) => {
                         e.stopPropagation();
                         complete.mutate({ path: `/compliance-items/${r.id}/complete`, body: { done_on: new Date().toISOString().slice(0, 10) } });

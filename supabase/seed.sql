@@ -393,3 +393,49 @@ values ('00000000-0000-4000-8000-000000000001', 'Local demo (read only)', 'demo0
   '{issue:read,asset:read,location:read,work_order:read,vendor:read,po:read,expense:read,budget:read,task:read}',
   '00000000-0000-4000-8000-000000000101')
 on conflict do nothing;
+
+-- Feedback & NPS demo: a staff pulse (answered in the app) and a parent survey (public link)
+do $surveys$
+declare
+  v_org uuid := '00000000-0000-4000-8000-000000000001';
+  v_staff_survey uuid;
+  v_parent_survey uuid;
+  r record;
+begin
+  insert into public.surveys (org_id, title, kind, question, follow_up, audience, status, anonymous, created_by)
+  values (v_org, 'Staff pulse — October', 'nps', 'How likely are you to recommend Greenfield as a place to work?',
+          'What is the main reason for your score?', 'members', 'active', true, '00000000-0000-4000-8000-000000000101')
+  returning id into v_staff_survey;
+  insert into public.surveys (org_id, title, kind, question, follow_up, audience, status, created_by, public_token)
+  values (v_org, 'Parent feedback — Term 1', 'nps', 'How likely are you to recommend Greenfield International School to a friend?',
+          'What should we keep doing, or do better?', 'both', 'active', '00000000-0000-4000-8000-000000000101', 'demo-parent-survey')
+  returning id into v_parent_survey;
+
+  for r in select * from (values
+    ('00000000-0000-4000-8000-000000000102'::uuid, 9, 'Good team, quick decisions.'),
+    ('00000000-0000-4000-8000-000000000103'::uuid, 6, 'Too many urgent calls after hours.'),
+    ('00000000-0000-4000-8000-000000000104'::uuid, 10, null),
+    ('00000000-0000-4000-8000-000000000107'::uuid, 8, 'Projectors in the old block need replacing.')
+  ) x(uid, score, comment) loop
+    insert into public.survey_responses (org_id, survey_id, score, comment, segment, respondent_id, source, created_at)
+    values (v_org, v_staff_survey, r.score, r.comment, 'staff', r.uid, 'in_app', now() - (random() * interval '20 days'));
+  end loop;
+
+  for r in select * from (values
+    (10, 'Teachers are caring and communicate well.', 'parent', 'Kavya R.'),
+    (9, 'Great sports facilities.', 'parent', null),
+    (7, 'Bus timings could be better.', 'parent', 'Imran S.'),
+    (4, 'Fee reminders are confusing.', 'parent', null),
+    (9, null, 'alumni', null),
+    (8, 'Library is excellent.', 'student', null)
+  ) x(score, comment, segment, name) loop
+    insert into public.survey_responses (org_id, survey_id, score, comment, segment, respondent_name, source, created_at)
+    values (v_org, v_parent_survey, r.score, r.comment, r.segment, r.name, 'link', now() - (random() * interval '40 days'));
+  end loop;
+
+  -- the resolved demo issue was fixed by the technician and rated by its reporter
+  update public.issues set resolved_by = coalesce(resolved_by, assignee_id, '00000000-0000-4000-8000-000000000103'),
+    rating = 4, feedback = 'Fixed the same day, thank you.'
+  where org_id = v_org and status in ('resolved', 'closed') and rating is null;
+end
+$surveys$;

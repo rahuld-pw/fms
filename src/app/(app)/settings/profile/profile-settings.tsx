@@ -97,12 +97,16 @@ function Preferences() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["notification-preferences"], queryFn: () => api<{ type: string; in_app: boolean; email: boolean }[]>("/notifications/preferences") });
   const pref = (type: string) => data?.find((p) => p.type === type) ?? data?.find((p) => p.type === "*") ?? { type, in_app: true, email: true };
+  // types whose preference is being saved: their switches stay disabled until it lands
+  const [saving, setSaving] = useState<string[]>([]);
   const update = async (type: string, patch: Partial<{ in_app: boolean; email: boolean }>) => {
+    if (saving.includes(type)) return;
     const cur = pref(type);
+    setSaving((s) => [...s, type]);
     try {
       await api("/notifications/preferences", { method: "PUT", body: { preferences: [{ type, in_app: cur.in_app, email: cur.email, ...patch }] } });
-      qc.invalidateQueries({ queryKey: ["notification-preferences"] });
-    } catch (e) { toast.error(errorMessage(e)); }
+      await qc.invalidateQueries({ queryKey: ["notification-preferences"] });
+    } catch (e) { toast.error(errorMessage(e)); } finally { setSaving((s) => s.filter((x) => x !== type)); }
   };
   return (
     <Card>
@@ -118,8 +122,8 @@ function Preferences() {
               const label = t(`settings.profile.notifications.types.${n.key}`);
               return [
                 <span key={`${n.type}-l`}>{label}</span>,
-                <Switch key={`${n.type}-a`} checked={pref(n.type).in_app} onCheckedChange={(c) => update(n.type, { in_app: c })} aria-label={t("settings.profile.notifications.inAppAria", { label })} />,
-                <Switch key={`${n.type}-e`} checked={pref(n.type).email} onCheckedChange={(c) => update(n.type, { email: c })} aria-label={t("settings.profile.notifications.emailAria", { label })} />,
+                <Switch key={`${n.type}-a`} disabled={saving.includes(n.type)} aria-busy={saving.includes(n.type) || undefined} checked={pref(n.type).in_app} onCheckedChange={(c) => update(n.type, { in_app: c })} aria-label={t("settings.profile.notifications.inAppAria", { label })} />,
+                <Switch key={`${n.type}-e`} disabled={saving.includes(n.type)} aria-busy={saving.includes(n.type) || undefined} checked={pref(n.type).email} onCheckedChange={(c) => update(n.type, { email: c })} aria-label={t("settings.profile.notifications.emailAria", { label })} />,
               ];
             }),
           ])}

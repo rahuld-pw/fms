@@ -28,6 +28,7 @@ export default function NewPoPage() {
   const [busy, setBusy] = useState<"draft" | "submit" | null>(null);
 
   const save = async (submit: boolean) => {
+    if (busy) return;
     if (!campus || !vendor) return toast.error(t("po.newOrder.chooseCampusVendor"));
     if (!lines.length) return toast.error(t("po.common.addOneLine"));
     setBusy(submit ? "submit" : "draft");

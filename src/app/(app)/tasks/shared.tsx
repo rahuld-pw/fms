@@ -6,6 +6,7 @@ import { CheckCircle2, Circle, Repeat } from "lucide-react";
 import { toast } from "sonner";
 import { AvatarStack } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { Spinner } from "@/components/ui/spinner";
 import { DueDate } from "@/components/shared/format";
 import { PriorityLabel } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
@@ -66,8 +67,8 @@ export function TaskRow({ task, showProject, onOpen }: { task: Task; showProject
   const subtasks = task.subtask_count?.[0]?.count ?? 0;
   return (
     <div className="group flex items-center gap-2.5 border-b px-3 py-2 text-sm last:border-0 hover:bg-muted/40">
-      <button onClick={() => toggle.mutate(task)} aria-label={done ? t("tasks.common.markIncomplete") : t("tasks.common.markComplete")} className="hit-area shrink-0">
-        {done ? <CheckCircle2 className="size-[18px] text-primary" /> : <Circle className="size-[18px] text-muted-foreground hover:text-primary" />}
+      <button onClick={() => toggle.mutate(task)} disabled={toggle.isPending} aria-busy={toggle.isPending || undefined} aria-label={done ? t("tasks.common.markIncomplete") : t("tasks.common.markComplete")} className="hit-area flex size-[18px] shrink-0 items-center justify-center">
+        {toggle.isPending ? <Spinner className="text-muted-foreground" /> : done ? <CheckCircle2 className="size-[18px] text-primary" /> : <Circle className="size-[18px] text-muted-foreground hover:text-primary" />}
       </button>
       <Link href={`/tasks/t/${task.id}`} onClick={(e) => { if (onOpen) { e.preventDefault(); onOpen(task); } }} className={cn("min-w-0 flex-1 truncate", done && "text-muted-foreground line-through")}>
         {task.title}
@@ -99,7 +100,7 @@ export function QuickAdd({ projectId, sectionId, placeholder, onAdded, assignToM
     onError: (e) => toast.error(errorMessage(e)),
   });
   return (
-    <form onSubmit={(e) => { e.preventDefault(); if (title.trim()) add.mutate(); }} className="px-3 py-2">
+    <form onSubmit={(e) => { e.preventDefault(); if (title.trim() && !add.isPending) add.mutate(); }} className="px-3 py-2">
       <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={placeholder ?? t("tasks.common.addTask")} className="h-8 border-dashed shadow-none" disabled={add.isPending} />
     </form>
   );

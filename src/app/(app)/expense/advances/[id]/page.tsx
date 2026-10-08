@@ -37,7 +37,7 @@ export default function AdvancePage({ params }: { params: Promise<{ id: string }
         breadcrumbs={[{ label: t("expense.advances.title"), href: "/expense/advances" }, { label: a.number }]}
         title={a.purpose}
         meta={<><StatusBadge status={a.status} /><Money value={a.amount} className="text-sm font-semibold" /></>}
-        actions={a.status === "draft" && a.user_id === user.id && <Button size="sm" onClick={() => act.mutate({ path: `/expense-advances/${id}/submit` })}><Send /> {t("ui.submit")}</Button>}
+        actions={a.status === "draft" && a.user_id === user.id && <Button size="sm" loading={act.isPending} onClick={() => act.mutate({ path: `/expense-advances/${id}/submit` })}><Send /> {t("ui.submit")}</Button>}
       />
       <div className="grid gap-4 md:grid-cols-[1fr_300px]">
         <div className="flex flex-col gap-4">
@@ -46,7 +46,7 @@ export default function AdvancePage({ params }: { params: Promise<{ id: string }
             <Card>
               <CardContent className="flex flex-col gap-2 pt-4 sm:flex-row">
                 <Input placeholder={t("expense.advances.disbursementReference")} value={ref} onChange={(e) => setRef(e.target.value)} />
-                <Button disabled={!ref} onClick={() => act.mutate({ path: `/expense-advances/${id}/disburse`, body: { reference: ref } })}><Banknote /> {t("expense.advances.disburse")}</Button>
+                <Button disabled={!ref} loading={act.isPending} onClick={() => act.mutate({ path: `/expense-advances/${id}/disburse`, body: { reference: ref } })}><Banknote /> {t("expense.advances.disburse")}</Button>
               </CardContent>
             </Card>
           )}

@@ -2,8 +2,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClipboardList, ListChecks, Lock, ShoppingCart, Wallet } from "lucide-react";
+import { ClipboardList, ListChecks, Lock, MessageSquareHeart, ShoppingCart, Wallet } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import { Spinner } from "@/components/ui/spinner";
 import { toast } from "sonner";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const MODULES = [
   { key: "expense", icon: Wallet },
   { key: "tasks", icon: ListChecks },
   { key: "po", icon: ShoppingCart },
+  { key: "surveys", icon: MessageSquareHeart },
 ];
 
 export function OrgSettings() {
@@ -172,7 +174,10 @@ function ModulesCard() {
   const router = useRouter();
   const { data } = useQuery({ queryKey: ["org", "modules"], queryFn: () => api<{ module: string; enabled: boolean }[]>("/org/modules") });
   const enabled = new Set((data ?? []).filter((m) => m.enabled).map((m) => m.module));
+  const [saving, setSaving] = useState<string | null>(null);
   const toggle = async (module: string, on: boolean) => {
+    if (saving) return;
+    setSaving(module);
     try {
       await api(`/org/modules/${module}`, { method: "PUT", body: { enabled: on } });
       toast.success(t(on ? "settings.org.modules.enabled" : "settings.org.modules.disabled", { module: t(`settings.org.modules.${module}`) }));
@@ -180,6 +185,8 @@ function ModulesCard() {
       router.refresh();
     } catch (e) {
       toast.error(errorMessage(e));
+    } finally {
+      setSaving(null);
     }
   };
   return (
@@ -187,14 +194,16 @@ function ModulesCard() {
       <CardHeader><CardTitle>{t("settings.org.modules.title")}</CardTitle></CardHeader>
       <CardContent className="grid gap-2 sm:grid-cols-2">
         {MODULES.map((m) => (
-          <label key={m.key} className={cn("flex items-start gap-3 rounded-md border p-3", !licensed.has(m.key) && "bg-muted/40")}>
-            <m.icon className="mt-0.5 size-4 text-muted-foreground" />
-            <span className="flex-1 text-sm font-medium">
+          <label key={m.key} className={cn("flex min-w-0 items-start gap-3 rounded-md border p-3", !licensed.has(m.key) && "bg-muted/40")}>
+            <m.icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+            <span className="min-w-0 flex-1 text-sm font-medium break-words">
               {t(`settings.org.modules.${m.key}`)}
               <span className="block text-xs font-normal text-muted-foreground">{licensed.has(m.key) ? t(`settings.org.modules.${m.key}Description`) : t("settings.org.modules.notInPlan")}</span>
             </span>
             {licensed.has(m.key)
-              ? <Switch checked={enabled.has(m.key)} onCheckedChange={(c) => toggle(m.key, c)} aria-label={t(`settings.org.modules.${m.key}`)} />
+              ? saving === m.key
+                ? <Spinner className="mt-0.5" />
+                : <Switch checked={enabled.has(m.key)} disabled={!!saving} onCheckedChange={(c) => toggle(m.key, c)} aria-label={t(`settings.org.modules.${m.key}`)} />
               : <Lock className="mt-0.5 size-4 text-muted-foreground" aria-label={t("settings.org.modules.notLicensed")} />}
           </label>
         ))}

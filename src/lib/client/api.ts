@@ -80,3 +80,25 @@ export function qs(params: Record<string, string | number | boolean | null | und
   const s = p.toString();
   return s ? `?${s}` : "";
 }
+
+/**
+ * Fetches a file (e.g. a CSV export) and saves it via a temporary link, so the
+ * caller can show a busy state until the download is ready.
+ */
+export async function downloadFile(url: string, fallbackName = "download") {
+  const res = await fetch(url, { credentials: "same-origin" });
+  if (!res.ok) {
+    const json = await res.json().catch(() => null);
+    throw new ApiClientError(res.status, json?.error?.code ?? "error", json?.error?.message ?? res.statusText);
+  }
+  const disposition = res.headers.get("content-disposition") ?? "";
+  const name = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(disposition)?.[1] ?? fallbackName;
+  const href = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = href;
+  a.download = decodeURIComponent(name);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(href), 1000);
+}

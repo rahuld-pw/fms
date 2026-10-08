@@ -35,14 +35,19 @@ export function CrudSection({
   const isEdit = !!editing?.id;
   const specs = (isEdit && editFields) || fields;
   const resolved = typeof specs === "function" ? specs(editing) : specs;
+  const [deleting, setDeleting] = useState<string | null>(null);
   const remove = async (row: any) => {
+    if (deleting) return;
     if (!confirm(t("settings.crud.confirmDelete", { name: row.name ?? row.label ?? row.key ?? t("settings.crud.thisItem") }))) return;
+    setDeleting(row.id);
     try {
       await api(`${base}/${row.id}`, { method: "DELETE" });
       toast.success(t("ui.deleted"));
       qc.invalidateQueries({ queryKey: [base] });
     } catch (e) {
       toast.error(errorMessage(e));
+    } finally {
+      setDeleting(null);
     }
   };
   const rows: any[] = data?.data ?? [];
@@ -72,7 +77,7 @@ export function CrudSection({
                 {canEdit && (
                   <TD className="text-right whitespace-nowrap">
                     <Button size="icon-sm" variant="ghost" aria-label={t("ui.edit")} onClick={() => setEditing({ ...(toForm ? toForm(r) : r), id: r.id })}><Pencil /></Button>
-                    {canDelete && <Button size="icon-sm" variant="ghost" aria-label={t("ui.delete")} onClick={() => remove(r)}><Trash2 /></Button>}
+                    {canDelete && <Button size="icon-sm" variant="ghost" aria-label={t("ui.delete")} disabled={!!deleting} loading={deleting === r.id} onClick={() => { void remove(r); }}>{deleting !== r.id && <Trash2 />}</Button>}
                   </TD>
                 )}
               </TR>

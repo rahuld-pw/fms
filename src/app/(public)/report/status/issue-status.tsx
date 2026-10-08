@@ -102,6 +102,7 @@ function Feedback({ token, status, onDone }: { token: string; status: Status; on
   const [busy, setBusy] = useState<"rate" | "reopen" | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const send = async (action: "rate" | "reopen") => {
+    if (busy) return;
     setBusy(action);
     const r = await fetch("/api/v1/public/issues/feedback", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ token, action, rating: action === "rate" ? rating : undefined, feedback: text || undefined }) });
     const j = await r.json().catch(() => null);
@@ -123,8 +124,8 @@ function Feedback({ token, status, onDone }: { token: string; status: Status; on
         </div>
         <Textarea rows={2} placeholder={t("public.status.anythingToAdd")} value={text} onChange={(e) => setText(e.target.value)} />
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" size="lg" loading={busy === "reopen"} onClick={() => send("reopen")}><RotateCcw /> {t("public.status.notFixed")}</Button>
-          <Button size="lg" loading={busy === "rate"} disabled={!rating} onClick={() => send("rate")}>{t("public.status.rate")}</Button>
+          <Button variant="outline" size="lg" loading={busy === "reopen"} disabled={!!busy} onClick={() => send("reopen")}><RotateCcw /> {t("public.status.notFixed")}</Button>
+          <Button size="lg" loading={busy === "rate"} disabled={!rating || !!busy} onClick={() => send("rate")}>{t("public.status.rate")}</Button>
         </div>
         {msg && <p className="text-center text-sm">{msg}</p>}
       </CardContent>

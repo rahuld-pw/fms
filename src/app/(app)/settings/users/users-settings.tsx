@@ -182,8 +182,10 @@ function MemberSheet({ member, roles, manage, onClose, scopeLabel }: { member: a
   const [campus, setCampus] = useState<string | null>(null);
   const [dept, setDept] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [removingRole, setRemovingRole] = useState<string | null>(null);
   const refresh = () => qc.invalidateQueries({ queryKey: ["members"] });
   const run = async (fn: () => Promise<unknown>, msg: string) => {
+    if (busy) return;
     setBusy(true);
     try { await fn(); toast.success(msg); refresh(); } catch (e) { toast.error(errorMessage(e)); } finally { setBusy(false); }
   };
@@ -206,7 +208,7 @@ function MemberSheet({ member, roles, manage, onClose, scopeLabel }: { member: a
               {(member.roles ?? []).map((a: any) => (
                 <div key={a.id} className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm">
                   <span className="flex-1">{a.role?.name}<span className="block text-xs text-muted-foreground">{scopeLabel(a) ?? t("settings.users.scopeOrg")}</span></span>
-                  {manage && <Button size="icon-sm" variant="ghost" aria-label={t("settings.users.removeRole")} disabled={busy} onClick={() => run(() => api(`/role-assignments/${a.id}`, { method: "DELETE" }), t("settings.users.roleRemoved"))}><X /></Button>}
+                  {manage && <Button size="icon-sm" variant="ghost" aria-label={t("settings.users.removeRole")} disabled={busy} loading={removingRole === a.id} onClick={() => { setRemovingRole(a.id); void run(() => api(`/role-assignments/${a.id}`, { method: "DELETE" }), t("settings.users.roleRemoved")).finally(() => setRemovingRole(null)); }}>{removingRole !== a.id && <X />}</Button>}
                 </div>
               ))}
               {manage && (
@@ -246,7 +248,7 @@ function MemberSheet({ member, roles, manage, onClose, scopeLabel }: { member: a
 }
 
 /** Per-member module access: all modules the organisation has on, or a chosen subset. */
-function ModuleAccess({ member, onSave, busy }: { member: any; onSave: (v: string[] | null) => void; busy: boolean }) {
+function ModuleAccess({ member, onSave, busy }: { member: any; onSave: (v: string[] | null) => Promise<unknown>; busy: boolean }) {
   const { t } = useT();
   const { data: orgModules } = useQuery({ queryKey: ["org", "modules"], queryFn: () => api<{ module: string; enabled: boolean }[]>("/org/modules") });
   const available = (orgModules ?? []).filter((m) => m.enabled).map((m) => m.module).sort();
@@ -281,7 +283,7 @@ function ModuleAccess({ member, onSave, busy }: { member: any; onSave: (v: strin
   );
 }
 
-function MemberFields({ member, onSave, busy }: { member: any; onSave: (b: Record<string, unknown>) => void; busy: boolean }) {
+function MemberFields({ member, onSave, busy }: { member: any; onSave: (b: Record<string, unknown>) => Promise<unknown>; busy: boolean }) {
   const { t } = useT();
   const [title, setTitle] = useState(member.title ?? "");
   const [code, setCode] = useState(member.employee_code ?? "");

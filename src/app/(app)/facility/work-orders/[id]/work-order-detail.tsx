@@ -61,6 +61,8 @@ export function WorkOrderDetail({ id }: { id: string }) {
   const mine = wo.assignee_id === user.id || wo.created_by === user.id;
   const editable = (manager || mine) && !["verified", "cancelled"].includes(wo.status);
   const setResult = (i: number, result: any) => setChecklist((c) => c.map((x, j) => (j === i ? { ...x, result } : x)));
+  /** Only the clicked button spins; every button sharing `patch` is disabled meanwhile. */
+  const patching = (status?: string) => patch.isPending && patch.variables?.status === status;
   const saveWork = (status?: string) =>
     patch.mutate({
       checklist,
@@ -86,22 +88,22 @@ export function WorkOrderDetail({ id }: { id: string }) {
           editable && (
             <>
               {["open", "scheduled", "on_hold"].includes(wo.status) && (
-                <Button size="sm" onClick={() => patch.mutate({ status: "in_progress" })}>
+                <Button size="sm" disabled={patch.isPending} loading={patching("in_progress")} onClick={() => patch.mutate({ status: "in_progress" })}>
                   <Play /> {t("facility.workOrders.detail.start")}
                 </Button>
               )}
               {wo.status === "in_progress" && (
                 <>
-                  <Button size="sm" onClick={() => saveWork("completed")} loading={patch.isPending}>
+                  <Button size="sm" onClick={() => saveWork("completed")} disabled={patch.isPending} loading={patching("completed")}>
                     <CheckCircle2 /> {t("facility.workOrders.detail.complete")}
                   </Button>
-                  <Button size="sm" variant="outline" onClick={() => patch.mutate({ status: "on_hold" })}>
+                  <Button size="sm" variant="outline" disabled={patch.isPending} loading={patching("on_hold")} onClick={() => patch.mutate({ status: "on_hold" })}>
                     <Pause /> {t("facility.workOrders.detail.hold")}
                   </Button>
                 </>
               )}
               {wo.status === "completed" && manager && (
-                <Button size="sm" onClick={() => patch.mutate({ status: "verified" })}>
+                <Button size="sm" disabled={patch.isPending} loading={patching("verified")} onClick={() => patch.mutate({ status: "verified" })}>
                   <ShieldCheck /> {t("facility.workOrders.detail.verify")}
                 </Button>
               )}
@@ -111,7 +113,7 @@ export function WorkOrderDetail({ id }: { id: string }) {
                 </Button>
               )}
               {manager && !["completed"].includes(wo.status) && (
-                <Button size="sm" variant="ghost" onClick={() => patch.mutate({ status: "cancelled" })}>
+                <Button size="sm" variant="ghost" disabled={patch.isPending} loading={patching("cancelled")} onClick={() => patch.mutate({ status: "cancelled" })}>
                   <XCircle /> {t("ui.cancel")}
                 </Button>
               )}
@@ -174,7 +176,7 @@ export function WorkOrderDetail({ id }: { id: string }) {
                   <Field label={t("facility.workOrders.detail.materialCost")}>
                     <Input type="number" inputMode="decimal" value={costs.material_cost} onChange={(e) => setCosts({ ...costs, material_cost: e.target.value })} />
                   </Field>
-                  <Button variant="outline" className="sm:col-span-2 sm:justify-self-start" onClick={() => saveWork()} loading={patch.isPending}>
+                  <Button variant="outline" className="sm:col-span-2 sm:justify-self-start" onClick={() => saveWork()} disabled={patch.isPending} loading={patching()}>
                     {t("facility.workOrders.detail.saveProgress")}
                   </Button>
                 </div>
@@ -213,10 +215,10 @@ export function WorkOrderDetail({ id }: { id: string }) {
                 {manager && (
                   <div className="flex flex-wrap gap-2">
                     {wo.vendor_booking_status === "not_required" && (
-                      <Button size="xs" variant="outline" onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "requested" } })}>{t("facility.workOrders.detail.requestVisit")}</Button>
+                      <Button size="xs" variant="outline" loading={booking.isPending} onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "requested" } })}>{t("facility.workOrders.detail.requestVisit")}</Button>
                     )}
                     {["requested", "rescheduled"].includes(wo.vendor_booking_status) && (
-                      <Button size="xs" variant="outline" onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "confirmed" } })}>
+                      <Button size="xs" variant="outline" loading={booking.isPending} onClick={() => booking.mutate({ path: `/work-orders/${id}/booking`, body: { vendor_booking_status: "confirmed" } })}>
                         <CalendarCheck /> {t("facility.workOrders.detail.markConfirmed")}
                       </Button>
                     )}

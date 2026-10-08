@@ -11,7 +11,8 @@ import settings from "./settings/en";
 import shared from "./shared/en";
 import platform from "./platform/en";
 import publicArea from "./public/en";
+import surveys from "./surveys/en";
 
-export const AREAS = ["ui", "enums", "facility", "expense", "po", "tasks", "settings", "shared", "platform", "public"] as const;
+export const AREAS = ["ui", "enums", "facility", "expense", "po", "tasks", "settings", "shared", "platform", "public", "surveys"] as const;
 
-export const englishAreas: Dict[] = [ui, enums, facility, expense, po, tasks, settings, shared, platform, publicArea] as Dict[];
+export const englishAreas: Dict[] = [ui, enums, facility, expense, po, tasks, settings, shared, platform, publicArea, surveys] as Dict[];

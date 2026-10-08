@@ -40,6 +40,7 @@ export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone }:
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (busy) return;
     setBusy(true);
     setError(null);
     const res = await fetch("/api/v1/feedback", {

@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ActivityFeed, ApprovalPanel, Attachments, Comments } from "@/components/shared/collaboration";
 import { DateTime, DueDate, Money } from "@/components/shared/format";
 import { DetailGrid, PageHeader, Stat } from "@/components/shared/page-header";
-import { ResourceFormDialog, useAction } from "@/components/shared/resource-form";
+import { isActing, ResourceFormDialog, useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
@@ -66,16 +66,16 @@ export function VendorDetail({ id }: { id: string }) {
           manage && (
             <>
               {["submitted", "draft", "invited"].includes(v.status) && (
-                <Button size="sm" variant="outline" onClick={() => act.mutate({ path: `/vendors/${id}/start-verification` })}>
+                <Button size="sm" variant="outline" disabled={act.isPending} loading={isActing(act, `/vendors/${id}/start-verification`)} onClick={() => act.mutate({ path: `/vendors/${id}/start-verification` })}>
                   <FileCheck2 /> {t("facility.vendors.detail.startVerification")}
                 </Button>
               )}
               {["under_verification", "submitted", "rejected"].includes(v.status) && (
-                <Button size="sm" onClick={() => act.mutate({ path: `/vendors/${id}/submit-for-approval` })}>
+                <Button size="sm" disabled={act.isPending} loading={isActing(act, `/vendors/${id}/submit-for-approval`)} onClick={() => act.mutate({ path: `/vendors/${id}/submit-for-approval` })}>
                   <Send /> {t("facility.vendors.detail.sendForApproval")}
                 </Button>
               )}
-              <Button size="sm" variant="outline" onClick={() => link.mutate({ path: `/vendors/${id}/portal-link`, body: { purpose: STEPS.indexOf(v.status) < 3 ? "onboarding" : "portal" } })}>
+              <Button size="sm" variant="outline" loading={link.isPending} onClick={() => link.mutate({ path: `/vendors/${id}/portal-link`, body: { purpose: STEPS.indexOf(v.status) < 3 ? "onboarding" : "portal" } })}>
                 <Link2 /> {t("facility.vendors.detail.portalLink")}
               </Button>
               <Button size="sm" variant="outline" onClick={() => setDialog("edit")}>
@@ -83,7 +83,7 @@ export function VendorDetail({ id }: { id: string }) {
               </Button>
               {can("vendor:approve") &&
                 (v.status === "blacklisted" ? (
-                  <Button size="sm" variant="ghost" onClick={() => act.mutate({ path: `/vendors/${id}/blacklist`, body: { blacklisted: false } })}>{t("facility.vendors.detail.reinstate")}</Button>
+                  <Button size="sm" variant="ghost" disabled={act.isPending} loading={isActing(act, `/vendors/${id}/blacklist`)} onClick={() => act.mutate({ path: `/vendors/${id}/blacklist`, body: { blacklisted: false } })}>{t("facility.vendors.detail.reinstate")}</Button>
                 ) : (
                   <Button size="sm" variant="ghost" onClick={() => setDialog("blacklist")}>
                     <Ban /> {t("facility.vendors.detail.blacklist")}
@@ -159,8 +159,8 @@ export function VendorDetail({ id }: { id: string }) {
                 )}
                 {manage && d.verification_status === "pending" && (
                   <div className="flex gap-1">
-                    <Button size="xs" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "verified" } })}><Check /> {t("facility.workOrders.detail.verify")}</Button>
-                    <Button size="xs" variant="outline" onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "rejected" } })}><X /> {t("ui.reject")}</Button>
+                    <Button size="xs" disabled={act.isPending} loading={isActing(act, `/vendors/${id}/documents/${d.id}/verify`, { verification_status: "verified" })} onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "verified" } })}><Check /> {t("facility.workOrders.detail.verify")}</Button>
+                    <Button size="xs" variant="outline" disabled={act.isPending} loading={isActing(act, `/vendors/${id}/documents/${d.id}/verify`, { verification_status: "rejected" })} onClick={() => act.mutate({ path: `/vendors/${id}/documents/${d.id}/verify`, body: { verification_status: "rejected" } })}><X /> {t("ui.reject")}</Button>
                   </div>
                 )}
               </div>

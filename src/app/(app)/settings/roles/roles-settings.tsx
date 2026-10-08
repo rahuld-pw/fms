@@ -70,8 +70,10 @@ export function RolesSettings() {
       setSaving(false);
     }
   };
+  const [removing, setRemoving] = useState(false);
   const remove = async (r: Role) => {
-    if (!confirm(t("settings.roles.confirmDelete", { name: r.name }))) return;
+    if (removing || !confirm(t("settings.roles.confirmDelete", { name: r.name }))) return;
+    setRemoving(true);
     try {
       await api(`/roles/${r.id}`, { method: "DELETE" });
       toast.success(t("settings.roles.deleted"));
@@ -79,6 +81,8 @@ export function RolesSettings() {
       qc.invalidateQueries({ queryKey: ["roles"] });
     } catch (e) {
       toast.error(errorMessage(e));
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -117,7 +121,7 @@ export function RolesSettings() {
                 <Button size="xs" variant="outline" onClick={() => startCopy(selected)}><Copy /> {t("settings.roles.duplicate")}</Button>
                 {!selected.is_system && <>
                   <Button size="xs" variant="outline" onClick={() => setDraft({ id: selected.id, key: selected.key, name: selected.name, description: selected.description ?? "", permissions: new Set(selected.role_permissions.map((p) => p.permission_key)) })}>{t("ui.edit")}</Button>
-                  <Button size="icon-sm" variant="ghost" aria-label={t("settings.roles.deleteRole")} onClick={() => remove(selected)}><Trash2 /></Button>
+                  <Button size="icon-sm" variant="ghost" aria-label={t("settings.roles.deleteRole")} loading={removing} onClick={() => { void remove(selected); }}>{!removing && <Trash2 />}</Button>
                 </>}
               </div>
             )}

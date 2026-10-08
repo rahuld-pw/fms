@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PREFIXES = ["/login", "/signup", "/forgot-password", "/auth", "/invite", "/q/", "/report", "/vendor-portal", "/api/", "/docs", "/feedback"];
+const PUBLIC_PREFIXES = ["/login", "/signup", "/forgot-password", "/auth", "/invite", "/q/", "/report", "/vendor-portal", "/api/", "/docs", "/feedback", "/s/"];
 
 /**
  * Refreshes the Supabase session cookie on every request and redirects

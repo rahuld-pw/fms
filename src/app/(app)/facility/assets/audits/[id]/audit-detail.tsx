@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageHeader, Stat } from "@/components/shared/page-header";
 import { QrScanner } from "@/components/shared/qr-scanner";
-import { useAction } from "@/components/shared/resource-form";
+import { isActing, useAction } from "@/components/shared/resource-form";
 import { StatusBadge } from "@/components/shared/status";
 import { api, errorMessage } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
@@ -54,7 +54,7 @@ export function AuditDetail({ id }: { id: string }) {
         meta={<StatusBadge status={audit.data.status} />}
         actions={
           audit.data.status !== "completed" && (
-            <Button size="sm" onClick={() => complete.mutate({ path: `/asset-audits/${id}`, method: "PATCH", body: { status: "completed" } })} disabled={counts.pending > 0}>
+            <Button size="sm" onClick={() => complete.mutate({ path: `/asset-audits/${id}`, method: "PATCH", body: { status: "completed" } })} disabled={counts.pending > 0} loading={complete.isPending}>
               {t("facility.assets.audits.detail.complete")}
             </Button>
           )
@@ -98,7 +98,7 @@ export function AuditDetail({ id }: { id: string }) {
                       {audit.data.status !== "completed" && (
                         <div className="flex gap-1">
                           {["found", "missing", "damaged"].filter((r) => r !== i.result).map((r) => (
-                            <Button key={r} size="xs" variant={r === "found" ? "default" : "outline"} onClick={() => mark.mutate({ path: `/asset-audits/${id}/verify`, body: { asset_id: i.asset_id, result: r } })}>
+                            <Button key={r} size="xs" variant={r === "found" ? "default" : "outline"} disabled={mark.isPending} loading={isActing(mark, `/asset-audits/${id}/verify`, { asset_id: i.asset_id, result: r })} onClick={() => mark.mutate({ path: `/asset-audits/${id}/verify`, body: { asset_id: i.asset_id, result: r } })}>
                               {t(`enum.auditResult.${r}`, undefined, r)}
                             </Button>
                           ))}

@@ -10,7 +10,8 @@ import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { BudgetBars, ColumnChart } from "@/components/shared/charts";
 import { Money, useMoney } from "@/components/shared/format";
 import { Stat } from "@/components/shared/page-header";
-import { api, apiList } from "@/lib/client/api";
+import { api, apiList, downloadFile, errorMessage } from "@/lib/client/api";
+import { toast } from "sonner";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
@@ -57,8 +58,8 @@ export function ExpenseDashboard() {
             </button>
           ))}
         </div>
-        <Button variant="outline" size="sm" className="ml-auto" asChild>
-          <a href={`/api/v1/budget-summary/export?fiscal_year_id=${fy}`}><Download /> {t("ui.export")}</a>
+        <Button variant="outline" size="sm" className="ml-auto" onClick={() => downloadFile(`/api/v1/budget-summary/export?fiscal_year_id=${fy}`, "budget-vs-actual.csv").catch((e) => toast.error(errorMessage(e)))}>
+          <Download /> {t("ui.export")}
         </Button>
       </div>
       {isLoading || !data ? (

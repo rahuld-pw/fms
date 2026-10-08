@@ -29,6 +29,7 @@ export default function NewClaimPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const save = async (submit: boolean) => {
+    if (busy) return;
     if (!campus) return toast.error(t("expense.newClaim.chooseCampus"));
     setBusy(submit ? "submit" : "draft");
     try {

@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApprovalPanel, Attachments, Comments } from "@/components/shared/collaboration";
@@ -79,6 +80,7 @@ export function OrderDetail({ id }: { id: string }) {
     can("po:cancel", scope, "auto") && !["closed", "cancelled"].includes(po.status) && received === 0 && { key: "cancel", label: t("po.order.cancelPo"), icon: Ban, run: () => setDialog("cancel") },
   ].filter(Boolean) as { key: string; label: string; icon: React.ComponentType; primary?: boolean; run: () => void }[];
   const primary = actions.filter((a) => a.primary);
+  const menuBusy = (send.isPending && actions.some((a) => a.key === "resend")) || remove.isPending;
   const secondary = actions.filter((a) => !a.primary);
 
   const saveLines = async () => {
@@ -126,12 +128,12 @@ export function OrderDetail({ id }: { id: string }) {
             </Button>
             {(secondary.length > 0 || (draft && can("po:delete", scope, "auto"))) && (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild><Button size="icon-sm" variant="outline" aria-label={t("po.order.moreActions")}><MoreHorizontal /></Button></DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild><Button size="icon-sm" variant="outline" loading={menuBusy} aria-label={t("po.order.moreActions")}>{!menuBusy && <MoreHorizontal />}</Button></DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {secondary.map((a) => <DropdownMenuItem key={a.key} onSelect={a.run}><a.icon /> {a.label}</DropdownMenuItem>)}
+                  {secondary.map((a) => <DropdownMenuItem key={a.key} disabled={a.key === "resend" && send.isPending} onSelect={a.run}>{a.key === "resend" && send.isPending ? <Spinner /> : <a.icon />} {a.label}</DropdownMenuItem>)}
                   {draft && po.version === 1 && can("po:delete", scope, "auto") && (
-                    <DropdownMenuItem destructive onSelect={() => confirm(t("po.order.confirmDelete")) && remove.mutate({ path: `/purchase-orders/${id}`, method: "DELETE" })}>
-                      <Trash2 /> {t("po.order.deleteDraft")}
+                    <DropdownMenuItem destructive disabled={remove.isPending} onSelect={() => confirm(t("po.order.confirmDelete")) && remove.mutate({ path: `/purchase-orders/${id}`, method: "DELETE" })}>
+                      {remove.isPending ? <Spinner /> : <Trash2 />} {t("po.order.deleteDraft")}
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
