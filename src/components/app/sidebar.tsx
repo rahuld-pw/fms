@@ -48,7 +48,13 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           <div key={i} className="flex flex-col gap-0.5">
             {section.title && <div className="px-2 pb-1 text-[11px] font-medium tracking-wide text-muted-foreground uppercase">{section.module ? t(`modules.${section.module}`, undefined, section.title) : section.title}</div>}
             {items.map((item) => (
-              <NavLink key={item.href} item={item} active={isActive(pathname, item.href)} onNavigate={onNavigate} />
+              <NavLink
+                key={item.href}
+                item={item}
+                // a deeper item (Assets › Asset audits) wins over its parent
+                active={isActive(pathname, item.href) && !items.some((o) => o.href.length > item.href.length && o.href.startsWith(`${item.href}/`) && isActive(pathname, o.href))}
+                onNavigate={onNavigate}
+              />
             ))}
           </div>
         );

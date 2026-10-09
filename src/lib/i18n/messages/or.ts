@@ -29,6 +29,7 @@ const odia = {
     "/facility/issues": "ସମସ୍ୟା",
     "/facility/work-orders": "କାମ ଅର୍ଡର",
     "/facility/assets": "ସମ୍ପତ୍ତି",
+    "/facility/assets/audits": "ସମ୍ପତ୍ତି ଅଡିଟ୍",
     "/facility/locations": "ସ୍ଥାନ",
     "/facility/maintenance": "ରକ୍ଷଣାବେକ୍ଷଣ",
     "/facility/vendors": "ଭେଣ୍ଡର",

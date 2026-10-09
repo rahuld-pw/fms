@@ -29,6 +29,7 @@ const malayalam = {
     "/facility/issues": "പ്രശ്നങ്ങൾ",
     "/facility/work-orders": "വർക്ക് ഓർഡറുകൾ",
     "/facility/assets": "ആസ്തികൾ",
+    "/facility/assets/audits": "ആസ്തി ഓഡിറ്റുകൾ",
     "/facility/locations": "സ്ഥലങ്ങൾ",
     "/facility/maintenance": "അറ്റകുറ്റപ്പണി",
     "/facility/vendors": "വെണ്ടർമാർ",

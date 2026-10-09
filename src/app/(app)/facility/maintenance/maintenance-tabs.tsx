@@ -41,7 +41,7 @@ const pmFields = (t: TFunction): FieldSpec[] => [
   { name: "requires_vendor_booking", label: t("facility.maintenance.pm.vendorConfirm"), type: "switch" },
 ];
 
-const amcFields = (t: TFunction): FieldSpec[] => [
+export const amcFields = (t: TFunction): FieldSpec[] => [
   { name: "title", label: t("ui.title"), required: true, full: true },
   { name: "vendor_id", label: t("ui.vendor"), type: "resource", endpoint: "/vendors?status=approved", required: true },
   { name: "campus_id", label: t("ui.campus"), type: "campus" },

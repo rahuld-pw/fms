@@ -370,6 +370,8 @@ const settings_kn = {
         service: "ಸೇವೆ",
       },
       assetCategories: {
+        parent: "ಇದರ ಉಪ-ವರ್ಗ",
+        parentHint: "ಮುಖ್ಯ ವರ್ಗಕ್ಕಾಗಿ ಖಾಲಿ ಬಿಡಿ",
         title: "ಆಸ್ತಿ ವರ್ಗಗಳು",
         add: "ವರ್ಗ ಸೇರಿಸಿ",
         createTitle: "ಆಸ್ತಿ ವರ್ಗ ಸೇರಿಸಿ",

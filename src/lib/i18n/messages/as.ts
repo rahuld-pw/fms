@@ -29,6 +29,7 @@ const assamese = {
     "/facility/issues": "সমস্যা",
     "/facility/work-orders": "কামৰ অৰ্ডাৰ",
     "/facility/assets": "সম্পদ",
+    "/facility/assets/audits": "সম্পদ অডিট",
     "/facility/locations": "স্থান",
     "/facility/maintenance": "ৰক্ষণাবেক্ষণ",
     "/facility/vendors": "যোগানধাৰী",

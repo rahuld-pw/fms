@@ -1,6 +1,13 @@
 // Punjabi (ਪੰਜਾਬੀ) translations of ./en.ts. Missing keys fall back to English.
 const shared_pa = {
   shared: {
+    location: {
+      none: "ਇਸ ਕੈਂਪਸ ਲਈ ਅਜੇ ਕੋਈ ਇਮਾਰਤ ਜਾਂ ਕਮਰਾ ਸੈੱਟ ਨਹੀਂ ਕੀਤਾ ਗਿਆ।",
+      wholeCampus: "ਪੂਰਾ ਕੈਂਪਸ",
+      wholeParent: "ਇਹ ਪੂਰਾ ਖੇਤਰ",
+      pick: { building: "ਇਮਾਰਤ", floor: "ਮੰਜ਼ਿਲ", room: "ਕਮਰਾ", area: "ਖੇਤਰ", any: "ਇਮਾਰਤ / ਖੇਤਰ" },
+    },
+    file: { choose: "ਫ਼ਾਈਲ ਨੱਥੀ ਕਰੋ", attached: "ਫ਼ਾਈਲ ਨੱਥੀ ਕੀਤੀ ਗਈ", remove: "ਫ਼ਾਈਲ ਹਟਾਓ" },
     breadcrumb: "ਬ੍ਰੈੱਡਕ੍ਰੰਬ",
     nav: {
       main: "ਮੁੱਖ",
@@ -62,6 +69,28 @@ const shared_pa = {
       updated: "{actor} ਨੇ ਅੱਪਡੇਟ ਕੀਤਾ",
       restored: "{actor} ਨੇ ਬਹਾਲ ਕੀਤਾ",
       other: {
+        warranty_added: "{actor} ਨੇ ਇੱਕ ਵਾਰੰਟੀ ਜੋੜੀ",
+        warranty_updated: "{actor} ਨੇ ਇੱਕ ਵਾਰੰਟੀ ਅੱਪਡੇਟ ਕੀਤੀ",
+        warranty_removed: "{actor} ਨੇ ਇੱਕ ਵਾਰੰਟੀ ਹਟਾਈ",
+        amc_linked: "{actor} ਨੇ ਇਸਨੂੰ ਇੱਕ AMC ਵਿੱਚ ਜੋੜਿਆ",
+        amc_unlinked: "{actor} ਨੇ ਇਸਨੂੰ ਇੱਕ AMC ਵਿੱਚੋਂ ਹਟਾਇਆ",
+        transfer_requested: "{actor} ਨੇ ਟ੍ਰਾਂਸਫਰ ਦੀ ਬੇਨਤੀ ਕੀਤੀ",
+        transfer_completed: "{actor} ਨੇ ਟ੍ਰਾਂਸਫਰ ਪੂਰਾ ਕੀਤਾ",
+        transfer_rejected: "{actor} ਨੇ ਟ੍ਰਾਂਸਫਰ ਰੱਦ ਕੀਤਾ",
+        transfer_cancelled: "{actor} ਨੇ ਟ੍ਰਾਂਸਫਰ ਕੈਂਸਲ ਕੀਤਾ",
+        verification_found: "{actor} ਨੇ ਆਡਿਟ ਵਿੱਚ ਇਸਦੀ ਜਾਂਚ ਕੀਤੀ: ਮਿਲਿਆ",
+        verification_damaged: "{actor} ਨੇ ਆਡਿਟ ਵਿੱਚ ਇਸਦੀ ਜਾਂਚ ਕੀਤੀ: ਖ਼ਰਾਬ",
+        verification_relocated: "{actor} ਨੇ ਆਡਿਟ ਵਿੱਚ ਇਸਦੀ ਜਾਂਚ ਕੀਤੀ: ਕਿਸੇ ਹੋਰ ਥਾਂ ਮਿਲਿਆ",
+        condition_recorded: "{actor} ਨੇ ਇਸਦੀ ਹਾਲਤ ਦਰਜ ਕੀਤੀ",
+        document_added: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਜੋੜਿਆ",
+        document_updated: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਅੱਪਡੇਟ ਕੀਤਾ",
+        document_removed: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਹਟਾਇਆ",
+        document_verified: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਦੀ ਪੁਸ਼ਟੀ ਕੀਤੀ",
+        document_rejected: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਰੱਦ ਕੀਤਾ",
+        document_pending: "{actor} ਨੇ ਇੱਕ ਦਸਤਾਵੇਜ਼ ਨੂੰ ਮੁੜ ਬਕਾਇਆ ਕੀਤਾ",
+        agreement_added: "{actor} ਨੇ ਇੱਕ ਸਮਝੌਤਾ ਜੋੜਿਆ",
+        agreement_updated: "{actor} ਨੇ ਇੱਕ ਸਮਝੌਤਾ ਅੱਪਡੇਟ ਕੀਤਾ",
+        agreement_removed: "{actor} ਨੇ ਇੱਕ ਸਮਝੌਤਾ ਹਟਾਇਆ",
         approval_approved: "{actor} — ਮਨਜ਼ੂਰੀ ਮਿਲੀ",
         approval_rejected: "{actor} — ਮਨਜ਼ੂਰੀ ਨਾਮਨਜ਼ੂਰ",
         approval_cancelled: "{actor} — ਮਨਜ਼ੂਰੀ ਰੱਦ",

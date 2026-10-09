@@ -1,6 +1,13 @@
 // shared screens: English source strings (top-level key "shared").
 const shared = {
   shared: {
+    location: {
+      none: "No buildings or rooms set up for this campus yet.",
+      wholeCampus: "Whole campus",
+      wholeParent: "Whole of this area",
+      pick: { building: "Building", floor: "Floor", room: "Room", area: "Area", any: "Building / area" },
+    },
+    file: { choose: "Attach file", attached: "File attached", remove: "Remove file" },
     breadcrumb: "Breadcrumb",
     nav: {
       main: "Main",
@@ -62,6 +69,28 @@ const shared = {
       updated: "{actor} updated",
       restored: "{actor} restored",
       other: {
+        warranty_added: "{actor} added a warranty",
+        warranty_updated: "{actor} updated a warranty",
+        warranty_removed: "{actor} removed a warranty",
+        amc_linked: "{actor} added it to an AMC",
+        amc_unlinked: "{actor} removed it from an AMC",
+        transfer_requested: "{actor} requested a transfer",
+        transfer_completed: "{actor} completed the transfer",
+        transfer_rejected: "{actor} rejected the transfer",
+        transfer_cancelled: "{actor} cancelled the transfer",
+        verification_found: "{actor} verified it in an audit: found",
+        verification_damaged: "{actor} verified it in an audit: damaged",
+        verification_relocated: "{actor} verified it in an audit: found elsewhere",
+        condition_recorded: "{actor} recorded its condition",
+        document_added: "{actor} added a document",
+        document_updated: "{actor} updated a document",
+        document_removed: "{actor} removed a document",
+        document_verified: "{actor} verified a document",
+        document_rejected: "{actor} rejected a document",
+        document_pending: "{actor} set a document back to pending",
+        agreement_added: "{actor} added an agreement",
+        agreement_updated: "{actor} updated an agreement",
+        agreement_removed: "{actor} removed an agreement",
         approval_approved: "{actor} approval approved",
         approval_rejected: "{actor} approval rejected",
         approval_cancelled: "{actor} approval cancelled",

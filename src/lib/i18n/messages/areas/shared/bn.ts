@@ -1,6 +1,13 @@
 // Bengali (বাংলা) translations of ./en.ts. Missing keys fall back to English.
 const shared_bn = {
   shared: {
+    location: {
+      none: "এই ক্যাম্পাসের জন্য এখনও কোনো বিল্ডিং বা রুম সেট আপ করা হয়নি।",
+      wholeCampus: "পুরো ক্যাম্পাস",
+      wholeParent: "এই পুরো এলাকা",
+      pick: { building: "বিল্ডিং", floor: "তলা", room: "রুম", area: "এলাকা", any: "বিল্ডিং / এলাকা" },
+    },
+    file: { choose: "ফাইল যোগ করুন", attached: "ফাইল যোগ করা হয়েছে", remove: "ফাইল সরান" },
     breadcrumb: "ব্রেডক্রাম্ব",
     nav: {
       main: "প্রধান",
@@ -62,6 +69,28 @@ const shared_bn = {
       updated: "{actor} আপডেট করেছেন",
       restored: "{actor} ফিরিয়ে এনেছেন",
       other: {
+        warranty_added: "{actor} একটি ওয়ারেন্টি যোগ করেছেন",
+        warranty_updated: "{actor} একটি ওয়ারেন্টি আপডেট করেছেন",
+        warranty_removed: "{actor} একটি ওয়ারেন্টি সরিয়েছেন",
+        amc_linked: "{actor} এটিকে একটি AMC-তে যোগ করেছেন",
+        amc_unlinked: "{actor} এটিকে একটি AMC থেকে সরিয়েছেন",
+        transfer_requested: "{actor} ট্রান্সফারের অনুরোধ করেছেন",
+        transfer_completed: "{actor} ট্রান্সফার সম্পন্ন করেছেন",
+        transfer_rejected: "{actor} ট্রান্সফার প্রত্যাখ্যান করেছেন",
+        transfer_cancelled: "{actor} ট্রান্সফার বাতিল করেছেন",
+        verification_found: "{actor} অডিটে এটি যাচাই করেছেন: পাওয়া গেছে",
+        verification_damaged: "{actor} অডিটে এটি যাচাই করেছেন: ক্ষতিগ্রস্ত",
+        verification_relocated: "{actor} অডিটে এটি যাচাই করেছেন: অন্য জায়গায় পাওয়া গেছে",
+        condition_recorded: "{actor} এটির অবস্থা রেকর্ড করেছেন",
+        document_added: "{actor} একটি নথি যোগ করেছেন",
+        document_updated: "{actor} একটি নথি আপডেট করেছেন",
+        document_removed: "{actor} একটি নথি সরিয়েছেন",
+        document_verified: "{actor} একটি নথি যাচাই করেছেন",
+        document_rejected: "{actor} একটি নথি প্রত্যাখ্যান করেছেন",
+        document_pending: "{actor} একটি নথি আবার পেন্ডিং-এ ফিরিয়ে দিয়েছেন",
+        agreement_added: "{actor} একটি চুক্তি যোগ করেছেন",
+        agreement_updated: "{actor} একটি চুক্তি আপডেট করেছেন",
+        agreement_removed: "{actor} একটি চুক্তি সরিয়েছেন",
         approval_approved: "{actor}: অনুমোদন মঞ্জুর",
         approval_rejected: "{actor}: অনুমোদন বাতিল",
         approval_cancelled: "{actor}: অনুমোদনের অনুরোধ তুলে নেওয়া হয়েছে",

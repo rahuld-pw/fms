@@ -891,6 +891,174 @@ export type Database = {
           },
         ]
       }
+      asset_condition_logs: {
+        Row: {
+          id: string
+          org_id: string
+          asset_id: string
+          condition: string
+          previous_condition: string | null
+          notes: string | null
+          attachment_id: string | null
+          recorded_by: string | null
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          asset_id: string
+          condition: string
+          previous_condition?: string | null
+          notes?: string | null
+          attachment_id?: string | null
+          recorded_by?: string | null
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          asset_id?: string
+          condition?: string
+          previous_condition?: string | null
+          notes?: string | null
+          attachment_id?: string | null
+          recorded_by?: string | null
+          recorded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_condition_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_condition_logs_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_condition_logs_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "attachments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_condition_logs_recorded_by_fkey"
+            columns: ["recorded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      asset_warranties: {
+        Row: {
+          id: string
+          org_id: string
+          asset_id: string
+          warranty_type: string
+          provider: string | null
+          vendor_id: string | null
+          reference_number: string | null
+          start_date: string
+          end_date: string
+          cost: number | null
+          coverage: string | null
+          attachment_id: string | null
+          notes: string | null
+          created_by: string | null
+          updated_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          org_id: string
+          asset_id: string
+          warranty_type?: string
+          provider?: string | null
+          vendor_id?: string | null
+          reference_number?: string | null
+          start_date: string
+          end_date: string
+          cost?: number | null
+          coverage?: string | null
+          attachment_id?: string | null
+          notes?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          org_id?: string
+          asset_id?: string
+          warranty_type?: string
+          provider?: string | null
+          vendor_id?: string | null
+          reference_number?: string | null
+          start_date?: string
+          end_date?: string
+          cost?: number | null
+          coverage?: string | null
+          attachment_id?: string | null
+          notes?: string | null
+          created_by?: string | null
+          updated_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "asset_warranties_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organisations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_warranties_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_warranties_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_warranties_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "attachments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_warranties_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "asset_warranties_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       asset_transfers: {
         Row: {
           id: string
@@ -1234,6 +1402,9 @@ export type Database = {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          subcategory_id: string | null
+          warranty_start: string | null
+          installed_on: string | null
         }
         Insert: {
           id?: string
@@ -1276,6 +1447,9 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          subcategory_id?: string | null
+          warranty_start?: string | null
+          installed_on?: string | null
         }
         Update: {
           id?: string
@@ -1318,6 +1492,9 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          subcategory_id?: string | null
+          warranty_start?: string | null
+          installed_on?: string | null
         }
         Relationships: [
           {
@@ -7185,6 +7362,17 @@ export type Database = {
           created_at: string
           updated_at: string
           deleted_at: string | null
+          category_id: string | null
+          campus_ids: string[]
+          service_area: string | null
+          contract_type: string | null
+          contract_start: string | null
+          contract_end: string | null
+          contract_value: number | null
+          sla_response_hours: number | null
+          sla_resolution_hours: number | null
+          sla_terms: string | null
+          penalty_terms: string | null
         }
         Insert: {
           id?: string
@@ -7224,6 +7412,17 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          category_id?: string | null
+          campus_ids?: string[]
+          service_area?: string | null
+          contract_type?: string | null
+          contract_start?: string | null
+          contract_end?: string | null
+          contract_value?: number | null
+          sla_response_hours?: number | null
+          sla_resolution_hours?: number | null
+          sla_terms?: string | null
+          penalty_terms?: string | null
         }
         Update: {
           id?: string
@@ -7263,8 +7462,26 @@ export type Database = {
           created_at?: string
           updated_at?: string
           deleted_at?: string | null
+          category_id?: string | null
+          campus_ids?: string[]
+          service_area?: string | null
+          contract_type?: string | null
+          contract_start?: string | null
+          contract_end?: string | null
+          contract_value?: number | null
+          sla_response_hours?: number | null
+          sla_resolution_hours?: number | null
+          sla_terms?: string | null
+          penalty_terms?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vendors_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vendors_approval_request_id_fkey"
             columns: ["approval_request_id"]

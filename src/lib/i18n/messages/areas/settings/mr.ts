@@ -370,6 +370,8 @@ const settings_mr = {
         service: "सेवा",
       },
       assetCategories: {
+        parent: "कोणत्या श्रेणीची उप-श्रेणी",
+        parentHint: "मुख्य श्रेणीसाठी रिकामे ठेवा",
         title: "मालमत्ता प्रकार",
         add: "प्रकार जोडा",
         createTitle: "मालमत्ता प्रकार जोडा",

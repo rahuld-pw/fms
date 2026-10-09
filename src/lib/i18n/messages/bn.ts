@@ -29,6 +29,7 @@ const bengali = {
     "/facility/issues": "সমস্যা",
     "/facility/work-orders": "কাজের অর্ডার",
     "/facility/assets": "সম্পদ",
+    "/facility/assets/audits": "অ্যাসেট অডিট",
     "/facility/locations": "লোকেশন",
     "/facility/maintenance": "রক্ষণাবেক্ষণ",
     "/facility/vendors": "ভেন্ডর",

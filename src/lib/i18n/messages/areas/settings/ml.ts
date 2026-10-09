@@ -370,6 +370,8 @@ const settings_ml = {
         service: "സേവനം",
       },
       assetCategories: {
+        parent: "ഇതിന്റെ ഉപവിഭാഗം",
+        parentHint: "പ്രധാന വിഭാഗമാണെങ്കിൽ ശൂന്യമായി വിടുക",
         title: "ആസ്തി വിഭാഗങ്ങൾ",
         add: "വിഭാഗം ചേർക്കുക",
         createTitle: "ആസ്തി വിഭാഗം ചേർക്കുക",

@@ -46,7 +46,7 @@ export default function AuditsPage() {
           { name: "name", label: t("ui.name"), required: true, full: true, placeholder: t("facility.assets.audits.namePlaceholder") },
           { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
           { name: "scheduled_for", label: t("ui.date"), type: "date" },
-          { name: "location_id", label: t("facility.assets.audits.limitLocation"), type: "resource", endpoint: "/locations" },
+          { name: "location_id", label: t("facility.assets.audits.limitLocation"), type: "location", campusField: "campus_id", hint: t("facility.assets.audits.limitLocationHint") },
           { name: "category_id", label: t("facility.assets.audits.limitCategory"), type: "resource", endpoint: "/asset-categories" },
         ]}
         defaultValues={{ campus_id: campuses.length === 1 ? campuses[0].id : "", scheduled_for: new Date().toISOString().slice(0, 10) }}

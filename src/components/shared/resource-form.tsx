@@ -10,6 +10,8 @@ import { ApiClientError, api, errorMessage } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 import { CampusSelect, DepartmentSelect, Field, ResourcePicker, UserPicker } from "./fields";
+import { FileField } from "./file-field";
+import { LocationCascade } from "./location-cascade";
 
 export type FieldType =
   | "text"
@@ -26,6 +28,8 @@ export type FieldType =
   | "resources"
   | "campus"
   | "department"
+  | "location"
+  | "file"
   | "email";
 
 export interface FieldSpec {
@@ -40,8 +44,12 @@ export interface FieldSpec {
   hint?: string;
   placeholder?: string;
   full?: boolean;
-  /** For department fields: which field holds the campus. */
+  /** For department and location fields: which field holds the campus. */
   campusField?: string;
+  /** For resource pickers: extra query string built from the other values (e.g. `&parent_id=…`). */
+  extraParams?: (values: FieldValues) => string;
+  /** For file fields: the record the uploaded file belongs to. */
+  upload?: { entityType: string; entityId: string; kind?: string };
   /** Initial label for pickers when editing. */
   initialLabel?: string | null;
   hidden?: (values: FieldValues) => boolean;
@@ -125,6 +133,7 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                       onChange={field.onChange}
                       placeholder={f.placeholder}
                       initialLabel={f.initialLabel}
+                      extraParams={f.extraParams?.(values)}
                     />
                   )}
                 />
@@ -146,6 +155,25 @@ export function FormFields({ fields, form }: { fields: FieldSpec[]; form: Return
                   control={control}
                   name={f.name}
                   render={({ field }) => <DepartmentSelect id={id} value={field.value} onChange={field.onChange} campusId={f.campusField ? values[f.campusField] : undefined} />}
+                />
+              );
+              break;
+            case "location":
+              control_ = (
+                <Controller
+                  control={control}
+                  name={f.name}
+                  render={({ field }) => <LocationCascade id={id} campusId={f.campusField ? values[f.campusField] : undefined} value={field.value} onChange={field.onChange} />}
+                />
+              );
+              break;
+            case "file":
+              control_ = (
+                <Controller
+                  control={control}
+                  name={f.name}
+                  rules={{ required: f.required && t("shared.form.isRequired", { label: f.label }) }}
+                  render={({ field }) => <FileField id={id} upload={f.upload!} value={field.value} onChange={field.onChange} />}
                 />
               );
               break;

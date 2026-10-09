@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Ban, Check, FileCheck2, Link2, Pencil, Plus, Send, ShieldCheck, Star, X } from "lucide-react";
 import { toast } from "sonner";
-import { useCan } from "@/components/app/session";
+import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -27,6 +27,7 @@ export function VendorDetail({ id }: { id: string }) {
   const { t } = useT();
   const qc = useQueryClient();
   const can = useCan();
+  const { campuses } = useSession();
   const { data: v, isLoading } = useQuery({ queryKey: ["vendor", id], queryFn: () => api<any>(`/vendors/${id}`) });
   const docs = useQuery({ queryKey: ["vendor-docs", id], queryFn: () => api<any[]>(`/vendors/${id}/documents`) });
   const agreements = useQuery({ queryKey: ["vendor-agreements", id], queryFn: () => api<any[]>(`/vendors/${id}/agreements`) });
@@ -112,6 +113,7 @@ export function VendorDetail({ id }: { id: string }) {
       <Tabs defaultValue="profile">
         <TabsList>
           <TabsTrigger value="profile">{t("facility.vendors.detail.tabProfile")}</TabsTrigger>
+          <TabsTrigger value="contract">{t("facility.vendors.detail.tabContract")}</TabsTrigger>
           <TabsTrigger value="documents">{t("facility.assets.detail.documents")} {docs.data?.some((d) => d.verification_status === "pending") ? "•" : ""}</TabsTrigger>
           <TabsTrigger value="agreements">{t("facility.vendors.detail.tabAgreements")}</TabsTrigger>
           <TabsTrigger value="ratings">{t("facility.vendors.detail.tabRatings")}</TabsTrigger>
@@ -126,6 +128,9 @@ export function VendorDetail({ id }: { id: string }) {
                 items={[
                   { label: t("facility.vendors.fields.legalName"), value: v.legal_name },
                   { label: t("ui.type"), value: v.vendor_type ? t(`enum.vendorType.${v.vendor_type}`, undefined, humanize(v.vendor_type)) : humanize(v.vendor_type) },
+                  { label: t("ui.category"), value: v.category?.name },
+                  { label: t("facility.vendors.fields.campusesServed"), value: v.campus_ids?.length ? v.campus_ids.map((c: string) => campuses.find((x) => x.id === c)?.name).filter(Boolean).join(", ") : t("facility.vendors.allCampuses") },
+                  { label: t("facility.vendors.fields.serviceArea"), value: v.service_area },
                   { label: t("facility.vendors.contact"), value: v.contact_name },
                   { label: t("ui.email"), value: v.email },
                   { label: t("ui.phone"), value: v.phone },
@@ -142,13 +147,33 @@ export function VendorDetail({ id }: { id: string }) {
             </CardContent>
           </Card>
         </TabsContent>
+        <TabsContent value="contract">
+          <Card>
+            <CardContent className="pt-4">
+              <DetailGrid
+                items={[
+                  { label: t("facility.vendors.fields.contractType"), value: v.contract_type ? t(`enum.vendorContractType.${v.contract_type}`, undefined, humanize(v.contract_type)) : null },
+                  { label: t("facility.vendors.fields.contractValue"), value: v.contract_value != null ? <Money value={v.contract_value} /> : null },
+                  { label: t("facility.vendors.fields.contractStart"), value: v.contract_start },
+                  { label: t("facility.vendors.fields.contractEnd"), value: v.contract_end ? <DueDate value={v.contract_end} done={["inactive", "blacklisted"].includes(v.status)} /> : null },
+                  { label: t("facility.vendors.fields.slaResponse"), value: v.sla_response_hours != null ? t("facility.vendors.detail.hoursN", { n: Number(v.sla_response_hours) }) : null },
+                  { label: t("facility.vendors.fields.slaResolution"), value: v.sla_resolution_hours != null ? t("facility.vendors.detail.hoursN", { n: Number(v.sla_resolution_hours) }) : null },
+                  { label: t("facility.vendors.fields.slaTerms"), value: v.sla_terms && <span className="whitespace-pre-wrap">{v.sla_terms}</span>, wide: true },
+                  { label: t("facility.vendors.fields.penaltyTerms"), value: v.penalty_terms && <span className="whitespace-pre-wrap">{v.penalty_terms}</span>, wide: true },
+                ]}
+              />
+              {!v.contract_type && !v.contract_end && !v.sla_response_hours && <p className="mt-2 text-sm text-muted-foreground">{t("facility.vendors.detail.noContract")}</p>}
+              {manage && <Button size="sm" variant="outline" className="mt-3" onClick={() => setDialog("edit")}><Pencil /> {t("facility.vendors.detail.editContract")}</Button>}
+            </CardContent>
+          </Card>
+        </TabsContent>
         <TabsContent value="documents" className="flex flex-col gap-3">
           <Card className="divide-y">
             {docs.data?.length === 0 && <p className="p-4 text-sm text-muted-foreground">{t("facility.vendors.detail.noDocuments")}</p>}
             {docs.data?.map((d) => (
               <div key={d.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium">{d.doc_type ? t(`enum.docType.${d.doc_type}`, undefined, humanize(d.doc_type)) : humanize(d.doc_type)} {d.doc_number && <span className="font-mono text-xs text-muted-foreground">{d.doc_number}</span>}</p>
+                  <p className="font-medium">{d.doc_type ? t(`enum.docType.${d.doc_type}`, undefined, humanize(d.doc_type)) : humanize(d.doc_type)}{d.title && <span className="font-normal"> · {d.title}</span>} {d.doc_number && <span className="font-mono text-xs text-muted-foreground">{d.doc_number}</span>}</p>
                   <p className="text-xs text-muted-foreground">
                     {d.attachment?.file_name ?? t("facility.vendors.detail.noFile")} {d.expires_on && <>· {t("facility.vendors.detail.expires")} <DueDate value={d.expires_on} /></>}
                   </p>
@@ -219,8 +244,10 @@ export function VendorDetail({ id }: { id: string }) {
         description={t("facility.vendors.detail.addDocDesc")}
         endpoint={`/vendors/${id}/documents`}
         fields={[
-          { name: "doc_type", label: t("ui.type"), type: "select", required: true, options: ["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "other"].map((x) => ({ value: x, label: t(`enum.docType.${x}`, undefined, humanize(x)) })) },
+          { name: "doc_type", label: t("ui.type"), type: "select", required: true, options: ["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "contract", "sla", "work_completion", "other"].map((x) => ({ value: x, label: t(`enum.docType.${x}`, undefined, humanize(x)) })) },
+          { name: "title", label: t("ui.title") },
           { name: "doc_number", label: t("ui.number") },
+          { name: "attachment_id", label: t("facility.vendors.detail.docFile"), type: "file", upload: { entityType: "vendor", entityId: id, kind: "document" } },
           { name: "issued_on", label: t("facility.vendors.detail.issuedOn"), type: "date" },
           { name: "expires_on", label: t("facility.vendors.detail.expiresOn"), type: "date" },
         ]}

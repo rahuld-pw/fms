@@ -11,7 +11,7 @@ import { api, errorMessage } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
 
-const TEMPLATE = "name,campus_code,category_code,location_code,asset_tag,make,model,serial_number,status,purchase_date,purchase_cost,warranty_until,custodian_email\nDell Latitude 5440,MAIN,IT,A-STF,,Dell,Latitude 5440,SN123,in_use,2025-06-10,72000,2028-06-09,teacher@greenfield.test\n";
+const TEMPLATE = "name,campus_code,category_code,subcategory_code,location_code,asset_tag,make,model,serial_number,status,condition,purchase_date,purchase_cost,installed_on,warranty_start,warranty_until,custodian_email\nDell Latitude 5440,MAIN,IT,LAP,A-STF,,Dell,Latitude 5440,SN123,in_use,good,2025-06-10,72000,2025-06-15,2025-06-10,2028-06-09,teacher@greenfield.test\n";
 
 interface Result { created: number; valid_rows: number; errors: { row: number; message: string }[]; dry_run: boolean }
 

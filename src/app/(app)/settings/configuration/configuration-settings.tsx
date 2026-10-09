@@ -172,7 +172,7 @@ export function ConfigurationSettings() {
             editTitle={t("settings.config.assetCategories.editTitle")}
             description={t("settings.config.assetCategories.description")}
             columns={[
-              { key: "name", header: t("ui.category"), render: (r) => <span className="font-medium">{r.name}</span> },
+              { key: "name", header: t("ui.category"), render: (r) => (r.parent ? <span><span className="text-muted-foreground">{r.parent.name} › </span><span className="font-medium">{r.name}</span></span> : <span className="font-medium">{r.name}</span>) },
               { key: "code", header: t("ui.code"), className: "font-mono text-xs" },
               { key: "depreciation_method", header: t("settings.config.assetCategories.depreciation"), render: (r) => (r.depreciation_method === "none" ? t("ui.none") : r.depreciation_method === "slm" ? t("settings.config.assetCategories.slmSummary", { months: r.useful_life_months ?? "?" }) : t("settings.config.assetCategories.wdvSummary", { rate: Number(r.wdv_rate_percent ?? 0) })) },
               { key: "verification_frequency_months", header: t("settings.config.assetCategories.verifyEvery"), hideOnPhone: true, render: (r) => (r.verification_frequency_months ? t("settings.config.months", { n: r.verification_frequency_months }) : "—") },
@@ -180,6 +180,7 @@ export function ConfigurationSettings() {
             fields={[
               { name: "name", label: t("ui.name"), required: true },
               { name: "code", label: t("ui.code"), required: true, placeholder: "IT" },
+              { name: "parent_id", label: t("settings.config.assetCategories.parent"), type: "resource", endpoint: "/asset-categories", extraParams: () => "&parent_id=null", hint: t("settings.config.assetCategories.parentHint") },
               { name: "depreciation_method", label: t("settings.config.assetCategories.depreciation"), type: "select", options: [{ value: "slm", label: t("settings.config.assetCategories.slm") }, { value: "wdv", label: t("settings.config.assetCategories.wdv") }, { value: "none", label: t("ui.none") }], required: true },
               { name: "useful_life_months", label: t("settings.config.assetCategories.usefulLife"), type: "number", hidden: (v) => v.depreciation_method !== "slm" },
               { name: "wdv_rate_percent", label: t("settings.config.assetCategories.wdvRate"), type: "number", hidden: (v) => v.depreciation_method !== "wdv" },

@@ -29,6 +29,7 @@ const telugu = {
     "/facility/issues": "సమస్యలు",
     "/facility/work-orders": "వర్క్ ఆర్డర్లు",
     "/facility/assets": "ఆస్తులు",
+    "/facility/assets/audits": "ఆస్తుల ఆడిట్‌లు",
     "/facility/locations": "ప్రదేశాలు",
     "/facility/maintenance": "నిర్వహణ",
     "/facility/vendors": "వెండర్లు",

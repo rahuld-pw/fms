@@ -29,6 +29,7 @@ const kannada = {
     "/facility/issues": "ಸಮಸ್ಯೆಗಳು",
     "/facility/work-orders": "ಕೆಲಸದ ಆದೇಶಗಳು",
     "/facility/assets": "ಆಸ್ತಿಗಳು",
+    "/facility/assets/audits": "ಆಸ್ತಿ ಆಡಿಟ್‌ಗಳು",
     "/facility/locations": "ಸ್ಥಳಗಳು",
     "/facility/maintenance": "ನಿರ್ವಹಣೆ",
     "/facility/vendors": "ಮಾರಾಟಗಾರರು",

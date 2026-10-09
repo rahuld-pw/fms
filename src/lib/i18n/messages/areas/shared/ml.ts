@@ -1,6 +1,13 @@
 // Malayalam (മലയാളം) translations of ./en.ts. Missing keys fall back to English.
 const shared_ml = {
   shared: {
+    location: {
+      none: "ഈ ക്യാമ്പസിനായി ഇതുവരെ കെട്ടിടങ്ങളോ മുറികളോ സജ്ജീകരിച്ചിട്ടില്ല.",
+      wholeCampus: "മുഴുവൻ ക്യാമ്പസ്",
+      wholeParent: "ഈ ഭാഗം മുഴുവൻ",
+      pick: { building: "കെട്ടിടം", floor: "നില", room: "മുറി", area: "ഭാഗം", any: "കെട്ടിടം / ഭാഗം" },
+    },
+    file: { choose: "ഫയൽ അറ്റാച്ച് ചെയ്യുക", attached: "ഫയൽ അറ്റാച്ച് ചെയ്തു", remove: "ഫയൽ നീക്കം ചെയ്യുക" },
     breadcrumb: "ബ്രെഡ്ക്രംബ്",
     nav: {
       main: "പ്രധാനം",
@@ -62,6 +69,28 @@ const shared_ml = {
       updated: "{actor} അപ്ഡേറ്റ് ചെയ്തു",
       restored: "{actor} പുനഃസ്ഥാപിച്ചു",
       other: {
+        warranty_added: "{actor} ഒരു വാറന്റി ചേർത്തു",
+        warranty_updated: "{actor} ഒരു വാറന്റി അപ്ഡേറ്റ് ചെയ്തു",
+        warranty_removed: "{actor} ഒരു വാറന്റി നീക്കം ചെയ്തു",
+        amc_linked: "{actor} ഇത് ഒരു AMC-യിൽ ചേർത്തു",
+        amc_unlinked: "{actor} ഇത് ഒരു AMC-യിൽ നിന്ന് നീക്കം ചെയ്തു",
+        transfer_requested: "{actor} ട്രാൻസ്ഫർ അഭ്യർത്ഥിച്ചു",
+        transfer_completed: "{actor} ട്രാൻസ്ഫർ പൂർത്തിയാക്കി",
+        transfer_rejected: "{actor} ട്രാൻസ്ഫർ നിരസിച്ചു",
+        transfer_cancelled: "{actor} ട്രാൻസ്ഫർ റദ്ദാക്കി",
+        verification_found: "{actor} ഓഡിറ്റിൽ ഇത് പരിശോധിച്ചു: കണ്ടെത്തി",
+        verification_damaged: "{actor} ഓഡിറ്റിൽ ഇത് പരിശോധിച്ചു: കേടുപാട്",
+        verification_relocated: "{actor} ഓഡിറ്റിൽ ഇത് പരിശോധിച്ചു: മറ്റൊരിടത്ത് കണ്ടെത്തി",
+        condition_recorded: "{actor} ഇതിന്റെ അവസ്ഥ രേഖപ്പെടുത്തി",
+        document_added: "{actor} ഒരു രേഖ ചേർത്തു",
+        document_updated: "{actor} ഒരു രേഖ അപ്ഡേറ്റ് ചെയ്തു",
+        document_removed: "{actor} ഒരു രേഖ നീക്കം ചെയ്തു",
+        document_verified: "{actor} ഒരു രേഖ പരിശോധിച്ചുറപ്പിച്ചു",
+        document_rejected: "{actor} ഒരു രേഖ നിരസിച്ചു",
+        document_pending: "{actor} ഒരു രേഖ വീണ്ടും തീർപ്പാക്കാത്തതാക്കി",
+        agreement_added: "{actor} ഒരു എഗ്രിമെന്റ് ചേർത്തു",
+        agreement_updated: "{actor} ഒരു എഗ്രിമെന്റ് അപ്ഡേറ്റ് ചെയ്തു",
+        agreement_removed: "{actor} ഒരു എഗ്രിമെന്റ് നീക്കം ചെയ്തു",
         approval_approved: "{actor} അംഗീകാരം നൽകി",
         approval_rejected: "{actor} അംഗീകാരം നിരസിച്ചു",
         approval_cancelled: "{actor} അംഗീകാരം റദ്ദാക്കി",

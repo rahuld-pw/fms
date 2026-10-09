@@ -1,6 +1,13 @@
 // Urdu (اردو) translations of ./en.ts. Missing keys fall back to English.
 const shared_ur = {
   shared: {
+    location: {
+      none: "اس کیمپس کے لیے ابھی تک کوئی عمارت یا کمرہ سیٹ نہیں کیا گیا۔",
+      wholeCampus: "پورا کیمپس",
+      wholeParent: "یہ پورا حصہ",
+      pick: { building: "عمارت", floor: "منزل", room: "کمرہ", area: "حصہ", any: "عمارت / حصہ" },
+    },
+    file: { choose: "فائل منسلک کریں", attached: "فائل منسلک ہو گئی", remove: "فائل ہٹائیں" },
     breadcrumb: "بریڈکرمب",
     nav: {
       main: "مرکزی",
@@ -62,6 +69,28 @@ const shared_ur = {
       updated: "{actor} نے اپ ڈیٹ کیا",
       restored: "{actor} نے بحال کیا",
       other: {
+        warranty_added: "{actor} نے ایک وارنٹی شامل کی",
+        warranty_updated: "{actor} نے ایک وارنٹی اپ ڈیٹ کی",
+        warranty_removed: "{actor} نے ایک وارنٹی ہٹائی",
+        amc_linked: "{actor} نے اسے ایک AMC میں شامل کیا",
+        amc_unlinked: "{actor} نے اسے ایک AMC سے ہٹایا",
+        transfer_requested: "{actor} نے منتقلی کی درخواست کی",
+        transfer_completed: "{actor} نے منتقلی مکمل کی",
+        transfer_rejected: "{actor} نے منتقلی مسترد کی",
+        transfer_cancelled: "{actor} نے منتقلی منسوخ کی",
+        verification_found: "{actor} نے آڈٹ میں تصدیق کی: مل گیا",
+        verification_damaged: "{actor} نے آڈٹ میں تصدیق کی: خراب",
+        verification_relocated: "{actor} نے آڈٹ میں تصدیق کی: کسی اور جگہ ملا",
+        condition_recorded: "{actor} نے اس کی حالت درج کی",
+        document_added: "{actor} نے ایک دستاویز شامل کی",
+        document_updated: "{actor} نے ایک دستاویز اپ ڈیٹ کی",
+        document_removed: "{actor} نے ایک دستاویز ہٹائی",
+        document_verified: "{actor} نے ایک دستاویز کی تصدیق کی",
+        document_rejected: "{actor} نے ایک دستاویز مسترد کی",
+        document_pending: "{actor} نے ایک دستاویز کو دوبارہ زیرِ التوا کر دیا",
+        agreement_added: "{actor} نے ایک معاہدہ شامل کیا",
+        agreement_updated: "{actor} نے ایک معاہدہ اپ ڈیٹ کیا",
+        agreement_removed: "{actor} نے ایک معاہدہ ہٹایا",
         approval_approved: "{actor}: منظوری دی گئی",
         approval_rejected: "{actor}: منظوری مسترد",
         approval_cancelled: "{actor}: منظوری منسوخ",

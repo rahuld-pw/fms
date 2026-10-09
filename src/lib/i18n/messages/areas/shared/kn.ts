@@ -1,6 +1,13 @@
 // Kannada (ಕನ್ನಡ) translations of ./en.ts. Missing keys fall back to English.
 const shared_kn = {
   shared: {
+    location: {
+      none: "ಈ ಕ್ಯಾಂಪಸ್‌ಗೆ ಇನ್ನೂ ಯಾವುದೇ ಕಟ್ಟಡಗಳು ಅಥವಾ ಕೊಠಡಿಗಳನ್ನು ಹೊಂದಿಸಲಾಗಿಲ್ಲ.",
+      wholeCampus: "ಸಂಪೂರ್ಣ ಕ್ಯಾಂಪಸ್",
+      wholeParent: "ಈ ಸಂಪೂರ್ಣ ಪ್ರದೇಶ",
+      pick: { building: "ಕಟ್ಟಡ", floor: "ಮಹಡಿ", room: "ಕೊಠಡಿ", area: "ಪ್ರದೇಶ", any: "ಕಟ್ಟಡ / ಪ್ರದೇಶ" },
+    },
+    file: { choose: "ಫೈಲ್ ಲಗತ್ತಿಸಿ", attached: "ಫೈಲ್ ಲಗತ್ತಿಸಲಾಗಿದೆ", remove: "ಫೈಲ್ ತೆಗೆದುಹಾಕಿ" },
     breadcrumb: "ಬ್ರೆಡ್‌ಕ್ರಂಬ್",
     nav: {
       main: "ಮುಖ್ಯ",
@@ -62,6 +69,28 @@ const shared_kn = {
       updated: "{actor} ಅಪ್‌ಡೇಟ್ ಮಾಡಿದರು",
       restored: "{actor} ಮರುಸ್ಥಾಪಿಸಿದರು",
       other: {
+        warranty_added: "{actor} ಅವರು ವಾರಂಟಿ ಸೇರಿಸಿದರು",
+        warranty_updated: "{actor} ಅವರು ವಾರಂಟಿ ನವೀಕರಿಸಿದರು",
+        warranty_removed: "{actor} ಅವರು ವಾರಂಟಿ ತೆಗೆದುಹಾಕಿದರು",
+        amc_linked: "{actor} ಅವರು ಇದನ್ನು AMCಗೆ ಸೇರಿಸಿದರು",
+        amc_unlinked: "{actor} ಅವರು ಇದನ್ನು AMCಯಿಂದ ತೆಗೆದುಹಾಕಿದರು",
+        transfer_requested: "{actor} ಅವರು ವರ್ಗಾವಣೆಗೆ ವಿನಂತಿಸಿದರು",
+        transfer_completed: "{actor} ಅವರು ವರ್ಗಾವಣೆ ಪೂರ್ಣಗೊಳಿಸಿದರು",
+        transfer_rejected: "{actor} ಅವರು ವರ್ಗಾವಣೆ ತಿರಸ್ಕರಿಸಿದರು",
+        transfer_cancelled: "{actor} ಅವರು ವರ್ಗಾವಣೆ ರದ್ದುಗೊಳಿಸಿದರು",
+        verification_found: "{actor} ಅವರು ಆಡಿಟ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿದರು: ಕಂಡುಬಂದಿದೆ",
+        verification_damaged: "{actor} ಅವರು ಆಡಿಟ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿದರು: ಹಾನಿಗೊಳಗಾಗಿದೆ",
+        verification_relocated: "{actor} ಅವರು ಆಡಿಟ್‌ನಲ್ಲಿ ಪರಿಶೀಲಿಸಿದರು: ಬೇರೆಡೆ ಕಂಡುಬಂದಿದೆ",
+        condition_recorded: "{actor} ಅವರು ಇದರ ಸ್ಥಿತಿಯನ್ನು ದಾಖಲಿಸಿದರು",
+        document_added: "{actor} ಅವರು ದಾಖಲೆ ಸೇರಿಸಿದರು",
+        document_updated: "{actor} ಅವರು ದಾಖಲೆ ನವೀಕರಿಸಿದರು",
+        document_removed: "{actor} ಅವರು ದಾಖಲೆ ತೆಗೆದುಹಾಕಿದರು",
+        document_verified: "{actor} ಅವರು ದಾಖಲೆ ಪರಿಶೀಲಿಸಿದರು",
+        document_rejected: "{actor} ಅವರು ದಾಖಲೆ ತಿರಸ್ಕರಿಸಿದರು",
+        document_pending: "{actor} ಅವರು ದಾಖಲೆಯನ್ನು ಮತ್ತೆ ಬಾಕಿ ಸ್ಥಿತಿಗೆ ಹೊಂದಿಸಿದರು",
+        agreement_added: "{actor} ಅವರು ಕರಾರು ಸೇರಿಸಿದರು",
+        agreement_updated: "{actor} ಅವರು ಕರಾರು ನವೀಕರಿಸಿದರು",
+        agreement_removed: "{actor} ಅವರು ಕರಾರು ತೆಗೆದುಹಾಕಿದರು",
         approval_approved: "{actor} ಅನುಮೋದನೆ ಸಿಕ್ಕಿತು",
         approval_rejected: "{actor} ಅನುಮೋದನೆ ತಿರಸ್ಕೃತ",
         approval_cancelled: "{actor} ಅನುಮೋದನೆ ರದ್ದಾಯಿತು",

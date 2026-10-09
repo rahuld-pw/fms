@@ -30,6 +30,7 @@ const en = {
     "/facility/issues": "Issues",
     "/facility/work-orders": "Work orders",
     "/facility/assets": "Assets",
+    "/facility/assets/audits": "Asset audits",
     "/facility/locations": "Locations",
     "/facility/maintenance": "Maintenance",
     "/facility/vendors": "Vendors",

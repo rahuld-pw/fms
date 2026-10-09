@@ -370,6 +370,8 @@ const settings_bn = {
         service: "পরিষেবা",
       },
       assetCategories: {
+        parent: "যার উপ-বিভাগ",
+        parentHint: "প্রধান বিভাগের জন্য খালি রাখুন",
         title: "সম্পদের ধরন",
         add: "ধরন যোগ করুন",
         createTitle: "সম্পদের ধরন যোগ করুন",

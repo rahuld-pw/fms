@@ -370,6 +370,8 @@ const settings_te = {
         service: "సేవ",
       },
       assetCategories: {
+        parent: "దీని ఉప-వర్గం",
+        parentHint: "ప్రధాన వర్గం కోసం ఖాళీగా ఉంచండి",
         title: "ఆస్తి వర్గాలు",
         add: "వర్గం జోడించండి",
         createTitle: "ఆస్తి వర్గం జోడించండి",

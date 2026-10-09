@@ -370,6 +370,8 @@ const settings_ur = {
         service: "سروس",
       },
       assetCategories: {
+        parent: "کس زمرے کا ذیلی زمرہ",
+        parentHint: "بنیادی زمرے کے لیے خالی چھوڑ دیں",
         title: "اثاثوں کے زمرے",
         add: "زمرہ شامل کریں",
         createTitle: "اثاثے کا زمرہ شامل کریں",

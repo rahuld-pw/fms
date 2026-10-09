@@ -1,6 +1,13 @@
 // Tamil (தமிழ்) translations of ./en.ts. Missing keys fall back to English.
 const shared_ta = {
   shared: {
+    location: {
+      none: "இந்த வளாகத்திற்கு இன்னும் கட்டடங்களோ அறைகளோ அமைக்கப்படவில்லை.",
+      wholeCampus: "முழு வளாகம்",
+      wholeParent: "இந்தப் பகுதி முழுவதும்",
+      pick: { building: "கட்டடம்", floor: "தளம்", room: "அறை", area: "பகுதி", any: "கட்டடம் / பகுதி" },
+    },
+    file: { choose: "கோப்பை இணைக்கவும்", attached: "கோப்பு இணைக்கப்பட்டது", remove: "கோப்பை நீக்கவும்" },
     breadcrumb: "வழித்தடம்",
     nav: {
       main: "முதன்மை",
@@ -62,6 +69,28 @@ const shared_ta = {
       updated: "{actor} புதுப்பித்தார்",
       restored: "{actor} மீட்டெடுத்தார்",
       other: {
+        warranty_added: "{actor} ஒரு வாரண்டியைச் சேர்த்தார்",
+        warranty_updated: "{actor} ஒரு வாரண்டியைப் புதுப்பித்தார்",
+        warranty_removed: "{actor} ஒரு வாரண்டியை நீக்கினார்",
+        amc_linked: "{actor} இதை ஒரு AMC-யில் சேர்த்தார்",
+        amc_unlinked: "{actor} இதை ஒரு AMC-யிலிருந்து நீக்கினார்",
+        transfer_requested: "{actor} இடமாற்றம் கோரினார்",
+        transfer_completed: "{actor} இடமாற்றத்தை நிறைவு செய்தார்",
+        transfer_rejected: "{actor} இடமாற்றத்தை நிராகரித்தார்",
+        transfer_cancelled: "{actor} இடமாற்றத்தை ரத்து செய்தார்",
+        verification_found: "{actor} தணிக்கையில் சரிபார்த்தார்: கண்டறியப்பட்டது",
+        verification_damaged: "{actor} தணிக்கையில் சரிபார்த்தார்: சேதமடைந்தது",
+        verification_relocated: "{actor} தணிக்கையில் சரிபார்த்தார்: வேறு இடத்தில் கண்டறியப்பட்டது",
+        condition_recorded: "{actor} இதன் நிலையைப் பதிவு செய்தார்",
+        document_added: "{actor} ஒரு ஆவணத்தைச் சேர்த்தார்",
+        document_updated: "{actor} ஒரு ஆவணத்தைப் புதுப்பித்தார்",
+        document_removed: "{actor} ஒரு ஆவணத்தை நீக்கினார்",
+        document_verified: "{actor} ஒரு ஆவணத்தைச் சரிபார்த்தார்",
+        document_rejected: "{actor} ஒரு ஆவணத்தை நிராகரித்தார்",
+        document_pending: "{actor} ஒரு ஆவணத்தை மீண்டும் நிலுவையில் வைத்தார்",
+        agreement_added: "{actor} ஒரு ஒப்பந்தத்தைச் சேர்த்தார்",
+        agreement_updated: "{actor} ஒரு ஒப்பந்தத்தைப் புதுப்பித்தார்",
+        agreement_removed: "{actor} ஒரு ஒப்பந்தத்தை நீக்கினார்",
         approval_approved: "{actor} ஒப்புதல் அளித்தார்",
         approval_rejected: "{actor} ஒப்புதலை நிராகரித்தார்",
         approval_cancelled: "{actor} ஒப்புதல் கோரிக்கையை ரத்து செய்தார்",

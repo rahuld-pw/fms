@@ -48,7 +48,7 @@ export async function depreciationSchedule(ctx: RequestContext, assetId: string)
   const a = unwrapMaybe(
     await ctx.db
       .from("assets")
-      .select("id, purchase_cost, purchase_date, salvage_value, useful_life_months, depreciation_method, category:asset_categories(wdv_rate_percent)")
+      .select("id, purchase_cost, purchase_date, salvage_value, useful_life_months, depreciation_method, category:asset_categories!assets_category_id_fkey(wdv_rate_percent)")
       .eq("id", assetId)
       .eq("org_id", ctx.orgId)
       .maybeSingle(),
@@ -82,6 +82,7 @@ const importRow = z.object({
   name: z.string().min(1).max(200),
   campus_code: z.string().min(1),
   category_code: z.string().optional(),
+  subcategory_code: z.string().optional(),
   location_code: z.string().optional(),
   asset_tag: z.string().max(60).optional(),
   make: z.string().max(100).optional(),
@@ -90,7 +91,10 @@ const importRow = z.object({
   status: z.enum(["in_stock", "in_use", "under_repair", "disposed", "lost"]).optional(),
   purchase_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   purchase_cost: z.coerce.number().nonnegative().optional(),
+  warranty_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   warranty_until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  installed_on: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  condition: z.enum(["new", "good", "fair", "poor", "damaged"]).optional(),
   custodian_email: z.email().optional(),
 });
 
@@ -107,7 +111,7 @@ export async function importAssets(ctx: RequestContext, csv: string, dryRun: boo
   if (raw.length > 5000) throw new ApiError("validation_failed", "Import at most 5000 rows at a time");
   const [campuses, categories, locations, members] = await Promise.all([
     unwrap(await ctx.db.from("campuses").select("id, code").eq("org_id", ctx.orgId)),
-    unwrap(await ctx.db.from("asset_categories").select("id, code").eq("org_id", ctx.orgId)),
+    unwrap(await ctx.db.from("asset_categories").select("id, code, parent_id").eq("org_id", ctx.orgId)),
     unwrap(await ctx.db.from("locations").select("id, code, campus_id").eq("org_id", ctx.orgId).not("code", "is", null)),
     unwrap(
       await ctx.db
@@ -140,6 +144,11 @@ export async function importAssets(ctx: RequestContext, csv: string, dryRun: boo
       errors.push({ row: i + 2, message: `Unknown category_code ${r.category_code}` });
       continue;
     }
+    const sub = r.subcategory_code ? categories.find((c) => c.code === r.subcategory_code!.toUpperCase() && c.parent_id) : undefined;
+    if (r.subcategory_code && (!sub || (category && sub.parent_id !== category.id))) {
+      errors.push({ row: i + 2, message: `Unknown sub-category ${r.subcategory_code}${category ? ` under ${r.category_code}` : ""}` });
+      continue;
+    }
     const location = r.location_code ? locations.find((l) => l.code === r.location_code && l.campus_id === campus.id) : undefined;
     if (r.location_code && !location) {
       errors.push({ row: i + 2, message: `Unknown location_code ${r.location_code} in campus ${r.campus_code}` });
@@ -155,7 +164,8 @@ export async function importAssets(ctx: RequestContext, csv: string, dryRun: boo
     inserts.push({
       org_id: ctx.orgId,
       campus_id: campus.id,
-      category_id: category?.id ?? null,
+      category_id: category?.id ?? sub?.parent_id ?? null,
+      subcategory_id: sub?.id ?? null,
       location_id: location?.id ?? null,
       custodian_id: custodian?.user_id ?? null,
       name: r.name,
@@ -166,7 +176,10 @@ export async function importAssets(ctx: RequestContext, csv: string, dryRun: boo
       status: r.status ?? (custodian ? "in_use" : "in_stock"),
       purchase_date: r.purchase_date ?? null,
       purchase_cost: r.purchase_cost ?? null,
+      warranty_start: r.warranty_start ?? null,
       warranty_until: r.warranty_until ?? null,
+      installed_on: r.installed_on ?? null,
+      condition: r.condition ?? null,
     });
   }
   if (errors.length > 0 || dryRun) {
@@ -267,6 +280,8 @@ export const vendorInviteSchema = z.object({
   phone: z.string().max(20).optional(),
   vendor_type: z.enum(["service", "supplier", "both"]).default("service"),
   service_category_ids: z.array(z.uuid()).default([]),
+  category_id: z.uuid().nullable().optional(),
+  campus_ids: z.array(z.uuid()).max(100).default([]),
 });
 
 export async function inviteVendor(ctx: RequestContext, input: z.infer<typeof vendorInviteSchema>) {

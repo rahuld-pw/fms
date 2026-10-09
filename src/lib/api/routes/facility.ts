@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import type { RequestContext } from "@/lib/auth/context";
 import { crudRoutes } from "@/lib/api/crud";
 import { ApiError, unwrap, unwrapMaybe } from "@/lib/api/errors";
 import { route, type RouteDef } from "@/lib/api/router";
@@ -23,7 +24,7 @@ import {
   maintenanceCalendar,
   vendorInviteSchema,
 } from "@/lib/services/facility";
-import { getResource, updateResource, type ResourceSpec } from "@/lib/services/resource";
+import { getResource, rowScope, updateResource, type ResourceSpec } from "@/lib/services/resource";
 import { labelsPdf, qrPng, qrSvg } from "@/lib/utils/qr";
 
 const M = "facility" as const;
@@ -208,6 +209,7 @@ const assetSchema = z.object({
   location_id: optUuid,
   department_id: optUuid,
   category_id: optUuid,
+  subcategory_id: optUuid,
   asset_tag: z.string().trim().max(60).optional(),
   name,
   description: z.string().max(2000).nullable().optional(),
@@ -222,7 +224,9 @@ const assetSchema = z.object({
   vendor_id: optUuid,
   po_id: optUuid,
   invoice_number: z.string().max(60).nullable().optional(),
+  warranty_start: isoDate.nullable().optional(),
   warranty_until: isoDate.nullable().optional(),
+  installed_on: isoDate.nullable().optional(),
   amc_contract_id: optUuid,
   depreciation_method: z.enum(["none", "slm", "wdv"]).nullable().optional(),
   useful_life_months: z.number().int().positive().nullable().optional(),
@@ -242,13 +246,15 @@ export const assets: ResourceSpec = {
   campusColumn: "campus_id",
   departmentColumn: "department_id",
   select:
-    "*, campus:campuses(id, name, code), category:asset_categories(id, name, code), location:locations(id, name, path_names), custodian:profiles!assets_custodian_id_fkey(id, full_name)",
+    "*, campus:campuses(id, name, code), category:asset_categories!assets_category_id_fkey(id, name, code), subcategory:subcategory(id, name), location:locations(id, name, path_names), custodian:profiles!assets_custodian_id_fkey(id, full_name)",
   detailSelect:
-    "*, campus:campuses(id, name, code), category:asset_categories(*), location:locations(id, name, path_names), custodian:profiles!assets_custodian_id_fkey(id, full_name, email), vendor:vendors(id, name), amc:amc_contracts!assets_amc_contract_id_fkey(id, title, end_date), purchase_order:purchase_orders!assets_po_fk(id, number), grn:grns!assets_grn_fk(id, number)",
+    "*, campus:campuses(id, name, code), category:asset_categories!assets_category_id_fkey(*), subcategory:subcategory(id, name, code), location:locations(id, name, type, path_names, parent_id), custodian:profiles!assets_custodian_id_fkey(id, full_name, email), vendor:vendors(id, name), amc:amc_contracts!assets_amc_contract_id_fkey(id, title, end_date), purchase_order:purchase_orders!assets_po_fk(id, number), grn:grns!assets_grn_fk(id, number)",
   filters: {
     status: "in",
+    condition: "in",
     campus_id: "eq",
     category_id: "eq",
+    subcategory_id: "eq",
     location_id: "eq",
     custodian_id: "user",
     department_id: "eq",
@@ -265,9 +271,10 @@ export const assets: ResourceSpec = {
   createSchema: assetSchema,
   updateSchema: assetSchema.partial(),
   csvColumns: [
-    ["asset_tag", "Asset tag"], ["name", "Name"], ["status", "Status"], ["category.name", "Category"], ["campus.name", "Campus"],
-    ["location.name", "Location"], ["custodian.full_name", "Custodian"], ["make", "Make"], ["model", "Model"],
-    ["serial_number", "Serial"], ["purchase_date", "Purchase date"], ["purchase_cost", "Cost"], ["warranty_until", "Warranty until"],
+    ["asset_tag", "Asset tag"], ["name", "Name"], ["status", "Status"], ["condition", "Condition"], ["category.name", "Category"],
+    ["subcategory.name", "Sub-category"], ["campus.name", "Campus"], ["location.name", "Location"], ["custodian.full_name", "Custodian"],
+    ["make", "Make"], ["model", "Model"], ["serial_number", "Serial"], ["purchase_date", "Purchase date"], ["purchase_cost", "Cost"],
+    ["installed_on", "Installed on"], ["warranty_start", "Warranty start"], ["warranty_until", "Warranty until"],
   ],
 };
 
@@ -291,6 +298,8 @@ export const assetCategories: ResourceSpec = {
   createPermission: "asset:configure",
   updatePermission: "asset:configure",
   deletePermission: "asset:configure",
+  select: "*, parent:asset_categories!asset_categories_parent_id_fkey(id, name)",
+  filters: { parent_id: "eq" },
   sortable: ["name", "code"],
   defaultSort: "name",
   search: ["name", "code"],
@@ -309,7 +318,7 @@ export const assetTransfers: ResourceSpec = {
   updatePermission: "asset:transfer",
   campusColumn: "from_campus_id",
   select:
-    "*, asset:assets(id, name, asset_tag), from_campus:campuses!asset_transfers_from_campus_id_fkey(name), to_campus:campuses!asset_transfers_to_campus_id_fkey(name), to_location:locations!asset_transfers_to_location_id_fkey(name), to_custodian:profiles!asset_transfers_to_custodian_id_fkey(full_name)",
+    "*, asset:assets(id, name, asset_tag), from_campus:campuses!asset_transfers_from_campus_id_fkey(name), to_campus:campuses!asset_transfers_to_campus_id_fkey(name), to_location:locations!asset_transfers_to_location_id_fkey(name, path_names), from_location:locations!asset_transfers_from_location_id_fkey(name, path_names), from_custodian:profiles!asset_transfers_from_custodian_id_fkey(full_name), requester:profiles!asset_transfers_requested_by_fkey(full_name), decider:profiles!asset_transfers_decided_by_fkey(full_name), to_custodian:profiles!asset_transfers_to_custodian_id_fkey(full_name)",
   filters: { asset_id: "eq", status: "in", from_campus_id: "eq", to_campus_id: "eq" },
   sortable: ["created_at"],
   defaultSort: "-created_at",
@@ -385,6 +394,17 @@ const vendorSchema = z.object({
   bank_name: z.string().max(120).nullable().optional(),
   payment_terms_days: z.number().int().min(0).max(365).optional(),
   service_category_ids: z.array(z.uuid()).optional(),
+  category_id: optUuid,
+  campus_ids: z.array(z.uuid()).max(100).optional(),
+  service_area: z.string().max(500).nullable().optional(),
+  contract_type: z.enum(["amc", "rate_contract", "annual", "retainer", "on_call", "one_time", "other"]).nullable().optional(),
+  contract_start: isoDate.nullable().optional(),
+  contract_end: isoDate.nullable().optional(),
+  contract_value: money.nullable().optional(),
+  sla_response_hours: z.number().positive().max(10000).nullable().optional(),
+  sla_resolution_hours: z.number().positive().max(10000).nullable().optional(),
+  sla_terms: z.string().max(2000).nullable().optional(),
+  penalty_terms: z.string().max(2000).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
   custom_fields: customFields,
 });
@@ -394,10 +414,10 @@ export const vendors: ResourceSpec = {
   table: "vendors",
   module: [M, "po"],
   permission: "vendor",
-  select: "id, org_id, vendor_code, name, status, vendor_type, contact_name, email, phone, city, gstin, rating_avg, rating_count, service_category_ids, created_at, updated_at",
-  detailSelect: "*",
-  filters: { status: "in", vendor_type: "in", service_category_ids: "contains", city: "eq" },
-  sortable: ["name", "created_at", "rating_avg", "vendor_code"],
+  select: "id, org_id, vendor_code, name, status, vendor_type, contact_name, email, phone, city, gstin, rating_avg, rating_count, service_category_ids, category_id, campus_ids, contract_type, contract_end, created_at, updated_at, category:service_categories(id, name)",
+  detailSelect: "*, category:service_categories(id, name)",
+  filters: { status: "in", vendor_type: "in", service_category_ids: "contains", category_id: "eq", campus_ids: "contains", contract_type: "in", contract_end: "range", city: "eq" },
+  sortable: ["name", "created_at", "rating_avg", "vendor_code", "contract_end"],
   defaultSort: "name",
   search: ["name", "legal_name", "gstin", "vendor_code", "email"],
   softDelete: true,
@@ -406,7 +426,8 @@ export const vendors: ResourceSpec = {
   updateSchema: vendorSchema.partial(),
   csvColumns: [
     ["vendor_code", "Code"], ["name", "Name"], ["status", "Status"], ["vendor_type", "Type"], ["contact_name", "Contact"],
-    ["email", "Email"], ["phone", "Phone"], ["city", "City"], ["gstin", "GSTIN"], ["rating_avg", "Rating"],
+    ["email", "Email"], ["phone", "Phone"], ["city", "City"], ["gstin", "GSTIN"], ["rating_avg", "Rating"], ["category.name", "Category"],
+    ["contract_type", "Contract type"], ["contract_end", "Contract end"],
   ],
 };
 
@@ -644,7 +665,7 @@ const pdfResponse = (bytes: Uint8Array, filename: string) =>
   new Response(Buffer.from(bytes), { headers: { "content-type": "application/pdf", "content-disposition": `inline; filename="${filename}"` } });
 
 const vendorDocSchema = z.object({
-  doc_type: z.enum(["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "other"]),
+  doc_type: z.enum(["gst_certificate", "pan_card", "cancelled_cheque", "msme_certificate", "incorporation", "insurance", "license", "agreement", "contract", "sla", "work_completion", "other"]),
   title: z.string().max(200).nullable().optional(),
   doc_number: z.string().max(80).nullable().optional(),
   attachment_id: optUuid,
@@ -664,6 +685,22 @@ const agreementSchema = z.object({
   attachment_id: optUuid,
   notes: z.string().max(2000).nullable().optional(),
 });
+
+const warrantySchema = z.object({
+  warranty_type: z.enum(["extended", "additional", "manufacturer", "insurance", "other"]).default("extended"),
+  provider: z.string().trim().max(200).nullable().optional(),
+  vendor_id: optUuid,
+  reference_number: z.string().trim().max(100).nullable().optional(),
+  start_date: isoDate,
+  end_date: isoDate,
+  cost: money.nullable().optional(),
+  coverage: z.string().max(2000).nullable().optional(),
+  attachment_id: optUuid,
+  notes: z.string().max(2000).nullable().optional(),
+});
+
+/** API keys bypass RLS, so their writes run as admin after the explicit permission checks. */
+const assetDb = (ctx: RequestContext) => (ctx.kind === "api_key" ? ctx.admin() : ctx.db);
 
 export const facilityRoutes: RouteDef[] = [
   route({
@@ -837,7 +874,7 @@ export const facilityRoutes: RouteDef[] = [
     path: "/assets/import",
     summary: "Bulk import assets from CSV (use dry_run to validate)",
     description:
-      "Body: `{ csv, dry_run }`. Columns: name, campus_code, category_code, location_code, asset_tag, make, model, serial_number, status, purchase_date, purchase_cost, warranty_until, custodian_email.",
+      "Body: `{ csv, dry_run }`. Columns: name, campus_code, category_code, subcategory_code, location_code, asset_tag, make, model, serial_number, status, condition, purchase_date, purchase_cost, installed_on, warranty_start, warranty_until, custodian_email.",
     tags: ["assets"],
     module: M,
     status: 200,
@@ -877,6 +914,132 @@ export const facilityRoutes: RouteDef[] = [
         disposed_at: body.disposed_at ?? new Date().toISOString().slice(0, 10),
         custodian_id: null,
       } as never);
+    },
+  }),
+  route({
+    method: "GET",
+    path: "/assets/:id/warranties",
+    summary: "Extended and additional warranties on an asset",
+    tags: ["assets"],
+    module: M,
+    handler: async ({ ctx, params }) => {
+      await getResource(ctx, assets, params.id);
+      return unwrap(
+        await assetDb(ctx)
+          .from("asset_warranties")
+          .select("*, vendor:vendors(id, name), attachment:attachments(id, file_name, mime_type)")
+          .eq("asset_id", params.id)
+          .eq("org_id", ctx.orgId)
+          .order("end_date", { ascending: false }),
+      );
+    },
+  }),
+  route({
+    method: "POST",
+    path: "/assets/:id/warranties",
+    summary: "Add an extended or additional warranty (with its document)",
+    tags: ["assets"],
+    module: M,
+    body: warrantySchema,
+    handler: async ({ ctx, params, body }) => {
+      const a = await getResource(ctx, assets, params.id);
+      await ctx.require("asset:update", rowScope(assets, a));
+      return unwrap(
+        await assetDb(ctx).from("asset_warranties").insert({ ...body, org_id: ctx.orgId, asset_id: params.id }).select("*").single(),
+      );
+    },
+  }),
+  route({
+    method: "PATCH",
+    path: "/assets/:id/warranties/:warrantyId",
+    summary: "Update a warranty",
+    tags: ["assets"],
+    module: M,
+    body: warrantySchema.partial(),
+    handler: async ({ ctx, params, body }) => {
+      const a = await getResource(ctx, assets, params.id);
+      await ctx.require("asset:update", rowScope(assets, a));
+      return unwrap(
+        await assetDb(ctx).from("asset_warranties").update(body).eq("id", params.warrantyId).eq("asset_id", params.id).eq("org_id", ctx.orgId).select("*").single(),
+      );
+    },
+  }),
+  route({
+    method: "DELETE",
+    path: "/assets/:id/warranties/:warrantyId",
+    summary: "Remove a warranty",
+    tags: ["assets"],
+    module: M,
+    response: "none",
+    handler: async ({ ctx, params }) => {
+      const a = await getResource(ctx, assets, params.id);
+      await ctx.require("asset:update", rowScope(assets, a));
+      unwrap(await assetDb(ctx).from("asset_warranties").delete().eq("id", params.warrantyId).eq("asset_id", params.id).eq("org_id", ctx.orgId));
+    },
+  }),
+  route({
+    method: "GET",
+    path: "/assets/:id/conditions",
+    summary: "Condition history of an asset",
+    tags: ["assets"],
+    module: M,
+    handler: async ({ ctx, params }) => {
+      await getResource(ctx, assets, params.id);
+      return unwrap(
+        await assetDb(ctx)
+          .from("asset_condition_logs")
+          .select("*, recorder:profiles!asset_condition_logs_recorded_by_fkey(id, full_name), attachment:attachments(id, file_name, mime_type)")
+          .eq("asset_id", params.id)
+          .eq("org_id", ctx.orgId)
+          .order("recorded_at", { ascending: false })
+          .limit(200),
+      );
+    },
+  }),
+  route({
+    method: "POST",
+    path: "/assets/:id/conditions",
+    summary: "Record the asset's current condition (custodians can too)",
+    tags: ["assets"],
+    module: M,
+    body: z.object({
+      condition: z.enum(["new", "good", "fair", "poor", "damaged"]),
+      notes: z.string().trim().max(2000).nullable().optional(),
+      attachment_id: optUuid,
+    }),
+    handler: async ({ ctx, params, body }) => {
+      const a = await getResource(ctx, assets, params.id);
+      if (a.custodian_id !== ctx.userId) await ctx.require("asset:update", rowScope(assets, a));
+      return unwrap(
+        await assetDb(ctx)
+          .from("asset_condition_logs")
+          .insert({ ...body, org_id: ctx.orgId, asset_id: params.id, recorded_by: ctx.userId })
+          .select("*")
+          .single(),
+      );
+    },
+  }),
+  route({
+    method: "PUT",
+    path: "/assets/:id/amc",
+    summary: "Put the asset under an AMC contract (null removes it)",
+    tags: ["assets"],
+    module: M,
+    status: 200,
+    body: z.object({ amc_contract_id: z.uuid().nullable() }),
+    handler: async ({ ctx, params, body }) => {
+      const a = await getResource(ctx, assets, params.id);
+      await ctx.require("asset:update", rowScope(assets, a));
+      const db = assetDb(ctx);
+      const target = body.amc_contract_id ?? a.amc_contract_id;
+      if (target) {
+        const amc = await getResource(ctx, amcContracts, target);
+        await ctx.require("amc:update", { campusId: amc.campus_id });
+      }
+      // linking is done by a trigger when amc_contract_id changes
+      if (a.amc_contract_id && a.amc_contract_id !== body.amc_contract_id)
+        unwrap(await db.from("amc_contract_assets").delete().eq("amc_contract_id", a.amc_contract_id).eq("asset_id", params.id));
+      return updateResource(ctx, assets, params.id, { amc_contract_id: body.amc_contract_id });
     },
   }),
   ...crudRoutes(assetTransfers, { tag: "assets", ops: ["list", "get", "create"] }),
@@ -920,7 +1083,7 @@ export const facilityRoutes: RouteDef[] = [
       return unwrap(
         await ctx.db
           .from("asset_verification_items")
-          .select("*, asset:assets(id, name, asset_tag, qr_token, location:locations(name)), verifier:profiles!asset_verification_items_verified_by_fkey(full_name)")
+          .select("*, asset:assets(id, name, asset_tag, qr_token, location:locations(name)), verifier:profiles!asset_verification_items_verified_by_fkey(full_name), found_location:locations!asset_verification_items_found_location_id_fkey(name)")
           .eq("audit_id", params.id)
           .order("result"),
       );
@@ -939,10 +1102,11 @@ export const facilityRoutes: RouteDef[] = [
         qr_token: z.string().max(64).optional(),
         result: z.enum(["found", "missing", "damaged", "relocated"]),
         found_location_id: optUuid,
-        condition: z.string().max(40).nullable().optional(),
+        condition: z.enum(["new", "good", "fair", "poor", "damaged"]).nullable().optional(),
         notes: z.string().max(1000).nullable().optional(),
       })
-      .refine((b) => b.asset_id || b.qr_token, "asset_id or qr_token required"),
+      .refine((b) => b.asset_id || b.qr_token, "asset_id or qr_token required")
+      .refine((b) => b.result !== "relocated" || b.found_location_id, { message: "Pick where it was found", path: ["found_location_id"] }),
     handler: async ({ ctx, params, body }) => {
       const audit = await getResource(ctx, assetAudits, params.id);
       await ctx.require("asset_audit:update", { campusId: audit.campus_id });

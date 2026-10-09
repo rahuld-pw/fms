@@ -1,6 +1,13 @@
 // Gujarati (ગુજરાતી) translations of ./en.ts. Missing keys fall back to English.
 const shared_gu = {
   shared: {
+    location: {
+      none: "આ કેમ્પસ માટે હજુ સુધી કોઈ બિલ્ડિંગ કે રૂમ સેટ કરેલા નથી.",
+      wholeCampus: "સંપૂર્ણ કેમ્પસ",
+      wholeParent: "આ સમગ્ર વિસ્તાર",
+      pick: { building: "બિલ્ડિંગ", floor: "માળ", room: "રૂમ", area: "વિસ્તાર", any: "બિલ્ડિંગ / વિસ્તાર" },
+    },
+    file: { choose: "ફાઇલ જોડો", attached: "ફાઇલ જોડાઈ ગઈ", remove: "ફાઇલ દૂર કરો" },
     breadcrumb: "બ્રેડક્રમ્બ",
     nav: {
       main: "મુખ્ય",
@@ -62,6 +69,28 @@ const shared_gu = {
       updated: "{actor} એ અપડેટ કર્યું",
       restored: "{actor} એ પાછું લાવ્યું",
       other: {
+        warranty_added: "{actor} દ્વારા વોરંટી ઉમેરવામાં આવી",
+        warranty_updated: "{actor} દ્વારા વોરંટી અપડેટ કરવામાં આવી",
+        warranty_removed: "{actor} દ્વારા વોરંટી દૂર કરવામાં આવી",
+        amc_linked: "{actor} દ્વારા તેને AMCમાં ઉમેરવામાં આવ્યું",
+        amc_unlinked: "{actor} દ્વારા તેને AMCમાંથી દૂર કરવામાં આવ્યું",
+        transfer_requested: "{actor} દ્વારા ટ્રાન્સફરની વિનંતી કરવામાં આવી",
+        transfer_completed: "{actor} દ્વારા ટ્રાન્સફર પૂર્ણ કરવામાં આવ્યું",
+        transfer_rejected: "{actor} દ્વારા ટ્રાન્સફર નકારવામાં આવ્યું",
+        transfer_cancelled: "{actor} દ્વારા ટ્રાન્સફર રદ કરવામાં આવ્યું",
+        verification_found: "{actor} દ્વારા ઓડિટમાં ચકાસણી: મળ્યું",
+        verification_damaged: "{actor} દ્વારા ઓડિટમાં ચકાસણી: નુકસાનગ્રસ્ત",
+        verification_relocated: "{actor} દ્વારા ઓડિટમાં ચકાસણી: બીજી જગ્યાએ મળ્યું",
+        condition_recorded: "{actor} દ્વારા તેની સ્થિતિ નોંધવામાં આવી",
+        document_added: "{actor} દ્વારા દસ્તાવેજ ઉમેરવામાં આવ્યો",
+        document_updated: "{actor} દ્વારા દસ્તાવેજ અપડેટ કરવામાં આવ્યો",
+        document_removed: "{actor} દ્વારા દસ્તાવેજ દૂર કરવામાં આવ્યો",
+        document_verified: "{actor} દ્વારા દસ્તાવેજ ચકાસવામાં આવ્યો",
+        document_rejected: "{actor} દ્વારા દસ્તાવેજ નકારવામાં આવ્યો",
+        document_pending: "{actor} દ્વારા દસ્તાવેજ ફરી પેન્ડિંગ કરવામાં આવ્યો",
+        agreement_added: "{actor} દ્વારા કરાર ઉમેરવામાં આવ્યો",
+        agreement_updated: "{actor} દ્વારા કરાર અપડેટ કરવામાં આવ્યો",
+        agreement_removed: "{actor} દ્વારા કરાર દૂર કરવામાં આવ્યો",
         approval_approved: "{actor} ની મંજૂરી મળી",
         approval_rejected: "{actor} એ મંજૂરી નકારી",
         approval_cancelled: "{actor} ની મંજૂરી રદ થઈ",

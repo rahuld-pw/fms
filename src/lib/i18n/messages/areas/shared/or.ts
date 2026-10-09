@@ -1,6 +1,13 @@
 // Odia (ଓଡ଼ିଆ) translations of ./en.ts. Missing keys fall back to English.
 const shared_or = {
   shared: {
+    location: {
+      none: "ଏହି କ୍ୟାମ୍ପସ୍ ପାଇଁ ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ବିଲ୍ଡିଂ କିମ୍ବା ରୁମ୍ ସେଟ୍ ଅପ୍ କରାଯାଇନାହିଁ।",
+      wholeCampus: "ସମଗ୍ର କ୍ୟାମ୍ପସ୍",
+      wholeParent: "ଏହି ସମଗ୍ର ଅଞ୍ଚଳ",
+      pick: { building: "ବିଲ୍ଡିଂ", floor: "ମହଲା", room: "ରୁମ୍", area: "ଅଞ୍ଚଳ", any: "ବିଲ୍ଡିଂ / ଅଞ୍ଚଳ" },
+    },
+    file: { choose: "ଫାଇଲ୍ ସଂଲଗ୍ନ କରନ୍ତୁ", attached: "ଫାଇଲ୍ ସଂଲଗ୍ନ ହୋଇଛି", remove: "ଫାଇଲ୍ କାଢ଼ନ୍ତୁ" },
     breadcrumb: "ବ୍ରେଡକ୍ରମ୍",
     nav: {
       main: "ମୁଖ୍ୟ",
@@ -62,6 +69,28 @@ const shared_or = {
       updated: "{actor} ଅପଡେଟ୍ କଲେ",
       restored: "{actor} ଫେରାଇ ଆଣିଲେ",
       other: {
+        warranty_added: "{actor} ଏକ ୱାରେଣ୍ଟି ଯୋଡ଼ିଲେ",
+        warranty_updated: "{actor} ଏକ ୱାରେଣ୍ଟି ଅପଡେଟ୍ କଲେ",
+        warranty_removed: "{actor} ଏକ ୱାରେଣ୍ଟି କାଢ଼ିଦେଲେ",
+        amc_linked: "{actor} ଏହାକୁ ଏକ AMCରେ ଯୋଡ଼ିଲେ",
+        amc_unlinked: "{actor} ଏହାକୁ ଏକ AMCରୁ କାଢ଼ିଦେଲେ",
+        transfer_requested: "{actor} ଟ୍ରାନ୍ସଫର ପାଇଁ ଅନୁରୋଧ କଲେ",
+        transfer_completed: "{actor} ଟ୍ରାନ୍ସଫର ସମ୍ପୂର୍ଣ୍ଣ କଲେ",
+        transfer_rejected: "{actor} ଟ୍ରାନ୍ସଫର ପ୍ରତ୍ୟାଖ୍ୟାନ କଲେ",
+        transfer_cancelled: "{actor} ଟ୍ରାନ୍ସଫର ବାତିଲ କଲେ",
+        verification_found: "{actor} ଅଡିଟ୍‌ରେ ଯାଞ୍ଚ କଲେ: ମିଳିଲା",
+        verification_damaged: "{actor} ଅଡିଟ୍‌ରେ ଯାଞ୍ଚ କଲେ: କ୍ଷତିଗ୍ରସ୍ତ",
+        verification_relocated: "{actor} ଅଡିଟ୍‌ରେ ଯାଞ୍ଚ କଲେ: ଅନ୍ୟତ୍ର ମିଳିଲା",
+        condition_recorded: "{actor} ଏହାର ଅବସ୍ଥା ରେକର୍ଡ କଲେ",
+        document_added: "{actor} ଏକ ଦଲିଲ ଯୋଡ଼ିଲେ",
+        document_updated: "{actor} ଏକ ଦଲିଲ ଅପଡେଟ୍ କଲେ",
+        document_removed: "{actor} ଏକ ଦଲିଲ କାଢ଼ିଦେଲେ",
+        document_verified: "{actor} ଏକ ଦଲିଲ ଯାଞ୍ଚ କଲେ",
+        document_rejected: "{actor} ଏକ ଦଲିଲ ପ୍ରତ୍ୟାଖ୍ୟାନ କଲେ",
+        document_pending: "{actor} ଏକ ଦଲିଲକୁ ପୁଣି ପେଣ୍ଡିଂ କଲେ",
+        agreement_added: "{actor} ଏକ ଚୁକ୍ତି ଯୋଡ଼ିଲେ",
+        agreement_updated: "{actor} ଏକ ଚୁକ୍ତି ଅପଡେଟ୍ କଲେ",
+        agreement_removed: "{actor} ଏକ ଚୁକ୍ତି କାଢ଼ିଦେଲେ",
         approval_approved: "{actor}ଙ୍କ ଅନୁମୋଦନ ଅନୁମୋଦିତ",
         approval_rejected: "{actor}ଙ୍କ ଅନୁମୋଦନ ପ୍ରତ୍ୟାଖ୍ୟାତ",
         approval_cancelled: "{actor}ଙ୍କ ଅନୁମୋଦନ ବାତିଲ୍",

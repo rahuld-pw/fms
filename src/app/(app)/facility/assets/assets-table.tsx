@@ -19,22 +19,29 @@ import { printLabels } from "./labels";
 
 const statusOpt = (t: TFunction) => (v: string) => ({ value: v, label: t(`status.${v}`, undefined, humanize(v)) });
 
+const CONDITIONS = ["new", "good", "fair", "poor", "damaged"];
+
 export const assetFields = (t: TFunction): FieldSpec[] => [
   { name: "name", label: t("ui.name"), required: true, full: true },
+  { name: "category_id", label: t("ui.category"), type: "resource", endpoint: "/asset-categories", extraParams: () => "&parent_id=null" },
+  { name: "subcategory_id", label: t("facility.assets.subcategory"), type: "resource", endpoint: "/asset-categories", extraParams: (v) => `&parent_id=${v.category_id}`, hidden: (v) => !v.category_id, hint: t("facility.assets.subcategoryHint") },
+  { name: "status", label: t("ui.status"), type: "select", required: true, options: ["in_stock", "in_use", "under_repair", "lost"].map(statusOpt(t)) },
+  { name: "condition", label: t("facility.assets.condition"), type: "select", options: CONDITIONS.map((c) => ({ value: c, label: t(`enum.assetCondition.${c}`, undefined, humanize(c)) })) },
   { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
-  { name: "category_id", label: t("ui.category"), type: "resource", endpoint: "/asset-categories" },
-  { name: "location_id", label: t("ui.location"), type: "resource", endpoint: "/locations" },
+  { name: "location_id", label: t("facility.assets.exactLocation"), type: "location", campusField: "campus_id", hint: t("facility.assets.exactLocationHint") },
   { name: "department_id", label: t("ui.department"), type: "department", campusField: "campus_id" },
   { name: "custodian_id", label: t("facility.assets.custodian"), type: "user" },
-  { name: "status", label: t("ui.status"), type: "select", required: true, options: ["in_stock", "in_use", "under_repair", "lost"].map(statusOpt(t)) },
   { name: "make", label: t("facility.assets.make") },
   { name: "model", label: t("facility.assets.model") },
   { name: "serial_number", label: t("facility.assets.serialNumber") },
+  { name: "vendor_id", label: t("ui.vendor"), type: "resource", endpoint: "/vendors" },
   { name: "purchase_date", label: t("facility.assets.purchaseDate"), type: "date" },
   { name: "purchase_cost", label: t("facility.assets.purchaseCost"), type: "money" },
-  { name: "vendor_id", label: t("ui.vendor"), type: "resource", endpoint: "/vendors" },
   { name: "invoice_number", label: t("facility.assets.invoiceNumber") },
+  { name: "installed_on", label: t("facility.assets.installedOn"), type: "date", hint: t("facility.assets.installedOnHint") },
+  { name: "warranty_start", label: t("facility.assets.warrantyStart"), type: "date" },
   { name: "warranty_until", label: t("facility.assets.warrantyUntil"), type: "date" },
+  { name: "amc_contract_id", label: t("facility.assets.detail.amc"), type: "resource", endpoint: "/amc-contracts", labelKey: "title", hintKey: "end_date", extraParams: (v) => `&status=active${v.campus_id ? `&campus_id=${v.campus_id}` : ""}`, hint: t("facility.assets.amcHint") },
   { name: "usage_unit", label: t("facility.assets.usageUnit"), hint: t("facility.assets.usageUnitHint") },
   { name: "description", label: t("ui.notes"), type: "textarea" },
 ];
@@ -45,19 +52,21 @@ export function AssetsTable() {
   const router = useRouter();
   const { campuses } = useSession();
   const [open, setOpen] = useState(false);
-  const { data: cats = [] } = useQuery({ queryKey: ["asset-categories"], queryFn: () => api<{ id: string; name: string }[]>("/asset-categories?limit=100") });
+  const { data: cats = [] } = useQuery({ queryKey: ["asset-categories"], queryFn: () => api<{ id: string; name: string; parent_id: string | null }[]>("/asset-categories?limit=200") });
   const columns: Column[] = [
     { key: "asset_tag", header: t("facility.assets.colTag"), sortable: true, pinned: true, className: "whitespace-nowrap font-mono text-xs" },
     { key: "name", header: t("ui.asset"), sortable: true, pinned: true, render: (r) => <span className="font-medium">{r.name}</span> },
     { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
-    { key: "category", header: t("ui.category"), render: (r) => r.category?.name ?? "—" },
-    { key: "location", header: t("ui.location"), render: (r) => r.location?.name ?? r.campus?.name, className: "max-w-48 truncate" },
+    { key: "category", header: t("ui.category"), render: (r) => [r.category?.name, r.subcategory?.name].filter(Boolean).join(" › ") || "—" },
+    { key: "condition", header: t("facility.assets.condition"), render: (r) => (r.condition ? t(`enum.assetCondition.${r.condition}`, undefined, humanize(r.condition)) : "—"), defaultHidden: true },
+    { key: "location", header: t("ui.location"), render: (r) => (r.location ? [...r.location.path_names, r.location.name].join(" › ") : r.campus?.name), className: "max-w-56 truncate" },
     { key: "custodian", header: t("facility.assets.custodian"), render: (r) => <UserChip name={r.custodian?.full_name} /> },
     { key: "make", header: t("facility.assets.colMakeModel"), render: (r) => [r.make, r.model].filter(Boolean).join(" ") || "—", defaultHidden: true },
     { key: "serial_number", header: t("facility.assets.colSerial"), defaultHidden: true },
     { key: "purchase_date", header: t("facility.assets.colPurchased"), sortable: true, render: (r) => r.purchase_date ?? "—", defaultHidden: true },
     { key: "purchase_cost", header: t("ui.cost"), sortable: true, align: "right", render: (r) => <Money value={r.purchase_cost} /> },
     { key: "warranty_until", header: t("facility.assets.colWarranty"), sortable: true, render: (r) => <DueDate value={r.warranty_until} done={r.status === "disposed"} /> },
+    { key: "installed_on", header: t("facility.assets.installedOn"), render: (r) => r.installed_on ?? "—", defaultHidden: true },
   ];
   return (
     <>
@@ -76,7 +85,9 @@ export function AssetsTable() {
         )}
         filters={[
           { key: "status", label: t("ui.status"), type: "multi", options: ["in_stock", "in_use", "under_repair", "disposed", "lost"].map(statusOpt(t)) },
-          { key: "category_id", label: t("ui.category"), type: "select", options: cats.map((c) => ({ value: c.id, label: c.name })) },
+          { key: "category_id", label: t("ui.category"), type: "select", options: cats.filter((c) => !c.parent_id).map((c) => ({ value: c.id, label: c.name })) },
+          ...(cats.some((c) => c.parent_id) ? [{ key: "subcategory_id", label: t("facility.assets.subcategory"), type: "select" as const, options: cats.filter((c) => c.parent_id).map((c) => ({ value: c.id, label: c.name })) }] : []),
+          { key: "condition", label: t("facility.assets.condition"), type: "multi", options: CONDITIONS.map((c) => ({ value: c, label: t(`enum.assetCondition.${c}`, undefined, humanize(c)) })) },
           ...(campuses.length > 1 ? [{ key: "campus_id", label: t("ui.campus"), type: "select" as const, options: campuses.map((c) => ({ value: c.id, label: c.name })) }] : []),
           { key: "custodian_id", label: t("facility.assets.custodian"), type: "select", options: [{ value: "me", label: t("facility.me") }] },
           { key: "warranty_until", label: t("facility.assets.colWarranty"), type: "date-range" },

@@ -230,6 +230,7 @@ export function ActivityFeed({ entityType, entityId }: { entityType: string; ent
             <span className="font-medium">{a.actor?.full_name ?? (a.actor_type === "system" ? t("shared.activity.system") : a.actor_type === "anonymous" ? t("shared.activity.anonymous") : t("shared.activity.api"))}</span>
             <span className="text-muted-foreground">{post}</span>
           </div>
+          {details(a, t) && <p className="mt-0.5 text-xs text-muted-foreground">{details(a, t)}</p>}
           {a.changes && (
             <ul className="mt-1 flex flex-col gap-0.5 text-xs text-muted-foreground">
               {Object.entries(a.changes)
@@ -248,6 +249,24 @@ export function ActivityFeed({ entityType, entityId }: { entityType: string; ent
       })}
     </ol>
   );
+}
+
+// metadata worth showing under an entry (ids and internal keys are left out)
+const DETAIL_KEYS = ["title", "warranty_type", "provider", "doc_type", "doc_number", "condition", "to", "to_custodian", "audit", "start_date", "end_date", "expires_on", "reason", "remarks", "notes"];
+
+function details(a: Activity, t: TFunction) {
+  const m = a.metadata ?? {};
+  const parts = DETAIL_KEYS.filter((k) => m[k] != null && m[k] !== "").map((k) => {
+    const v = String(m[k]);
+    if (k === "condition") return t(`enum.assetCondition.${v}`, undefined, humanize(v));
+    if (k === "warranty_type") return t(`enum.warrantyType.${v}`, undefined, humanize(v));
+    if (k === "doc_type") return t(`enum.docType.${v}`, undefined, humanize(v));
+    if (k === "to") return `→ ${v}`;
+    if (k === "end_date" || k === "expires_on") return `${t("ui.to").toLowerCase()} ${v}`;
+    if (k === "start_date") return `${t("ui.from").toLowerCase()} ${v}`;
+    return v;
+  });
+  return parts.length ? parts.join(" · ") : null;
 }
 
 /** Sentence with an `{actor}` marker where the actor's name goes. */

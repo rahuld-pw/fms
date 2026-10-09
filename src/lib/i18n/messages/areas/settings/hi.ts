@@ -370,6 +370,8 @@ const settings_hi = {
         service: "सेवा",
       },
       assetCategories: {
+        parent: "किसकी उप-श्रेणी",
+        parentHint: "मुख्य श्रेणी के लिए खाली छोड़ें",
         title: "एसेट श्रेणियाँ",
         add: "श्रेणी जोड़ें",
         createTitle: "एसेट श्रेणी जोड़ें",

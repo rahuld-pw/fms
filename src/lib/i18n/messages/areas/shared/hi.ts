@@ -1,6 +1,13 @@
 // Hindi (हिन्दी) translations of ./en.ts. Missing keys fall back to English.
 const shared_hi = {
   shared: {
+    location: {
+      none: "इस कैंपस के लिए अभी तक कोई बिल्डिंग या कमरा सेट नहीं किया गया है।",
+      wholeCampus: "पूरा कैंपस",
+      wholeParent: "यह पूरा क्षेत्र",
+      pick: { building: "बिल्डिंग", floor: "मंज़िल", room: "कमरा", area: "क्षेत्र", any: "बिल्डिंग / क्षेत्र" },
+    },
+    file: { choose: "फ़ाइल जोड़ें", attached: "फ़ाइल जोड़ी गई", remove: "फ़ाइल हटाएँ" },
     breadcrumb: "ब्रेडक्रम्ब",
     nav: {
       main: "मुख्य",
@@ -62,6 +69,28 @@ const shared_hi = {
       updated: "{actor} ने अपडेट किया",
       restored: "{actor} ने वापस लाया",
       other: {
+        warranty_added: "{actor} ने एक वारंटी जोड़ी",
+        warranty_updated: "{actor} ने एक वारंटी अपडेट की",
+        warranty_removed: "{actor} ने एक वारंटी हटाई",
+        amc_linked: "{actor} ने इसे एक AMC में जोड़ा",
+        amc_unlinked: "{actor} ने इसे एक AMC से हटाया",
+        transfer_requested: "{actor} ने ट्रांसफ़र का अनुरोध किया",
+        transfer_completed: "{actor} ने ट्रांसफ़र पूरा किया",
+        transfer_rejected: "{actor} ने ट्रांसफ़र अस्वीकार किया",
+        transfer_cancelled: "{actor} ने ट्रांसफ़र रद्द किया",
+        verification_found: "{actor} ने ऑडिट में इसका सत्यापन किया: मिला",
+        verification_damaged: "{actor} ने ऑडिट में इसका सत्यापन किया: क्षतिग्रस्त",
+        verification_relocated: "{actor} ने ऑडिट में इसका सत्यापन किया: कहीं और मिला",
+        condition_recorded: "{actor} ने इसकी स्थिति दर्ज की",
+        document_added: "{actor} ने एक दस्तावेज़ जोड़ा",
+        document_updated: "{actor} ने एक दस्तावेज़ अपडेट किया",
+        document_removed: "{actor} ने एक दस्तावेज़ हटाया",
+        document_verified: "{actor} ने एक दस्तावेज़ सत्यापित किया",
+        document_rejected: "{actor} ने एक दस्तावेज़ अस्वीकार किया",
+        document_pending: "{actor} ने एक दस्तावेज़ को वापस लंबित पर सेट किया",
+        agreement_added: "{actor} ने एक एग्रीमेंट जोड़ा",
+        agreement_updated: "{actor} ने एक एग्रीमेंट अपडेट किया",
+        agreement_removed: "{actor} ने एक एग्रीमेंट हटाया",
         approval_approved: "{actor} की मंज़ूरी मिली",
         approval_rejected: "{actor} की मंज़ूरी नामंज़ूर",
         approval_cancelled: "{actor} की मंज़ूरी रद्द",

@@ -370,6 +370,8 @@ const settings_pa = {
         service: "ਸੇਵਾ",
       },
       assetCategories: {
+        parent: "ਇਸਦੀ ਉਪ-ਸ਼੍ਰੇਣੀ",
+        parentHint: "ਮੁੱਖ ਸ਼੍ਰੇਣੀ ਲਈ ਖਾਲੀ ਛੱਡੋ",
         title: "ਸੰਪਤੀ ਸ਼੍ਰੇਣੀਆਂ",
         add: "ਸ਼੍ਰੇਣੀ ਜੋੜੋ",
         createTitle: "ਸੰਪਤੀ ਸ਼੍ਰੇਣੀ ਜੋੜੋ",

@@ -370,6 +370,8 @@ const settings_gu = {
         service: "સેવા",
       },
       assetCategories: {
+        parent: "આની પેટા-શ્રેણી",
+        parentHint: "મુખ્ય શ્રેણી માટે ખાલી રાખો",
         title: "એસેટ કેટેગરી",
         add: "કેટેગરી ઉમેરો",
         createTitle: "એસેટ કેટેગરી ઉમેરો",

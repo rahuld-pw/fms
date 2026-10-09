@@ -1,6 +1,13 @@
 // Marathi (मराठी) translations of ./en.ts. Missing keys fall back to English.
 const shared_mr = {
   shared: {
+    location: {
+      none: "या कॅम्पससाठी अद्याप कोणत्याही इमारती किंवा खोल्या सेट केलेल्या नाहीत.",
+      wholeCampus: "संपूर्ण कॅम्पस",
+      wholeParent: "हा संपूर्ण भाग",
+      pick: { building: "इमारत", floor: "मजला", room: "खोली", area: "भाग", any: "इमारत / भाग" },
+    },
+    file: { choose: "फाइल जोडा", attached: "फाइल जोडली", remove: "फाइल काढा" },
     breadcrumb: "मार्ग",
     nav: {
       main: "मुख्य",
@@ -62,6 +69,28 @@ const shared_mr = {
       updated: "{actor} यांनी अपडेट केले",
       restored: "{actor} यांनी पुन्हा आणले",
       other: {
+        warranty_added: "{actor} यांनी वॉरंटी जोडली",
+        warranty_updated: "{actor} यांनी वॉरंटी अपडेट केली",
+        warranty_removed: "{actor} यांनी वॉरंटी काढली",
+        amc_linked: "{actor} यांनी हे AMC मध्ये जोडले",
+        amc_unlinked: "{actor} यांनी हे AMC मधून काढले",
+        transfer_requested: "{actor} यांनी हस्तांतरणाची विनंती केली",
+        transfer_completed: "{actor} यांनी हस्तांतरण पूर्ण केले",
+        transfer_rejected: "{actor} यांनी हस्तांतरण नाकारले",
+        transfer_cancelled: "{actor} यांनी हस्तांतरण रद्द केले",
+        verification_found: "{actor} यांनी ऑडिटमध्ये पडताळणी केली: सापडले",
+        verification_damaged: "{actor} यांनी ऑडिटमध्ये पडताळणी केली: खराब",
+        verification_relocated: "{actor} यांनी ऑडिटमध्ये पडताळणी केली: दुसऱ्या ठिकाणी सापडले",
+        condition_recorded: "{actor} यांनी स्थिती नोंदवली",
+        document_added: "{actor} यांनी दस्तऐवज जोडला",
+        document_updated: "{actor} यांनी दस्तऐवज अपडेट केला",
+        document_removed: "{actor} यांनी दस्तऐवज काढला",
+        document_verified: "{actor} यांनी दस्तऐवजाची पडताळणी केली",
+        document_rejected: "{actor} यांनी दस्तऐवज नाकारला",
+        document_pending: "{actor} यांनी दस्तऐवज पुन्हा प्रलंबित केला",
+        agreement_added: "{actor} यांनी करार जोडला",
+        agreement_updated: "{actor} यांनी करार अपडेट केला",
+        agreement_removed: "{actor} यांनी करार काढला",
         approval_approved: "{actor} यांनी मंजुरी दिली",
         approval_rejected: "{actor} यांनी मंजुरी नाकारली",
         approval_cancelled: "{actor} यांनी मंजुरी रद्द केली",

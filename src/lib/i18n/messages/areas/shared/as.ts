@@ -1,6 +1,13 @@
 // Assamese (অসমীয়া) translations of ./en.ts. Missing keys fall back to English.
 const shared_as = {
   shared: {
+    location: {
+      none: "এই কেম্পাছৰ বাবে এতিয়ালৈকে কোনো অট্টালিকা বা কোঠা ছেট কৰা হোৱা নাই।",
+      wholeCampus: "সমগ্ৰ কেম্পাছ",
+      wholeParent: "এই সমগ্ৰ অঞ্চল",
+      pick: { building: "অট্টালিকা", floor: "মহলা", room: "কোঠা", area: "অঞ্চল", any: "অট্টালিকা / অঞ্চল" },
+    },
+    file: { choose: "ফাইল সংলগ্ন কৰক", attached: "ফাইল সংলগ্ন কৰা হ'ল", remove: "ফাইল আঁতৰাওক" },
     breadcrumb: "ব্ৰেডক্ৰাম্ব",
     nav: {
       main: "মূল",
@@ -62,6 +69,28 @@ const shared_as = {
       updated: "{actor}য়ে আপডেট কৰিলে",
       restored: "{actor}য়ে পুনৰুদ্ধাৰ কৰিলে",
       other: {
+        warranty_added: "{actor}-এ এটা ৱাৰেণ্টি যোগ কৰিলে",
+        warranty_updated: "{actor}-এ এটা ৱাৰেণ্টি আপডেট কৰিলে",
+        warranty_removed: "{actor}-এ এটা ৱাৰেণ্টি আঁতৰালে",
+        amc_linked: "{actor}-এ ইয়াক এটা AMC-ত যোগ কৰিলে",
+        amc_unlinked: "{actor}-এ ইয়াক এটা AMC-ৰ পৰা আঁতৰালে",
+        transfer_requested: "{actor}-এ স্থানান্তৰৰ অনুৰোধ কৰিলে",
+        transfer_completed: "{actor}-এ স্থানান্তৰ সম্পূৰ্ণ কৰিলে",
+        transfer_rejected: "{actor}-এ স্থানান্তৰ নাকচ কৰিলে",
+        transfer_cancelled: "{actor}-এ স্থানান্তৰ বাতিল কৰিলে",
+        verification_found: "{actor}-এ অডিটত ইয়াক পৰীক্ষা কৰিলে: পোৱা গ'ল",
+        verification_damaged: "{actor}-এ অডিটত ইয়াক পৰীক্ষা কৰিলে: ক্ষতিগ্ৰস্ত",
+        verification_relocated: "{actor}-এ অডিটত ইয়াক পৰীক্ষা কৰিলে: অন্য ঠাইত পোৱা গ'ল",
+        condition_recorded: "{actor}-এ ইয়াৰ অৱস্থা লিপিবদ্ধ কৰিলে",
+        document_added: "{actor}-এ এখন নথি যোগ কৰিলে",
+        document_updated: "{actor}-এ এখন নথি আপডেট কৰিলে",
+        document_removed: "{actor}-এ এখন নথি আঁতৰালে",
+        document_verified: "{actor}-এ এখন নথি সত্যাপন কৰিলে",
+        document_rejected: "{actor}-এ এখন নথি নাকচ কৰিলে",
+        document_pending: "{actor}-এ এখন নথি পুনৰ বিবেচনাধীন কৰিলে",
+        agreement_added: "{actor}-এ এখন চুক্তিপত্ৰ যোগ কৰিলে",
+        agreement_updated: "{actor}-এ এখন চুক্তিপত্ৰ আপডেট কৰিলে",
+        agreement_removed: "{actor}-এ এখন চুক্তিপত্ৰ আঁতৰালে",
         approval_approved: "{actor} অনুমোদন দিয়া হ'ল",
         approval_rejected: "{actor} অনুমোদন নাকচ হ'ল",
         approval_cancelled: "{actor} অনুমোদন বাতিল হ'ল",

@@ -1,6 +1,13 @@
 // Telugu (తెలుగు) translations of ./en.ts. Missing keys fall back to English.
 const shared_te = {
   shared: {
+    location: {
+      none: "ఈ క్యాంపస్‌కు ఇంకా భవనాలు లేదా గదులు సెటప్ చేయలేదు.",
+      wholeCampus: "మొత్తం క్యాంపస్",
+      wholeParent: "ఈ మొత్తం ప్రాంతం",
+      pick: { building: "భవనం", floor: "అంతస్తు", room: "గది", area: "ప్రాంతం", any: "భవనం / ప్రాంతం" },
+    },
+    file: { choose: "ఫైల్ జోడించండి", attached: "ఫైల్ జోడించబడింది", remove: "ఫైల్ తీసివేయండి" },
     breadcrumb: "బ్రెడ్‌క్రంబ్",
     nav: {
       main: "ప్రధాన",
@@ -62,6 +69,28 @@ const shared_te = {
       updated: "{actor} అప్‌డేట్ చేశారు",
       restored: "{actor} పునరుద్ధరించారు",
       other: {
+        warranty_added: "{actor} ఒక వారంటీని జోడించారు",
+        warranty_updated: "{actor} ఒక వారంటీని అప్‌డేట్ చేశారు",
+        warranty_removed: "{actor} ఒక వారంటీని తీసివేశారు",
+        amc_linked: "{actor} దీన్ని ఒక AMCకి జోడించారు",
+        amc_unlinked: "{actor} దీన్ని ఒక AMC నుండి తీసివేశారు",
+        transfer_requested: "{actor} బదిలీని అభ్యర్థించారు",
+        transfer_completed: "{actor} బదిలీని పూర్తి చేశారు",
+        transfer_rejected: "{actor} బదిలీని తిరస్కరించారు",
+        transfer_cancelled: "{actor} బదిలీని రద్దు చేశారు",
+        verification_found: "{actor} ఆడిట్‌లో దీన్ని ధృవీకరించారు: కనుగొనబడింది",
+        verification_damaged: "{actor} ఆడిట్‌లో దీన్ని ధృవీకరించారు: దెబ్బతిన్నది",
+        verification_relocated: "{actor} ఆడిట్‌లో దీన్ని ధృవీకరించారు: వేరే చోట కనుగొనబడింది",
+        condition_recorded: "{actor} దీని స్థితిని నమోదు చేశారు",
+        document_added: "{actor} ఒక పత్రాన్ని జోడించారు",
+        document_updated: "{actor} ఒక పత్రాన్ని అప్‌డేట్ చేశారు",
+        document_removed: "{actor} ఒక పత్రాన్ని తీసివేశారు",
+        document_verified: "{actor} ఒక పత్రాన్ని ధృవీకరించారు",
+        document_rejected: "{actor} ఒక పత్రాన్ని తిరస్కరించారు",
+        document_pending: "{actor} ఒక పత్రాన్ని మళ్లీ పెండింగ్‌కు మార్చారు",
+        agreement_added: "{actor} ఒక ఒప్పందాన్ని జోడించారు",
+        agreement_updated: "{actor} ఒక ఒప్పందాన్ని అప్‌డేట్ చేశారు",
+        agreement_removed: "{actor} ఒక ఒప్పందాన్ని తీసివేశారు",
         approval_approved: "{actor} ఆమోదం ఇచ్చారు",
         approval_rejected: "{actor} ఆమోదం తిరస్కరించబడింది",
         approval_cancelled: "{actor} ఆమోదం రద్దైంది",

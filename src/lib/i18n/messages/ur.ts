@@ -29,6 +29,7 @@ const urdu = {
     "/facility/issues": "مسائل",
     "/facility/work-orders": "ورک آرڈرز",
     "/facility/assets": "اثاثے",
+    "/facility/assets/audits": "اثاثہ آڈٹ",
     "/facility/locations": "مقامات",
     "/facility/maintenance": "دیکھ بھال",
     "/facility/vendors": "وینڈرز",

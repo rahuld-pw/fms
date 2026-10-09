@@ -370,6 +370,8 @@ const settings_as = {
         service: "সেৱা",
       },
       assetCategories: {
+        parent: "ইয়াৰ উপ-শ্ৰেণী",
+        parentHint: "মূল শ্ৰেণীৰ বাবে খালী ৰাখক",
         title: "সম্পদৰ শ্ৰেণী",
         add: "শ্ৰেণী যোগ কৰক",
         createTitle: "সম্পদৰ শ্ৰেণী যোগ কৰক",

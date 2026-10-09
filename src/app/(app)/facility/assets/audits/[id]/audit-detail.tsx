@@ -3,6 +3,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { NativeSelect, Textarea } from "@/components/ui/input";
+import { Field } from "@/components/shared/fields";
+import { LocationCascade } from "@/components/shared/location-cascade";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -22,6 +26,7 @@ export function AuditDetail({ id }: { id: string }) {
   const audit = useQuery({ queryKey: ["audit", id], queryFn: () => api<any>(`/asset-audits/${id}`) });
   const items = useQuery({ queryKey: ["audit-items", id], queryFn: () => api<any[]>(`/asset-audits/${id}/items`) });
   const [filter, setFilter] = useState<string>("pending");
+  const [detail, setDetail] = useState<any | null>(null);
   const refresh = () => qc.invalidateQueries({ queryKey: ["audit-items", id] });
   const mark = useAction({ onSuccess: refresh });
   const complete = useAction({ success: t("facility.assets.audits.detail.completed"), onSuccess: () => qc.invalidateQueries({ queryKey: ["audit", id] }) });
@@ -93,7 +98,14 @@ export function AuditDetail({ id }: { id: string }) {
                   .map((i) => (
                     <div key={i.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-sm">
                       <span className="font-mono text-xs">{i.asset?.asset_tag}</span>
-                      <span className="min-w-0 flex-1 truncate">{i.asset?.name}</span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate">{i.asset?.name}</span>
+                        {(i.condition || i.notes || i.found_location) && (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {[i.condition && t(`enum.assetCondition.${i.condition}`, undefined, humanize(i.condition)), i.found_location && t("facility.assets.audits.detail.foundAt", { place: i.found_location.name }), i.notes, i.verifier?.full_name].filter(Boolean).join(" · ")}
+                          </span>
+                        )}
+                      </span>
                       <span className="text-xs text-muted-foreground">{i.asset?.location?.name}</span>
                       {audit.data.status !== "completed" && (
                         <div className="flex gap-1">
@@ -102,6 +114,7 @@ export function AuditDetail({ id }: { id: string }) {
                               {t(`enum.auditResult.${r}`, undefined, r)}
                             </Button>
                           ))}
+                          <Button size="xs" variant="ghost" onClick={() => setDetail(i)}>{t("facility.assets.audits.detail.details")}</Button>
                         </div>
                       )}
                     </div>
@@ -112,6 +125,58 @@ export function AuditDetail({ id }: { id: string }) {
           </Tabs>
         </div>
       </div>
+      {detail && <VerifyDialog auditId={id} campusId={audit.data.campus_id} item={detail} onClose={() => setDetail(null)} onDone={refresh} />}
     </div>
+  );
+}
+
+const RESULTS = ["found", "missing", "damaged", "relocated"];
+const CONDITIONS = ["new", "good", "fair", "poor", "damaged"];
+
+function VerifyDialog({ auditId, campusId, item, onClose, onDone }: { auditId: string; campusId: string; item: any; onClose: () => void; onDone: () => void }) {
+  const { t } = useT();
+  const [result, setResult] = useState<string>(item.result === "pending" ? "found" : item.result);
+  const [condition, setCondition] = useState<string>(item.condition ?? "");
+  const [location, setLocation] = useState<string | null>(item.found_location_id ?? null);
+  const [notes, setNotes] = useState<string>(item.notes ?? "");
+  const act = useAction({ success: t("ui.saved"), onSuccess: () => { onDone(); onClose(); } });
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{item.asset?.asset_tag} · {item.asset?.name}</DialogTitle>
+          <DialogDescription>{t("facility.assets.audits.detail.detailsDesc")}</DialogDescription>
+        </DialogHeader>
+        <Field label={t("facility.assets.audits.detail.result")} required>
+          <NativeSelect value={result} onChange={(e) => setResult(e.target.value)}>
+            {RESULTS.map((r) => <option key={r} value={r}>{t(`enum.auditResult.${r}`, undefined, humanize(r))}</option>)}
+          </NativeSelect>
+        </Field>
+        {result !== "missing" && (
+          <Field label={t("facility.assets.condition")}>
+            <NativeSelect value={condition} onChange={(e) => setCondition(e.target.value)}>
+              <option value="">—</option>
+              {CONDITIONS.map((c) => <option key={c} value={c}>{t(`enum.assetCondition.${c}`, undefined, humanize(c))}</option>)}
+            </NativeSelect>
+          </Field>
+        )}
+        {result === "relocated" && (
+          <Field label={t("facility.assets.audits.detail.foundLocation")} required>
+            <LocationCascade campusId={campusId} value={location} onChange={setLocation} />
+          </Field>
+        )}
+        <Field label={t("ui.notes")}><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>{t("ui.cancel")}</Button>
+          <Button
+            disabled={result === "relocated" && !location}
+            loading={act.isPending}
+            onClick={() => act.mutate({ path: `/asset-audits/${auditId}/verify`, body: { asset_id: item.asset_id, result, condition: condition || null, found_location_id: result === "relocated" ? location : null, notes: notes.trim() || null } })}
+          >
+            {t("ui.save")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

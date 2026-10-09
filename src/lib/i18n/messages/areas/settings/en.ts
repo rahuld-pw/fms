@@ -370,6 +370,8 @@ const settings = {
         service: "Service",
       },
       assetCategories: {
+        parent: "Sub-category of",
+        parentHint: "Leave empty for a main category",
         title: "Asset categories",
         add: "Add category",
         createTitle: "Add asset category",

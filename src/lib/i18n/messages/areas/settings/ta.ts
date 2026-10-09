@@ -370,6 +370,8 @@ const settings_ta = {
         service: "சேவை",
       },
       assetCategories: {
+        parent: "எந்த வகையின் துணை வகை",
+        parentHint: "முதன்மை வகைக்கு காலியாக விடவும்",
         title: "சொத்து வகைகள்",
         add: "வகையைச் சேர்",
         createTitle: "சொத்து வகையைச் சேர்",

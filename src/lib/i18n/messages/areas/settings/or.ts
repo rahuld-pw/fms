@@ -370,6 +370,8 @@ const settings_or = {
         service: "ସେବା",
       },
       assetCategories: {
+        parent: "ଏହାର ଉପ-ବର୍ଗ",
+        parentHint: "ମୁଖ୍ୟ ବର୍ଗ ପାଇଁ ଖାଲି ରଖନ୍ତୁ",
         title: "ସମ୍ପତ୍ତି ବର୍ଗ",
         add: "ବର୍ଗ ଯୋଡ଼ନ୍ତୁ",
         createTitle: "ସମ୍ପତ୍ତି ବର୍ଗ ଯୋଡ଼ନ୍ତୁ",
