@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { MessageSquareText } from "lucide-react";
 import { hasApprovals, NAV, SETTINGS_NAV, type NavItem } from "@/lib/nav";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
@@ -92,6 +93,7 @@ export function SettingsNav() {
         <NavLink key={item.href} item={item} active={item.href === "/settings" ? pathname === "/settings" : pathname.startsWith(item.href)} />
       ))}
       <NavLink item={{ label: "My profile", href: "/settings/profile", icon: SETTINGS_NAV[1].icon }} active={pathname === "/settings/profile"} />
+      <NavLink item={{ label: "My reports", href: "/settings/feedback", icon: MessageSquareText }} active={pathname === "/settings/feedback"} />
     </nav>
   );
 }

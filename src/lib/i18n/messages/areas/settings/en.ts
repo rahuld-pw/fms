@@ -106,7 +106,7 @@ const settings = {
         email: "Email",
         inAppAria: "{label} in app",
         emailAria: "{label} by email",
-        groups: { approvals: "Approvals", facilities: "Facilities", tasks: "Tasks", money: "Money" },
+        groups: { general: "General", approvals: "Approvals", facilities: "Facilities", tasks: "Tasks", money: "Money" },
         types: {
           approvalRequested: "Something needs my approval",
           approvalApproved: "My request was approved",
@@ -120,6 +120,7 @@ const settings = {
           taskCompleted: "Task I follow completed",
           taskDue: "Due date reminders",
           mentioned: "Someone @mentions me",
+          feedbackUpdated: "Updates on my bug reports and ideas",
           expensePaid: "My claim was reimbursed",
           advanceDisbursed: "Advance disbursed",
           grnPosted: "Goods received on my PO",
@@ -127,6 +128,16 @@ const settings = {
           pettyCashLow: "Petty cash running low",
         },
       },
+    },
+    feedback: {
+      title: "My reports",
+      description: "Bugs you reported and features you suggested, with their status and the team's reply.",
+      emptyTitle: "Nothing reported yet",
+      emptyDescription: "Report a bug or suggest a feature, then follow its progress here.",
+      sent: "sent",
+      updated: "updated",
+      reply: "Reply from the Campus Ops team",
+      kinds: { bug: "Bug", feature: "Feature request", other: "Feedback" },
     },
     users: {
       description: "Members, their roles and where those roles apply (organisation, campus or department).",

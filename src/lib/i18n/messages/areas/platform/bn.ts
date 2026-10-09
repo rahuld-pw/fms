@@ -40,6 +40,8 @@ const platform_bn = {
       browser: "ব্রাউজার: ",
       internalNotes: "অভ্যন্তরীণ নোট",
       saveNotes: "নোট সেভ করুন",
+      reply: "রিপোর্টকারীকে উত্তর (তিনি এটি দেখতে পাবেন)",
+      sendReply: "উত্তর পাঠান",
     },
     orgs: {
       title: "প্রতিষ্ঠান",

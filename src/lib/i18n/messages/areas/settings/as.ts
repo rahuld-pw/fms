@@ -106,7 +106,7 @@ const settings_as = {
         email: "ইমেইল",
         inAppAria: "{label} এপত",
         emailAria: "{label} ইমেইলত",
-        groups: { approvals: "অনুমোদন", facilities: "আন্তঃগাঁথনি", tasks: "কাম", money: "টকা" },
+        groups: { general: "সাধাৰণ", approvals: "অনুমোদন", facilities: "আন্তঃগাঁথনি", tasks: "কাম", money: "টকা" },
         types: {
           approvalRequested: "কিবা মোৰ অনুমোদনৰ বাবে আছে",
           approvalApproved: "মোৰ অনুৰোধ অনুমোদিত হ'ল",
@@ -120,6 +120,7 @@ const settings_as = {
           taskCompleted: "মই অনুসৰণ কৰা কাম সম্পূৰ্ণ হ'ল",
           taskDue: "ম্যাদৰ তাৰিখৰ সোঁৱৰণী",
           mentioned: "কোনোবাই মোক @উল্লেখ কৰিলে",
+          feedbackUpdated: "মোৰ বাগ ৰিপৰ্ট আৰু পৰামৰ্শৰ আপডেট",
           expensePaid: "মোৰ দাবীৰ টকা দিয়া হ'ল",
           advanceDisbursed: "অগ্ৰিম বিতৰণ কৰা হ'ল",
           grnPosted: "মোৰ PO-ৰ সামগ্ৰী প্ৰাপ্ত হ'ল",
@@ -127,6 +128,16 @@ const settings_as = {
           pettyCashLow: "খুচুৰা খৰচৰ টকা কমি আহিছে",
         },
       },
+    },
+    feedback: {
+      title: "মোৰ ৰিপৰ্ট",
+      description: "আপুনি জনোৱা বাগ আৰু পৰামৰ্শ দিয়া সুবিধা, সিহঁতৰ স্থিতি আৰু দলৰ উত্তৰৰ সৈতে।",
+      emptyTitle: "এতিয়ালৈকে একো জনোৱা হোৱা নাই",
+      emptyDescription: "বাগ জনাওক বা সুবিধাৰ পৰামৰ্শ দিয়ক, তাৰ পিছত ইয়াত অগ্ৰগতি চাওক।",
+      sent: "পঠোৱা হ'ল",
+      updated: "আপডেট",
+      reply: "Campus Ops দলৰ উত্তৰ",
+      kinds: { bug: "বাগ", feature: "সুবিধাৰ পৰামৰ্শ", other: "মতামত" },
     },
     users: {
       description: "সদস্য, তেওঁলোকৰ ভূমিকা আৰু সেই ভূমিকা ক'ত প্ৰযোজ্য (প্ৰতিষ্ঠান, কেম্পাছ বা বিভাগ)।",

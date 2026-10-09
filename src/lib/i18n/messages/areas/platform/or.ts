@@ -40,6 +40,8 @@ const platform_or = {
       browser: "ବ୍ରାଉଜର୍: ",
       internalNotes: "ଆଭ୍ୟନ୍ତରୀଣ ନୋଟ୍",
       saveNotes: "ନୋଟ୍ ସେଭ୍ କରନ୍ତୁ",
+      reply: "ଜଣାଇଥିବା ବ୍ୟକ୍ତିଙ୍କୁ ଉତ୍ତର (ସେମାନେ ଏହା ଦେଖିପାରିବେ)",
+      sendReply: "ଉତ୍ତର ପଠାନ୍ତୁ",
     },
     orgs: {
       title: "ସଂସ୍ଥା",

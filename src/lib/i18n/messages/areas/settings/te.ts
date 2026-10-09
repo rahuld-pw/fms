@@ -106,7 +106,7 @@ const settings_te = {
         email: "ఈమెయిల్",
         inAppAria: "{label} యాప్‌లో",
         emailAria: "{label} ఈమెయిల్ ద్వారా",
-        groups: { approvals: "ఆమోదాలు", facilities: "సౌకర్యాలు", tasks: "పనులు", money: "డబ్బు" },
+        groups: { general: "సాధారణ", approvals: "ఆమోదాలు", facilities: "సౌకర్యాలు", tasks: "పనులు", money: "డబ్బు" },
         types: {
           approvalRequested: "నా ఆమోదం అవసరమైనప్పుడు",
           approvalApproved: "నా అభ్యర్థన ఆమోదించబడినప్పుడు",
@@ -120,6 +120,7 @@ const settings_te = {
           taskCompleted: "నేను ఫాలో అయ్యే పని పూర్తైనప్పుడు",
           taskDue: "గడువు తేదీ రిమైండర్‌లు",
           mentioned: "ఎవరైనా నన్ను @mention చేసినప్పుడు",
+          feedbackUpdated: "నా బగ్ నివేదికలు, సూచనలపై అప్‌డేట్‌లు",
           expensePaid: "నా క్లెయిమ్ చెల్లించబడినప్పుడు",
           advanceDisbursed: "అడ్వాన్స్ విడుదలైనప్పుడు",
           grnPosted: "నా PO పై సరుకు అందినప్పుడు",
@@ -127,6 +128,16 @@ const settings_te = {
           pettyCashLow: "చిల్లర నగదు తక్కువైనప్పుడు",
         },
       },
+    },
+    feedback: {
+      title: "నా నివేదికలు",
+      description: "మీరు నివేదించిన బగ్‌లు, సూచించిన ఫీచర్లు, వాటి స్థితి మరియు బృందం సమాధానంతో.",
+      emptyTitle: "ఇంకా ఏమీ నివేదించలేదు",
+      emptyDescription: "బగ్ నివేదించండి లేదా ఫీచర్ సూచించండి, తర్వాత దాని పురోగతిని ఇక్కడ చూడండి.",
+      sent: "పంపబడింది",
+      updated: "నవీకరించబడింది",
+      reply: "Campus Ops బృందం సమాధానం",
+      kinds: { bug: "బగ్", feature: "ఫీచర్ సూచన", other: "అభిప్రాయం" },
     },
     users: {
       description: "సభ్యులు, వారి పాత్రలు మరియు ఆ పాత్రలు ఎక్కడ వర్తిస్తాయి (సంస్థ, క్యాంపస్ లేదా విభాగం).",

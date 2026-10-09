@@ -2,7 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Bug, Building2, Check, Download, Lightbulb, LogOut, Menu, Monitor, Moon, Plus, Search, ShieldCheck, Sun, User } from "lucide-react";
+import { Bug, Building2, Check, Download, Lightbulb, LogOut, Menu, MessageSquareText, Monitor, Moon, Plus, Search, ShieldCheck, Sun, User } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { Avatar } from "@/components/ui/avatar";
@@ -134,6 +134,9 @@ export function Topbar() {
             </DropdownMenuItem>
             <DropdownMenuItem onSelect={() => setFeedback("feature")}>
               <Lightbulb /> {t("account.suggestFeature")}
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => router.push("/settings/feedback")}>
+              <MessageSquareText /> {t("account.myReports")}
             </DropdownMenuItem>
             {install && (
               <DropdownMenuItem onSelect={() => install()}>

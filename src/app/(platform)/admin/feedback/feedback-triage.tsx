@@ -61,11 +61,12 @@ function Item({ f }: { f: any }) {
   const { t } = useT();
   const [open, setOpen] = useState(false);
   const [notes, setNotes] = useState(f.admin_notes ?? "");
+  const [reply, setReply] = useState(f.reply ?? "");
   const Icon = ICON[f.kind as keyof typeof ICON] ?? MessageSquare;
-  const [saving, setSaving] = useState<"status" | "notes" | null>(null);
+  const [saving, setSaving] = useState<"status" | "notes" | "reply" | null>(null);
   const save = async (body: Record<string, unknown>) => {
     if (saving) return;
-    setSaving("status" in body ? "status" : "notes");
+    setSaving("status" in body ? "status" : "reply" in body ? "reply" : "notes");
     try {
       await api(`/admin/feedback/${f.id}`, { method: "PATCH", body });
       toast.success(t("admin.feedback.updated"));
@@ -99,6 +100,8 @@ function Item({ f }: { f: any }) {
             </NativeSelect>
             {saving === "status" && <Spinner className="text-muted-foreground" />}
           </div>
+          <Textarea rows={2} placeholder={t("admin.feedback.reply")} aria-label={t("admin.feedback.reply")} value={reply} onChange={(e) => setReply(e.target.value)} />
+          {reply !== (f.reply ?? "") && <Button size="sm" className="self-start" disabled={!!saving} loading={saving === "reply"} onClick={() => { void save({ reply: reply.trim() || null }); }}>{t("admin.feedback.sendReply")}</Button>}
           <Textarea rows={2} placeholder={t("admin.feedback.internalNotes")} value={notes} onChange={(e) => setNotes(e.target.value)} />
           {notes !== (f.admin_notes ?? "") && <Button size="sm" className="self-start" disabled={!!saving} loading={saving === "notes"} onClick={() => { void save({ admin_notes: notes || null }); }}>{t("admin.feedback.saveNotes")}</Button>}
         </div>

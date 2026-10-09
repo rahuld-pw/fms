@@ -106,7 +106,7 @@ const settings_ur = {
         email: "ای میل",
         inAppAria: "{label} ایپ میں",
         emailAria: "{label} ای میل سے",
-        groups: { approvals: "منظوریاں", facilities: "سہولیات", tasks: "کام", money: "پیسہ" },
+        groups: { general: "عام", approvals: "منظوریاں", facilities: "سہولیات", tasks: "کام", money: "پیسہ" },
         types: {
           approvalRequested: "کسی چیز کو میری منظوری درکار ہے",
           approvalApproved: "میری درخواست منظور ہو گئی",
@@ -120,6 +120,7 @@ const settings_ur = {
           taskCompleted: "میرا فالو کیا ہوا کام مکمل ہوا",
           taskDue: "آخری تاریخ کی یاد دہانی",
           mentioned: "کوئی مجھے @mention کرے",
+          feedbackUpdated: "میری بگ رپورٹوں اور تجاویز پر اپڈیٹس",
           expensePaid: "میرے کلیم کی ادائیگی ہو گئی",
           advanceDisbursed: "ایڈوانس ادا ہو گیا",
           grnPosted: "میرے PO کا مال موصول ہوا",
@@ -127,6 +128,16 @@ const settings_ur = {
           pettyCashLow: "پیٹی کیش کم ہو رہا ہے",
         },
       },
+    },
+    feedback: {
+      title: "میری رپورٹیں",
+      description: "آپ کے بتائے گئے بگ اور تجویز کردہ فیچرز، ان کی حالت اور ٹیم کے جواب کے ساتھ۔",
+      emptyTitle: "ابھی تک کچھ رپورٹ نہیں کیا",
+      emptyDescription: "بگ رپورٹ کریں یا فیچر تجویز کریں، پھر اس کی پیش رفت یہاں دیکھیں۔",
+      sent: "بھیجا",
+      updated: "اپڈیٹ",
+      reply: "Campus Ops ٹیم کا جواب",
+      kinds: { bug: "بگ", feature: "فیچر تجویز", other: "رائے" },
     },
     users: {
       description: "اراکین، ان کے کردار اور وہ کردار کہاں لاگو ہوتے ہیں (ادارہ، کیمپس یا شعبہ)۔",

@@ -106,7 +106,7 @@ const settings_kn = {
         email: "ಇಮೇಲ್",
         inAppAria: "{label} ಆ್ಯಪ್‌ನಲ್ಲಿ",
         emailAria: "{label} ಇಮೇಲ್ ಮೂಲಕ",
-        groups: { approvals: "ಅನುಮೋದನೆಗಳು", facilities: "ಸೌಲಭ್ಯಗಳು", tasks: "ಕೆಲಸಗಳು", money: "ಹಣ" },
+        groups: { general: "ಸಾಮಾನ್ಯ", approvals: "ಅನುಮೋದನೆಗಳು", facilities: "ಸೌಲಭ್ಯಗಳು", tasks: "ಕೆಲಸಗಳು", money: "ಹಣ" },
         types: {
           approvalRequested: "ಏನಾದರೂ ನನ್ನ ಅನುಮೋದನೆಗೆ ಕಾಯುತ್ತಿದೆ",
           approvalApproved: "ನನ್ನ ಕೋರಿಕೆ ಅನುಮೋದಿತವಾಯಿತು",
@@ -120,6 +120,7 @@ const settings_kn = {
           taskCompleted: "ನಾನು ಅನುಸರಿಸುವ ಕೆಲಸ ಮುಗಿದಿದೆ",
           taskDue: "ಗಡುವು ದಿನಾಂಕ ಜ್ಞಾಪನೆಗಳು",
           mentioned: "ಯಾರಾದರೂ ನನ್ನನ್ನು @ಉಲ್ಲೇಖಿಸಿದಾಗ",
+          feedbackUpdated: "ನನ್ನ ಬಗ್ ವರದಿಗಳು ಮತ್ತು ಸಲಹೆಗಳ ಅಪ್‌ಡೇಟ್‌ಗಳು",
           expensePaid: "ನನ್ನ ಕ್ಲೇಮ್ ಮರುಪಾವತಿಯಾಗಿದೆ",
           advanceDisbursed: "ಮುಂಗಡ ವಿತರಿಸಲಾಗಿದೆ",
           grnPosted: "ನನ್ನ PO ಸರಕು ಸ್ವೀಕರಿಸಲಾಗಿದೆ",
@@ -127,6 +128,16 @@ const settings_kn = {
           pettyCashLow: "ಚಿಲ್ಲರೆ ನಗದು ಕಡಿಮೆಯಾಗುತ್ತಿದೆ",
         },
       },
+    },
+    feedback: {
+      title: "ನನ್ನ ವರದಿಗಳು",
+      description: "ನೀವು ವರದಿ ಮಾಡಿದ ಬಗ್‌ಗಳು ಮತ್ತು ಸೂಚಿಸಿದ ವೈಶಿಷ್ಟ್ಯಗಳು, ಅವುಗಳ ಸ್ಥಿತಿ ಮತ್ತು ತಂಡದ ಉತ್ತರದೊಂದಿಗೆ.",
+      emptyTitle: "ಇನ್ನೂ ಏನೂ ವರದಿ ಮಾಡಿಲ್ಲ",
+      emptyDescription: "ಬಗ್ ವರದಿ ಮಾಡಿ ಅಥವಾ ವೈಶಿಷ್ಟ್ಯ ಸೂಚಿಸಿ, ನಂತರ ಅದರ ಪ್ರಗತಿಯನ್ನು ಇಲ್ಲಿ ನೋಡಿ.",
+      sent: "ಕಳುಹಿಸಲಾಗಿದೆ",
+      updated: "ನವೀಕರಿಸಲಾಗಿದೆ",
+      reply: "Campus Ops ತಂಡದ ಉತ್ತರ",
+      kinds: { bug: "ಬಗ್", feature: "ವೈಶಿಷ್ಟ್ಯ ಸಲಹೆ", other: "ಪ್ರತಿಕ್ರಿಯೆ" },
     },
     users: {
       description: "ಸದಸ್ಯರು, ಅವರ ಪಾತ್ರಗಳು ಮತ್ತು ಆ ಪಾತ್ರಗಳು ಎಲ್ಲಿ ಅನ್ವಯಿಸುತ್ತವೆ (ಸಂಸ್ಥೆ, ಕ್ಯಾಂಪಸ್ ಅಥವಾ ವಿಭಾಗ).",

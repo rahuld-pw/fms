@@ -40,6 +40,8 @@ const platform_pa = {
       browser: "ਬ੍ਰਾਊਜ਼ਰ: ",
       internalNotes: "ਅੰਦਰੂਨੀ ਨੋਟ",
       saveNotes: "ਨੋਟ ਸੇਵ ਕਰੋ",
+      reply: "ਰਿਪੋਰਟ ਕਰਨ ਵਾਲੇ ਨੂੰ ਜਵਾਬ (ਉਹਨਾਂ ਨੂੰ ਇਹ ਦਿਖੇਗਾ)",
+      sendReply: "ਜਵਾਬ ਭੇਜੋ",
     },
     orgs: {
       title: "ਸੰਸਥਾਵਾਂ",

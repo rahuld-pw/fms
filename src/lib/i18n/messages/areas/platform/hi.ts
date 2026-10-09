@@ -40,6 +40,8 @@ const platform_hi = {
       browser: "ब्राउज़र: ",
       internalNotes: "अंदरूनी नोट्स",
       saveNotes: "नोट्स सेव करें",
+      reply: "रिपोर्ट करने वाले को जवाब (उन्हें यह दिखेगा)",
+      sendReply: "जवाब भेजें",
     },
     orgs: {
       title: "संस्थाएँ",

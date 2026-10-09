@@ -156,4 +156,26 @@ describe("feedback", () => {
       await s.as(admin);
       expect(await s.q("update feedback set status = 'planned' where id = $1 returning id", [id])).toHaveLength(1);
     }));
+
+  it("reporters see the status and reply but not internal notes, and are notified of changes", () =>
+    withSession(async (s) => {
+      const admin = await platformAdmin(s);
+      const a = await s.user(`a-${rnd()}@x.test`);
+      await s.asAdmin();
+      const { orgId: org } = await s.org(a);
+      await s.asAdmin();
+      const id = await s.val<string>(
+        "insert into feedback (kind, title, description, user_id, org_id, admin_notes) values ('feature', 'Dark mode', 'Please...', $1, $2, 'internal only') returning id",
+        [a, org],
+      );
+      await s.as(admin);
+      await s.q("update feedback set status = 'planned' where id = $1", [id]);
+      await s.q("update feedback set reply = 'Coming next month' where id = $1", [id]);
+      await s.as(a);
+      const [row] = await s.q<{ status: string; reply: string }>("select status, reply from feedback where id = $1", [id]);
+      expect(row).toMatchObject({ status: "planned", reply: "Coming next month" });
+      expect(await s.error("select admin_notes from feedback where id = $1", [id])).toMatch(/permission denied/);
+      const notes = await s.q<{ title: string }>("select title from notifications where user_id = $1 and type = 'feedback.updated' order by created_at", [a]);
+      expect(notes.map((n) => n.title)).toEqual(["Your feature request is now planned", "Reply to your feature request"]);
+    }));
 });

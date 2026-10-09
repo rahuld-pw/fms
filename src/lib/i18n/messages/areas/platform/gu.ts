@@ -40,6 +40,8 @@ const platform_gu = {
       browser: "બ્રાઉઝર: ",
       internalNotes: "આંતરિક નોંધ",
       saveNotes: "નોંધ સેવ કરો",
+      reply: "જણાવનારને જવાબ (તેમને આ દેખાશે)",
+      sendReply: "જવાબ મોકલો",
     },
     orgs: {
       title: "સંસ્થાઓ",

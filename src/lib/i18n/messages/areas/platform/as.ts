@@ -40,6 +40,8 @@ const platform_as = {
       browser: "ব্ৰাউজাৰ: ",
       internalNotes: "আভ্যন্তৰীণ টোকা",
       saveNotes: "টোকা ছেভ কৰক",
+      reply: "জনোৱা জনক উত্তৰ (তেওঁ এইটো দেখিব)",
+      sendReply: "উত্তৰ পঠাওক",
     },
     orgs: {
       title: "প্ৰতিষ্ঠান",

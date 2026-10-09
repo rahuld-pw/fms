@@ -40,6 +40,8 @@ const platform_kn = {
       browser: "ಬ್ರೌಸರ್: ",
       internalNotes: "ಆಂತರಿಕ ಟಿಪ್ಪಣಿಗಳು",
       saveNotes: "ಟಿಪ್ಪಣಿಗಳನ್ನು ಉಳಿಸಿ",
+      reply: "ವರದಿ ಮಾಡಿದವರಿಗೆ ಉತ್ತರ (ಅವರಿಗೆ ಕಾಣಿಸುತ್ತದೆ)",
+      sendReply: "ಉತ್ತರ ಕಳುಹಿಸಿ",
     },
     orgs: {
       title: "ಸಂಸ್ಥೆಗಳು",

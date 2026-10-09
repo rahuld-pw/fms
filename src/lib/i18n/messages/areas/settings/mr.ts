@@ -106,7 +106,7 @@ const settings_mr = {
         email: "ईमेल",
         inAppAria: "{label} अ‍ॅपमध्ये",
         emailAria: "{label} ईमेलने",
-        groups: { approvals: "मंजुरी", facilities: "सुविधा", tasks: "कामे", money: "पैसे" },
+        groups: { general: "सामान्य", approvals: "मंजुरी", facilities: "सुविधा", tasks: "कामे", money: "पैसे" },
         types: {
           approvalRequested: "माझ्या मंजुरीची गरज आहे",
           approvalApproved: "माझी विनंती मंजूर झाली",
@@ -120,6 +120,7 @@ const settings_mr = {
           taskCompleted: "मी फॉलो करत असलेले काम पूर्ण झाले",
           taskDue: "मुदतीची आठवण",
           mentioned: "कोणी माझा @उल्लेख केला",
+          feedbackUpdated: "माझ्या बग अहवाल आणि सूचनांवरील अपडेट",
           expensePaid: "माझ्या क्लेमची परतफेड झाली",
           advanceDisbursed: "अ‍ॅडव्हान्स वाटप झाला",
           grnPosted: "माझ्या PO चा माल मिळाला",
@@ -127,6 +128,16 @@ const settings_mr = {
           pettyCashLow: "किरकोळ रोख कमी होत आहे",
         },
       },
+    },
+    feedback: {
+      title: "माझे अहवाल",
+      description: "तुम्ही कळवलेले बग आणि सुचवलेली फीचर्स, त्यांची स्थिती आणि टीमच्या उत्तरासह.",
+      emptyTitle: "अजून काहीही कळवलेले नाही",
+      emptyDescription: "बग कळवा किंवा फीचर सुचवा, नंतर त्याची प्रगती इथे पाहा.",
+      sent: "पाठवले",
+      updated: "अपडेट",
+      reply: "Campus Ops टीमचे उत्तर",
+      kinds: { bug: "बग", feature: "फीचर सूचना", other: "अभिप्राय" },
     },
     users: {
       description: "सदस्य, त्यांच्या भूमिका आणि त्या कुठे लागू होतात (संस्था, कॅम्पस किंवा विभाग).",

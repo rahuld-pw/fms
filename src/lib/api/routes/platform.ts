@@ -175,8 +175,9 @@ export const platformRoutes: RouteDef[] = [
     summary: "Platform admin: bug reports and feature requests",
     query: z.object({ status: z.string().optional(), kind: z.enum(["bug", "feature", "other"]).optional() }),
     handler: async ({ query }) => {
-      const { db } = await platformAdmin();
-      let q = db
+      await platformAdmin();
+      // internal notes and contact details are hidden from signed-in clients
+      let q = createAdminClient()
         .from("feedback")
         .select("*, user:profiles!feedback_user_id_fkey(full_name, email), organisation:organisations(name)")
         .order("created_at", { ascending: false })
@@ -196,10 +197,33 @@ export const platformRoutes: RouteDef[] = [
     body: z.object({
       status: z.enum(["new", "triaged", "planned", "in_progress", "done", "wont_fix", "duplicate"]).optional(),
       admin_notes: z.string().max(5000).nullable().optional(),
+      reply: z.string().trim().max(5000).nullable().optional(),
     }),
     handler: async ({ params, body }) => {
-      const { db } = await platformAdmin();
-      return unwrap(await db.from("feedback").update(body).eq("id", params.id).select("*").single());
+      await platformAdmin();
+      return unwrap(await createAdminClient().from("feedback").update(body).eq("id", params.id).select("*").single());
+    },
+  }),
+
+  publicRoute({
+    public: true,
+    method: "GET",
+    path: "/feedback/mine",
+    summary: "My bug reports and feature requests, with their status and the team's reply",
+    tags: ["feedback"],
+    rateLimit: { name: "feedback-mine", limit: 120 },
+    handler: async () => {
+      const user = await getSessionUser();
+      if (!user) throw new ApiError("unauthorized", "Authentication required");
+      const db = await createUserClient();
+      return unwrap(
+        await db
+          .from("feedback")
+          .select("id, kind, title, description, status, reply, created_at, updated_at")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(200),
+      );
     },
   }),
 

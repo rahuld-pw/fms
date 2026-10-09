@@ -41,6 +41,8 @@ const platformArea = {
       browser: "Browser: ",
       internalNotes: "Internal notes",
       saveNotes: "Save notes",
+      reply: "Reply to the reporter (they can see this)",
+      sendReply: "Send reply",
     },
     orgs: {
       title: "Organisations",

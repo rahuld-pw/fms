@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Bug, CheckCircle2, Lightbulb, MessageSquare } from "lucide-react";
@@ -23,7 +24,7 @@ const kinds = (t: TFunction): { value: FeedbackKind; label: string; icon: React.
  * Bug report / feature request form. Signed-in users are identified by their
  * session; anonymous visitors (`anonymous`) give an email and pass the captcha.
  */
-export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone }: { initialKind?: FeedbackKind; anonymous?: boolean; onDone?: () => void }) {
+export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone, onSent }: { initialKind?: FeedbackKind; anonymous?: boolean; onDone?: () => void; onSent?: () => void }) {
   const pathname = usePathname();
   const { t } = useT();
   const [kind, setKind] = useState<FeedbackKind>(initialKind);
@@ -55,6 +56,7 @@ export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone }:
     setBusy(false);
     if (!res?.ok) return setError(json?.error?.message ?? t("shared.feedback.sendFailed"));
     setSent(true);
+    onSent?.();
   };
 
   if (sent) {
@@ -63,7 +65,10 @@ export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone }:
         <CheckCircle2 className="size-10 text-primary" />
         <p className="font-medium">{t("shared.feedback.thanks")}</p>
         <p className="text-sm text-muted-foreground">{kind === "bug" ? t("shared.feedback.thanksBug") : t("shared.feedback.thanksOther")}</p>
-        {onDone && <Button variant="outline" onClick={onDone}>{t("ui.close")}</Button>}
+        <div className="flex flex-wrap justify-center gap-2">
+          {!anonymous && <Button asChild variant="outline"><Link href="/settings/feedback" onClick={onDone}>{t("shared.feedback.track")}</Link></Button>}
+          {onDone && <Button variant="outline" onClick={onDone}>{t("ui.close")}</Button>}
+        </div>
       </div>
     );
   }
@@ -94,7 +99,7 @@ export function FeedbackForm({ initialKind = "bug", anonymous = false, onDone }:
   );
 }
 
-export function FeedbackDialog({ open, onOpenChange, kind }: { open: boolean; onOpenChange: (o: boolean) => void; kind: FeedbackKind }) {
+export function FeedbackDialog({ open, onOpenChange, kind, onSent }: { open: boolean; onOpenChange: (o: boolean) => void; kind: FeedbackKind; onSent?: () => void }) {
   const { t } = useT();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -103,7 +108,7 @@ export function FeedbackDialog({ open, onOpenChange, kind }: { open: boolean; on
           <DialogTitle>{t("shared.feedback.title")}</DialogTitle>
           <DialogDescription>{t("shared.feedback.description")}</DialogDescription>
         </DialogHeader>
-        {open && <FeedbackForm key={kind} initialKind={kind} onDone={() => onOpenChange(false)} />}
+        {open && <FeedbackForm key={kind} initialKind={kind} onDone={() => onOpenChange(false)} onSent={onSent} />}
       </DialogContent>
     </Dialog>
   );

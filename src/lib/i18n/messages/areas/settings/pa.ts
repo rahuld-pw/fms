@@ -106,7 +106,7 @@ const settings_pa = {
         email: "ਈਮੇਲ",
         inAppAria: "{label} ਐਪ ਵਿੱਚ",
         emailAria: "{label} ਈਮੇਲ ਰਾਹੀਂ",
-        groups: { approvals: "ਮਨਜ਼ੂਰੀਆਂ", facilities: "ਸਹੂਲਤਾਂ", tasks: "ਕੰਮ", money: "ਪੈਸਾ" },
+        groups: { general: "ਆਮ", approvals: "ਮਨਜ਼ੂਰੀਆਂ", facilities: "ਸਹੂਲਤਾਂ", tasks: "ਕੰਮ", money: "ਪੈਸਾ" },
         types: {
           approvalRequested: "ਕਿਸੇ ਚੀਜ਼ ਨੂੰ ਮੇਰੀ ਮਨਜ਼ੂਰੀ ਚਾਹੀਦੀ ਹੈ",
           approvalApproved: "ਮੇਰੀ ਬੇਨਤੀ ਮਨਜ਼ੂਰ ਹੋਈ",
@@ -120,6 +120,7 @@ const settings_pa = {
           taskCompleted: "ਮੇਰਾ ਫਾਲੋ ਕੀਤਾ ਕੰਮ ਪੂਰਾ ਹੋਇਆ",
           taskDue: "ਆਖ਼ਰੀ ਮਿਤੀ ਦੀ ਯਾਦ",
           mentioned: "ਕੋਈ ਮੈਨੂੰ @mention ਕਰੇ",
+          feedbackUpdated: "ਮੇਰੀਆਂ ਬੱਗ ਰਿਪੋਰਟਾਂ ਅਤੇ ਸੁਝਾਵਾਂ ਬਾਰੇ ਅੱਪਡੇਟ",
           expensePaid: "ਮੇਰੇ ਕਲੇਮ ਦੀ ਅਦਾਇਗੀ ਹੋਈ",
           advanceDisbursed: "ਐਡਵਾਂਸ ਜਾਰੀ ਹੋਇਆ",
           grnPosted: "ਮੇਰੇ PO ਦਾ ਮਾਲ ਪ੍ਰਾਪਤ ਹੋਇਆ",
@@ -127,6 +128,16 @@ const settings_pa = {
           pettyCashLow: "ਪੈਟੀ ਕੈਸ਼ ਘੱਟ ਰਿਹਾ ਹੈ",
         },
       },
+    },
+    feedback: {
+      title: "ਮੇਰੀਆਂ ਰਿਪੋਰਟਾਂ",
+      description: "ਤੁਹਾਡੇ ਦੱਸੇ ਬੱਗ ਅਤੇ ਸੁਝਾਏ ਫੀਚਰ, ਉਹਨਾਂ ਦੀ ਸਥਿਤੀ ਅਤੇ ਟੀਮ ਦੇ ਜਵਾਬ ਨਾਲ।",
+      emptyTitle: "ਹਾਲੇ ਕੁਝ ਰਿਪੋਰਟ ਨਹੀਂ ਕੀਤਾ",
+      emptyDescription: "ਬੱਗ ਰਿਪੋਰਟ ਕਰੋ ਜਾਂ ਫੀਚਰ ਸੁਝਾਓ, ਫਿਰ ਇਸਦੀ ਤਰੱਕੀ ਇੱਥੇ ਦੇਖੋ।",
+      sent: "ਭੇਜਿਆ",
+      updated: "ਅੱਪਡੇਟ",
+      reply: "Campus Ops ਟੀਮ ਦਾ ਜਵਾਬ",
+      kinds: { bug: "ਬੱਗ", feature: "ਫੀਚਰ ਸੁਝਾਅ", other: "ਫੀਡਬੈਕ" },
     },
     users: {
       description: "ਮੈਂਬਰ, ਉਨ੍ਹਾਂ ਦੀਆਂ ਭੂਮਿਕਾਵਾਂ ਅਤੇ ਉਹ ਕਿੱਥੇ ਲਾਗੂ ਹੁੰਦੀਆਂ ਹਨ (ਸੰਸਥਾ, ਕੈਂਪਸ ਜਾਂ ਵਿਭਾਗ)।",

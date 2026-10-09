@@ -106,7 +106,7 @@ const settings_or = {
         email: "ଇମେଲ୍",
         inAppAria: "ଆପ୍‌ରେ {label}",
         emailAria: "ଇମେଲ୍‌ରେ {label}",
-        groups: { approvals: "ଅନୁମୋଦନ", facilities: "ଭିତ୍ତିଭୂମି", tasks: "କାମ", money: "ଟଙ୍କା" },
+        groups: { general: "ସାଧାରଣ", approvals: "ଅନୁମୋଦନ", facilities: "ଭିତ୍ତିଭୂମି", tasks: "କାମ", money: "ଟଙ୍କା" },
         types: {
           approvalRequested: "କିଛି ମୋ ଅନୁମୋଦନ ଦରକାର କରେ",
           approvalApproved: "ମୋ ଅନୁରୋଧ ଅନୁମୋଦିତ ହେଲା",
@@ -120,6 +120,7 @@ const settings_or = {
           taskCompleted: "ମୁଁ ଅନୁସରଣ କରୁଥିବା କାମ ସମ୍ପୂର୍ଣ୍ଣ ହେଲା",
           taskDue: "ଶେଷ ତାରିଖ ସ୍ମାରକ",
           mentioned: "କେହି ମୋତେ @ଉଲ୍ଲେଖ କଲେ",
+          feedbackUpdated: "ମୋ ବଗ୍ ରିପୋର୍ଟ ଓ ପରାମର୍ଶ ଉପରେ ଅପଡେଟ୍",
           expensePaid: "ମୋ କ୍ଲେମ୍‌ର ଟଙ୍କା ଫେରସ୍ତ ହେଲା",
           advanceDisbursed: "ଅଗ୍ରିମ ପ୍ରଦାନ ହେଲା",
           grnPosted: "ମୋ PO-ର ସାମଗ୍ରୀ ପ୍ରାପ୍ତ ହେଲା",
@@ -127,6 +128,16 @@ const settings_or = {
           pettyCashLow: "ଖୁଚୁରା ଖର୍ଚ୍ଚ ପାଣ୍ଠି କମ୍ ହେଉଛି",
         },
       },
+    },
+    feedback: {
+      title: "ମୋର ରିପୋର୍ଟ",
+      description: "ଆପଣ ଜଣାଇଥିବା ବଗ୍ ଓ ପରାମର୍ଶ ଦେଇଥିବା ଫିଚର୍, ସେମାନଙ୍କ ସ୍ଥିତି ଓ ଦଳର ଉତ୍ତର ସହିତ।",
+      emptyTitle: "ଏପର୍ଯ୍ୟନ୍ତ କିଛି ଜଣାଯାଇନାହିଁ",
+      emptyDescription: "ବଗ୍ ଜଣାନ୍ତୁ କିମ୍ବା ଫିଚର୍ ପରାମର୍ଶ ଦିଅନ୍ତୁ, ତାପରେ ଏଠାରେ ଅଗ୍ରଗତି ଦେଖନ୍ତୁ।",
+      sent: "ପଠାଗଲା",
+      updated: "ଅପଡେଟ୍",
+      reply: "Campus Ops ଦଳର ଉତ୍ତର",
+      kinds: { bug: "ବଗ୍", feature: "ଫିଚର୍ ପରାମର୍ଶ", other: "ମତାମତ" },
     },
     users: {
       description: "ସଦସ୍ୟ, ସେମାନଙ୍କ ଭୂମିକା ଓ ସେହି ଭୂମିକା କେଉଁଠି ଲାଗୁ (ସଂସ୍ଥା, କ୍ୟାମ୍ପସ୍ ବା ବିଭାଗ)।",

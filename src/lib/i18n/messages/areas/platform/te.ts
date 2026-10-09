@@ -40,6 +40,8 @@ const platform_te = {
       browser: "బ్రౌజర్: ",
       internalNotes: "అంతర్గత గమనికలు",
       saveNotes: "గమనికలు సేవ్ చేయండి",
+      reply: "నివేదించిన వారికి సమాధానం (వారికి కనిపిస్తుంది)",
+      sendReply: "సమాధానం పంపండి",
     },
     orgs: {
       title: "సంస్థలు",

@@ -40,6 +40,8 @@ const platform_ta = {
       browser: "பிரவுசர்: ",
       internalNotes: "உள் குறிப்புகள்",
       saveNotes: "குறிப்புகளைச் சேமி",
+      reply: "தெரிவித்தவருக்குப் பதில் (அவருக்குத் தெரியும்)",
+      sendReply: "பதில் அனுப்பு",
     },
     orgs: {
       title: "நிறுவனங்கள்",

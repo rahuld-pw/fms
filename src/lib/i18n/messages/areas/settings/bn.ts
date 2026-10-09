@@ -106,7 +106,7 @@ const settings_bn = {
         email: "ইমেল",
         inAppAria: "{label} অ্যাপে",
         emailAria: "{label} ইমেলে",
-        groups: { approvals: "অনুমোদন", facilities: "পরিকাঠামো", tasks: "কাজ", money: "টাকা" },
+        groups: { general: "সাধারণ", approvals: "অনুমোদন", facilities: "পরিকাঠামো", tasks: "কাজ", money: "টাকা" },
         types: {
           approvalRequested: "কিছু আমার অনুমোদনের অপেক্ষায়",
           approvalApproved: "আমার অনুরোধ অনুমোদিত হয়েছে",
@@ -120,6 +120,7 @@ const settings_bn = {
           taskCompleted: "আমার ফলো করা কাজ শেষ হয়েছে",
           taskDue: "শেষ তারিখের রিমাইন্ডার",
           mentioned: "কেউ আমাকে @mention করেছেন",
+          feedbackUpdated: "আমার বাগ রিপোর্ট ও প্রস্তাবের আপডেট",
           expensePaid: "আমার ক্লেমের টাকা ফেরত দেওয়া হয়েছে",
           advanceDisbursed: "অগ্রিম দেওয়া হয়েছে",
           grnPosted: "আমার PO-র মাল পাওয়া গেছে",
@@ -127,6 +128,16 @@ const settings_bn = {
           pettyCashLow: "খুচরো খরচের টাকা কমে আসছে",
         },
       },
+    },
+    feedback: {
+      title: "আমার রিপোর্ট",
+      description: "আপনার জানানো বাগ ও প্রস্তাবিত ফিচার, তাদের অবস্থা ও টিমের উত্তরসহ।",
+      emptyTitle: "এখনও কিছু রিপোর্ট করা হয়নি",
+      emptyDescription: "বাগ রিপোর্ট করুন বা ফিচার প্রস্তাব করুন, তারপর এখানে অগ্রগতি দেখুন।",
+      sent: "পাঠানো",
+      updated: "আপডেট",
+      reply: "Campus Ops টিমের উত্তর",
+      kinds: { bug: "বাগ", feature: "ফিচার প্রস্তাব", other: "মতামত" },
     },
     users: {
       description: "সদস্য, তাদের ভূমিকা এবং সেই ভূমিকা কোথায় প্রযোজ্য (প্রতিষ্ঠান, ক্যাম্পাস বা বিভাগ)।",

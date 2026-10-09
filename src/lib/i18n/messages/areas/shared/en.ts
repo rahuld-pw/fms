@@ -107,6 +107,7 @@ const shared = {
       featureTitle: "What would you like?",
       featureHint: "The problem it solves and how you imagine it working.",
       otherTitle: "Your feedback",
+      track: "Track it in My reports",
       otherHint: "Anything else you'd like the team to know.",
       sendFailed: "Could not send. Please try again.",
       thanks: "Thanks — we've received it.",

@@ -106,7 +106,7 @@ const settings_gu = {
         email: "ઇમેઇલ",
         inAppAria: "{label} એપમાં",
         emailAria: "{label} ઇમેઇલથી",
-        groups: { approvals: "મંજૂરીઓ", facilities: "સુવિધાઓ", tasks: "કામ", money: "પૈસા" },
+        groups: { general: "સામાન્ય", approvals: "મંજૂરીઓ", facilities: "સુવિધાઓ", tasks: "કામ", money: "પૈસા" },
         types: {
           approvalRequested: "કંઈક મારી મંજૂરીની રાહમાં છે",
           approvalApproved: "મારી વિનંતી મંજૂર થઈ",
@@ -120,6 +120,7 @@ const settings_gu = {
           taskCompleted: "હું ફોલો કરું છું તે કામ પૂરું થયું",
           taskDue: "છેલ્લી તારીખનાં રિમાઇન્ડર",
           mentioned: "કોઈ મને @mention કરે",
+          feedbackUpdated: "મારા બગ અહેવાલો અને સૂચનો પર અપડેટ",
           expensePaid: "મારા ક્લેમની ભરપાઈ થઈ",
           advanceDisbursed: "એડવાન્સ ચૂકવાયું",
           grnPosted: "મારા PO નો માલ મળ્યો",
@@ -127,6 +128,16 @@ const settings_gu = {
           pettyCashLow: "પરચૂરણ રોકડ ઓછી થઈ રહી છે",
         },
       },
+    },
+    feedback: {
+      title: "મારા અહેવાલો",
+      description: "તમે જણાવેલા બગ અને સૂચવેલી સુવિધાઓ, તેમની સ્થિતિ અને ટીમના જવાબ સાથે.",
+      emptyTitle: "હજી કંઈ જણાવ્યું નથી",
+      emptyDescription: "બગ જણાવો અથવા સુવિધા સૂચવો, પછી તેની પ્રગતિ અહીં જુઓ.",
+      sent: "મોકલ્યું",
+      updated: "અપડેટ",
+      reply: "Campus Ops ટીમનો જવાબ",
+      kinds: { bug: "બગ", feature: "સુવિધા સૂચન", other: "પ્રતિસાદ" },
     },
     users: {
       description: "સભ્યો, તેમની ભૂમિકાઓ અને તે ભૂમિકાઓ ક્યાં લાગુ પડે છે (સંસ્થા, કેમ્પસ કે વિભાગ).",

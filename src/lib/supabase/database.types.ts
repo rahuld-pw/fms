@@ -2702,6 +2702,7 @@ export type Database = {
           org_id: string | null
           status: string
           admin_notes: string | null
+          reply: string | null
           votes: number
           created_at: string
           updated_at: string
@@ -2718,6 +2719,7 @@ export type Database = {
           org_id?: string | null
           status?: string
           admin_notes?: string | null
+          reply?: string | null
           votes?: number
           created_at?: string
           updated_at?: string
@@ -2734,6 +2736,7 @@ export type Database = {
           org_id?: string | null
           status?: string
           admin_notes?: string | null
+          reply?: string | null
           votes?: number
           created_at?: string
           updated_at?: string

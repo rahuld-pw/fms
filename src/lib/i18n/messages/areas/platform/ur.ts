@@ -40,6 +40,8 @@ const platform_ur = {
       browser: "براؤزر: ",
       internalNotes: "اندرونی نوٹس",
       saveNotes: "نوٹس محفوظ کریں",
+      reply: "رپورٹ کرنے والے کو جواب (انہیں یہ نظر آئے گا)",
+      sendReply: "جواب بھیجیں",
     },
     orgs: {
       title: "ادارے",

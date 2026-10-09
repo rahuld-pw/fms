@@ -18,11 +18,46 @@ import { useT } from "@/lib/i18n/client";
 import { supabaseBrowser } from "@/lib/supabase/browser";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-const GROUPS: { key: string; types: { type: string; key: string }[] }[] = [
-  { key: "approvals", types: [{ type: "approval.requested", key: "approvalRequested" }, { type: "approval.approved", key: "approvalApproved" }, { type: "approval.rejected", key: "approvalRejected" }, { type: "reminder.approval_overdue", key: "approvalOverdue" }] },
-  { key: "facilities", types: [{ type: "issue.assigned", key: "issueAssigned" }, { type: "issue.status_changed", key: "issueStatusChanged" }, { type: "issue.escalated", key: "issueEscalated" }, { type: "work_order.assigned", key: "workOrderAssigned" }] },
-  { key: "tasks", types: [{ type: "task.assigned", key: "taskAssigned" }, { type: "task.completed", key: "taskCompleted" }, { type: "reminder.task_due", key: "taskDue" }, { type: "comment.mentioned", key: "mentioned" }] },
-  { key: "money", types: [{ type: "expense.paid", key: "expensePaid" }, { type: "expense.advance_disbursed", key: "advanceDisbursed" }, { type: "grn.posted", key: "grnPosted" }, { type: "po.acknowledged", key: "poAcknowledged" }, { type: "petty_cash.low_balance", key: "pettyCashLow" }] },
+type Module = "facility" | "expense" | "tasks" | "po" | "surveys";
+// `modules`: shown only when the user has at least one of them; none = always shown
+const GROUPS: { key: string; types: { type: string; key: string; modules?: Module[] }[] }[] = [
+  { key: "general", types: [{ type: "comment.mentioned", key: "mentioned" }, { type: "feedback.updated", key: "feedbackUpdated" }] },
+  {
+    key: "approvals",
+    types: [
+      { type: "approval.requested", key: "approvalRequested", modules: ["expense", "po", "facility"] },
+      { type: "approval.approved", key: "approvalApproved", modules: ["expense", "po", "facility"] },
+      { type: "approval.rejected", key: "approvalRejected", modules: ["expense", "po", "facility"] },
+      { type: "reminder.approval_overdue", key: "approvalOverdue", modules: ["expense", "po", "facility"] },
+    ],
+  },
+  {
+    key: "facilities",
+    types: [
+      { type: "issue.assigned", key: "issueAssigned", modules: ["facility"] },
+      { type: "issue.status_changed", key: "issueStatusChanged", modules: ["facility"] },
+      { type: "issue.escalated", key: "issueEscalated", modules: ["facility"] },
+      { type: "work_order.assigned", key: "workOrderAssigned", modules: ["facility"] },
+    ],
+  },
+  {
+    key: "tasks",
+    types: [
+      { type: "task.assigned", key: "taskAssigned", modules: ["tasks"] },
+      { type: "task.completed", key: "taskCompleted", modules: ["tasks"] },
+      { type: "reminder.task_due", key: "taskDue", modules: ["tasks"] },
+    ],
+  },
+  {
+    key: "money",
+    types: [
+      { type: "expense.paid", key: "expensePaid", modules: ["expense"] },
+      { type: "expense.advance_disbursed", key: "advanceDisbursed", modules: ["expense"] },
+      { type: "petty_cash.low_balance", key: "pettyCashLow", modules: ["expense"] },
+      { type: "grn.posted", key: "grnPosted", modules: ["po"] },
+      { type: "po.acknowledged", key: "poAcknowledged", modules: ["po"] },
+    ],
+  },
 ];
 
 export function ProfileSettings() {
@@ -95,7 +130,10 @@ function PasswordCard() {
 
 function Preferences() {
   const { t } = useT();
+  const { modules } = useSession();
   const qc = useQueryClient();
+  // only alerts for modules this person can use in the current organisation
+  const groups = GROUPS.map((g) => ({ ...g, types: g.types.filter((n) => !n.modules || n.modules.some((m) => modules.includes(m))) })).filter((g) => g.types.length);
   const { data } = useQuery({ queryKey: ["notification-preferences"], queryFn: () => api<{ type: string; in_app: boolean; email: boolean }[]>("/notifications/preferences") });
   const pref = (type: string) => data?.find((p) => p.type === type) ?? data?.find((p) => p.type === "*") ?? { type, in_app: true, email: true };
   // types whose preference is being saved: their switches stay disabled until it lands
@@ -118,7 +156,7 @@ function Preferences() {
           <span />
           <span className="text-xs font-medium text-muted-foreground">{t("settings.profile.notifications.inApp")}</span>
           <span className="text-xs font-medium text-muted-foreground">{t("settings.profile.notifications.email")}</span>
-          {GROUPS.map((g) => [
+          {groups.map((g) => [
             <span key={g.key} className="col-span-3 mt-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t(`settings.profile.notifications.groups.${g.key}`)}</span>,
             ...g.types.flatMap((n) => {
               const label = t(`settings.profile.notifications.types.${n.key}`);
