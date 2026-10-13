@@ -45,7 +45,7 @@ const facility_ta = {
         reported: "பிரச்சனை {number} புகாரளிக்கப்பட்டது",
         where: "எங்கே உள்ளது?",
         whereHint: "கட்டடம், தளம் அல்லது அறை",
-        searchLocations: "இடங்களைத் தேடு…",
+        searchLocations: "அல்லது பெயரால் தேடு…",
         kind: "என்ன வகையான பிரச்சனை?",
         shortTitle: "சுருக்கமான தலைப்பு",
         titlePlaceholder: "எ.கா. கழிவறையில் குழாய் கசிகிறது",

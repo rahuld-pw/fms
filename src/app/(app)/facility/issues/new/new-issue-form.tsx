@@ -1,7 +1,7 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Camera, X } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "@/components/app/session";
@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/checkbox";
 import { Input, Textarea } from "@/components/ui/input";
 import { CampusSelect, Field, ResourcePicker } from "@/components/shared/fields";
+import { LocationCascade } from "@/components/shared/location-cascade";
 import { api, errorMessage, uploadToSigned } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
 import { cn } from "@/lib/utils/cn";
@@ -32,6 +33,11 @@ export function NewIssueForm() {
   const [anonymous, setAnonymous] = useState(false);
   const [busy, setBusy] = useState(false);
   const file = useRef<HTMLInputElement>(null);
+  // a location from a QR code or link without a campus: take the campus from the location
+  useEffect(() => {
+    if (!locationId || campusId) return;
+    api<{ campus_id: string }>(`/locations/${locationId}`).then((l) => setCampusId(l.campus_id)).catch(() => undefined);
+  }, [locationId, campusId]);
   const { data: categories = [] } = useQuery({ queryKey: ["issue-categories", "active"], queryFn: () => api<Category[]>("/issue-categories?active=true&limit=100") });
 
   const submit = async (e: React.FormEvent) => {
@@ -71,13 +77,19 @@ export function NewIssueForm() {
           </Field>
         )}
         <Field label={t("facility.issues.new.where")} hint={t("facility.issues.new.whereHint")}>
-          <ResourcePicker
-            endpoint="/locations"
-            extraParams={campusId ? `&campus_id=${campusId}` : ""}
-            value={locationId}
-            onChange={(v) => setLocationId(v as string | null)}
-            placeholder={t("facility.issues.new.searchLocations")}
-          />
+          <div className="flex flex-col gap-2">
+            <LocationCascade campusId={campusId} value={locationId} onChange={setLocationId} />
+            {campusId && (
+              <ResourcePicker
+                endpoint="/locations"
+                extraParams={`&campus_id=${campusId}`}
+                hintKey="type"
+                value={null}
+                onChange={(v) => v && setLocationId(v as string)}
+                placeholder={t("facility.issues.new.searchLocations")}
+              />
+            )}
+          </div>
         </Field>
         <Field label={t("facility.issues.new.kind")}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">

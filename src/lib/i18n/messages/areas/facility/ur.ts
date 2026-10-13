@@ -45,7 +45,7 @@ const facility_ur = {
         reported: "مسئلہ {number} رپورٹ ہو گیا",
         where: "یہ کہاں ہے؟",
         whereHint: "عمارت، منزل یا کمرہ",
-        searchLocations: "مقامات تلاش کریں…",
+        searchLocations: "یا نام سے تلاش کریں…",
         kind: "کس قسم کا مسئلہ ہے؟",
         shortTitle: "مختصر عنوان",
         titlePlaceholder: "مثلاً واش روم میں نل ٹپک رہا ہے",

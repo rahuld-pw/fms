@@ -45,7 +45,7 @@ const facility_kn = {
         reported: "ಸಮಸ್ಯೆ {number} ವರದಿಯಾಗಿದೆ",
         where: "ಎಲ್ಲಿದೆ?",
         whereHint: "ಕಟ್ಟಡ, ಮಹಡಿ ಅಥವಾ ಕೊಠಡಿ",
-        searchLocations: "ಸ್ಥಳಗಳನ್ನು ಹುಡುಕಿ…",
+        searchLocations: "ಅಥವಾ ಹೆಸರಿನಿಂದ ಹುಡುಕಿ…",
         kind: "ಯಾವ ರೀತಿಯ ಸಮಸ್ಯೆ?",
         shortTitle: "ಚಿಕ್ಕ ಶೀರ್ಷಿಕೆ",
         titlePlaceholder: "ಉದಾ. ಶೌಚಾಲಯದಲ್ಲಿ ನಲ್ಲಿ ಸೋರುತ್ತಿದೆ",

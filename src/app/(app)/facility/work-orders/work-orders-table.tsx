@@ -21,7 +21,7 @@ export const workOrderFields = (t: TFunction): FieldSpec[] => [
   { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
   { name: "type", label: t("ui.type"), type: "select", required: true, options: WO_TYPES.map(typeOpt(t)) },
   { name: "priority", label: t("ui.priority"), type: "select", required: true, options: ["low", "medium", "high", "critical"].map((v) => ({ value: v, label: t(`priority.${v}`, undefined, humanize(v)) })) },
-  { name: "location_id", label: t("ui.location"), type: "resource", endpoint: "/locations" },
+  { name: "location_id", label: t("ui.location"), type: "location", campusField: "campus_id" },
   { name: "asset_id", label: t("ui.asset"), type: "resource", endpoint: "/assets", hintKey: "asset_tag" },
   { name: "assignee_id", label: t("facility.workOrders.assignTo"), type: "user" },
   { name: "vendor_id", label: t("ui.vendor"), type: "resource", endpoint: "/vendors?status=approved" },

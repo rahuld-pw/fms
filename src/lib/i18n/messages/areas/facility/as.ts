@@ -45,7 +45,7 @@ const facility_as = {
         reported: "সমস্যা {number} জনোৱা হ'ল",
         where: "ক'ত?",
         whereHint: "ভৱন, মহলা বা কোঠা",
-        searchLocations: "স্থান বিচাৰক…",
+        searchLocations: "নাইবা নামেৰে বিচাৰক…",
         kind: "কি ধৰণৰ সমস্যা?",
         shortTitle: "চমু শিৰোনাম",
         titlePlaceholder: "যেনে শৌচালয়ত টেপৰ পানী সৰিছে",

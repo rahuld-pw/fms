@@ -45,7 +45,7 @@ const facility_hi = {
         reported: "समस्या {number} दर्ज हुई",
         where: "यह कहाँ है?",
         whereHint: "इमारत, मंज़िल या कमरा",
-        searchLocations: "जगह खोजें…",
+        searchLocations: "या नाम से खोजें…",
         kind: "किस तरह की समस्या है?",
         shortTitle: "छोटा शीर्षक",
         titlePlaceholder: "जैसे वॉशरूम में नल टपक रहा है",

@@ -45,7 +45,7 @@ const facility_gu = {
         reported: "સમસ્યા {number} નોંધાઈ",
         where: "ક્યાં છે?",
         whereHint: "બિલ્ડિંગ, માળ કે રૂમ",
-        searchLocations: "જગ્યાઓ શોધો…",
+        searchLocations: "અથવા નામથી શોધો…",
         kind: "કેવા પ્રકારની સમસ્યા?",
         shortTitle: "ટૂંકું શીર્ષક",
         titlePlaceholder: "દા.ત. વોશરૂમમાં નળ ટપકે છે",

@@ -45,7 +45,7 @@ const facility_mr = {
         reported: "समस्या {number} नोंदवली",
         where: "कुठे आहे?",
         whereHint: "इमारत, मजला किंवा खोली",
-        searchLocations: "ठिकाणे शोधा…",
+        searchLocations: "किंवा नावाने शोधा…",
         kind: "कोणत्या प्रकारची समस्या?",
         shortTitle: "थोडक्यात शीर्षक",
         titlePlaceholder: "उदा. स्वच्छतागृहातील नळ गळतो",

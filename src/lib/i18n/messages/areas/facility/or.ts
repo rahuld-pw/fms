@@ -45,7 +45,7 @@ const facility_or = {
         reported: "ସମସ୍ୟା {number} ଜଣାଗଲା",
         where: "ଏହା କେଉଁଠି?",
         whereHint: "କୋଠା, ମହଲା ବା କୋଠରୀ",
-        searchLocations: "ସ୍ଥାନ ଖୋଜନ୍ତୁ…",
+        searchLocations: "କିମ୍ବା ନାମରେ ଖୋଜନ୍ତୁ…",
         kind: "କେଉଁ ପ୍ରକାର ସମସ୍ୟା?",
         shortTitle: "ସଂକ୍ଷିପ୍ତ ଶୀର୍ଷକ",
         titlePlaceholder: "ଯଥା: ବାଥରୁମ୍‌ରେ ଟ୍ୟାପ୍ ଲିକ୍ ହେଉଛି",

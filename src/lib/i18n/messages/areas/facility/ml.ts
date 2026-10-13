@@ -45,7 +45,7 @@ const facility_ml = {
         reported: "പ്രശ്നം {number} റിപ്പോർട്ട് ചെയ്തു",
         where: "എവിടെയാണ്?",
         whereHint: "കെട്ടിടം, നില അല്ലെങ്കിൽ മുറി",
-        searchLocations: "സ്ഥലങ്ങൾ തിരയുക…",
+        searchLocations: "അല്ലെങ്കിൽ പേരിൽ തിരയുക…",
         kind: "ഏത് തരം പ്രശ്നം?",
         shortTitle: "ചെറിയ തലക്കെട്ട്",
         titlePlaceholder: "ഉദാ. വാഷ്റൂമിലെ ടാപ്പ് ചോരുന്നു",

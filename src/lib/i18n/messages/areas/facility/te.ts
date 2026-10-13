@@ -45,7 +45,7 @@ const facility_te = {
         reported: "సమస్య {number} నివేదించబడింది",
         where: "ఎక్కడ ఉంది?",
         whereHint: "భవనం, అంతస్తు లేదా గది",
-        searchLocations: "ప్రదేశాలు వెతకండి…",
+        searchLocations: "లేదా పేరుతో వెతకండి…",
         kind: "ఏ రకమైన సమస్య?",
         shortTitle: "చిన్న శీర్షిక",
         titlePlaceholder: "ఉదా. వాష్‌రూమ్‌లో కుళాయి లీక్ అవుతోంది",

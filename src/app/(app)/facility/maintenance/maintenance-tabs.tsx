@@ -26,7 +26,7 @@ const pmFields = (t: TFunction): FieldSpec[] => [
   { name: "title", label: t("ui.title"), required: true, full: true },
   { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
   { name: "asset_id", label: t("ui.asset"), type: "resource", endpoint: "/assets", hintKey: "asset_tag" },
-  { name: "location_id", label: t("facility.maintenance.pm.locationIfNoAsset"), type: "resource", endpoint: "/locations" },
+  { name: "location_id", label: t("facility.maintenance.pm.locationIfNoAsset"), type: "location", campusField: "campus_id" },
   { name: "trigger_type", label: t("facility.maintenance.pm.trigger"), type: "select", required: true, options: [{ value: "time", label: t("facility.maintenance.pm.timeBased") }, { value: "usage", label: t("facility.maintenance.pm.usageBased") }] },
   { name: "frequency", label: t("facility.maintenance.pm.frequency"), type: "select", options: ["daily", "weekly", "monthly", "quarterly", "half_yearly", "yearly", "custom_days"].map(enumOpt(t, "frequency")), hidden: (v) => v.trigger_type === "usage" },
   { name: "interval_days", label: t("facility.maintenance.pm.everyNDays"), type: "number", hidden: (v) => v.frequency !== "custom_days" },

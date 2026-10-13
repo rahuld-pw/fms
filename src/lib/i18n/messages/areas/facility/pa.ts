@@ -45,7 +45,7 @@ const facility_pa = {
         reported: "ਸਮੱਸਿਆ {number} ਦਰਜ ਹੋਈ",
         where: "ਇਹ ਕਿੱਥੇ ਹੈ?",
         whereHint: "ਇਮਾਰਤ, ਮੰਜ਼ਿਲ ਜਾਂ ਕਮਰਾ",
-        searchLocations: "ਥਾਵਾਂ ਖੋਜੋ…",
+        searchLocations: "ਜਾਂ ਨਾਮ ਨਾਲ ਖੋਜੋ…",
         kind: "ਕਿਸ ਤਰ੍ਹਾਂ ਦੀ ਸਮੱਸਿਆ?",
         shortTitle: "ਛੋਟਾ ਸਿਰਲੇਖ",
         titlePlaceholder: "ਜਿਵੇਂ ਵਾਸ਼ਰੂਮ ਵਿੱਚ ਟੂਟੀ ਚੋਅ ਰਹੀ ਹੈ",

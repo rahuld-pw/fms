@@ -45,7 +45,7 @@ const facility_bn = {
         reported: "সমস্যা {number} জানানো হয়েছে",
         where: "এটি কোথায়?",
         whereHint: "বিল্ডিং, তলা বা ঘর",
-        searchLocations: "লোকেশন খুঁজুন…",
+        searchLocations: "অথবা নাম দিয়ে খুঁজুন…",
         kind: "কী ধরনের সমস্যা?",
         shortTitle: "ছোট শিরোনাম",
         titlePlaceholder: "যেমন বাথরুমে কল দিয়ে জল পড়ছে",
