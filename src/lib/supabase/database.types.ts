@@ -8114,6 +8114,8 @@ export type Database = {
         | { Args: { p_requisition_id: string; p_vendor_ids: string[]; p_due_date?: string; p_terms?: string }; Returns: string }
       submit_public_issue:
         | { Args: { p_qr_token: string; p_title: string; p_description: string; p_category_id?: string; p_priority?: string; p_campus_id?: string; p_org_slug?: string }; Returns: { issue_id: string; issue_number: string; tracking_token: string }[] }
+      submit_public_report:
+        | { Args: { p_qr_token: string; p_title: string; p_description: string; p_category_id?: string; p_priority?: string; p_campus_id?: string; p_org_slug?: string; p_location_id?: string }; Returns: { issue_id: string; issue_number: string; tracking_token: string }[] }
       survey_overview:
         | { Args: { p_org: string }; Returns: { id: string; title: string; kind: string; audience: string; status: string; anonymous: boolean; campus_id: string; closes_at: string; created_at: string; responses: number; score: number; last_response_at: string }[] }
       survey_respond:

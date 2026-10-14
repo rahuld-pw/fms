@@ -5,14 +5,27 @@ import { NativeSelect } from "@/components/ui/input";
 import { api } from "@/lib/client/api";
 import { useT } from "@/lib/i18n/client";
 
-interface Loc { id: string; name: string; type: string; parent_id: string | null; campus_id: string }
+export interface Loc { id: string; name: string; type: string; parent_id: string | null; campus_id: string }
+
+/** Where the levels come from: the signed-in API by default, or e.g. a public QR endpoint. */
+export interface LocationSource {
+  key: string;
+  children: (campusId: string, parentId: string | null) => Promise<Loc[]>;
+  get: (id: string) => Promise<Loc | null>;
+}
+
+const apiSource: LocationSource = {
+  key: "api",
+  children: (campusId, parentId) => api<Loc[]>(`/locations?campus_id=${campusId}&parent_id=${parentId ?? "null"}&limit=200&sort=name`),
+  get: (id) => api<Loc>(`/locations/${id}`).catch(() => null),
+};
 
 /**
  * Campus › building/area › floor/area › room/area: one dropdown per level of
  * the location tree. The value is the deepest location picked (or null for the
  * campus itself).
  */
-export function LocationCascade({ campusId, value, onChange, id }: { campusId: string | null | undefined; value: string | null | undefined; onChange: (v: string | null) => void; id?: string }) {
+export function LocationCascade({ campusId, value, onChange, id, source = apiSource }: { campusId: string | null | undefined; value: string | null | undefined; onChange: (v: string | null) => void; id?: string; source?: LocationSource }) {
   const [chain, setChain] = useState<string[]>([]);
   // ancestors of a location picked elsewhere (editing, or a QR code)
   const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
@@ -23,7 +36,7 @@ export function LocationCascade({ campusId, value, onChange, id }: { campusId: s
       const ids: string[] = [];
       let cur = value ?? null;
       for (let i = 0; cur && i < 10; i++) {
-        const loc: Loc = await api<Loc>(`/locations/${cur}`).catch(() => null as never);
+        const loc = await source.get(cur);
         if (!loc) break;
         ids.unshift(loc.id);
         cur = loc.parent_id;
@@ -34,7 +47,7 @@ export function LocationCascade({ campusId, value, onChange, id }: { campusId: s
       }
     })();
     return () => { cancelled = true; };
-  }, [value, loadedFor, chain]);
+  }, [value, loadedFor, chain, source]);
   // a different campus starts again from the top
   const campusRef = useRef(campusId);
   useEffect(() => {
@@ -58,17 +71,17 @@ export function LocationCascade({ campusId, value, onChange, id }: { campusId: s
   return (
     <div className="flex flex-col gap-2">
       {[...chain, null].map((_, level) => (
-        <Level key={`${level}-${chain[level - 1] ?? "root"}`} id={level === 0 ? id : undefined} campusId={campusId} parentId={level === 0 ? null : chain[level - 1]} value={chain[level] ?? ""} onPick={(v) => pick(level, v)} />
+        <Level key={`${level}-${chain[level - 1] ?? "root"}`} id={level === 0 ? id : undefined} source={source} campusId={campusId} parentId={level === 0 ? null : chain[level - 1]} value={chain[level] ?? ""} onPick={(v) => pick(level, v)} />
       ))}
     </div>
   );
 }
 
-function Level({ campusId, parentId, value, onPick, id }: { campusId: string; parentId: string | null; value: string; onPick: (v: string) => void; id?: string }) {
+function Level({ campusId, parentId, value, onPick, id, source }: { campusId: string; parentId: string | null; value: string; onPick: (v: string) => void; id?: string; source: LocationSource }) {
   const { t } = useT();
   const { data, isLoading } = useQuery({
-    queryKey: ["location-level", campusId, parentId],
-    queryFn: () => api<Loc[]>(`/locations?campus_id=${campusId}&parent_id=${parentId ?? "null"}&limit=200&sort=name`),
+    queryKey: ["location-level", source.key, campusId, parentId],
+    queryFn: () => source.children(campusId, parentId),
     staleTime: 60_000,
   });
   if (!isLoading && !data?.length) {

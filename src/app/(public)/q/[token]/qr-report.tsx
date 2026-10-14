@@ -1,17 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Copy, MapPin, Package, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Textarea } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Field } from "@/components/shared/fields";
+import { LocationCascade, type Loc, type LocationSource } from "@/components/shared/location-cascade";
 import { cn } from "@/lib/utils/cn";
 import { captchaEnabled, Turnstile } from "@/components/shared/turnstile";
 import { useT } from "@/lib/i18n/client";
 
-interface QrInfo { kind: "location" | "asset"; id: string; name: string; path: string | null; campus: string; org_name: string; asset_tag?: string; facility_enabled: boolean; public_reporting: boolean; categories: { id: string; name: string }[] }
+interface QrInfo { kind: "location" | "asset"; id: string; name: string; path: string | null; campus: string; campus_id: string; location_id: string | null; org_name: string; asset_tag?: string; facility_enabled: boolean; public_reporting: boolean; categories: { id: string; name: string }[] }
 type Result = { number: string; tracking_token: string };
 
 async function post<T>(path: string, body: unknown, fallbackError: string): Promise<T> {
@@ -34,11 +35,25 @@ export function QrReport({ token }: { token: string }) {
   const [honeypot, setHoneypot] = useState("");
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
+  const [locationId, setLocationId] = useState<string | null>(null);
+  // levels come from a public endpoint limited to the scanned code's campus
+  const source = useMemo<LocationSource>(() => {
+    const load = async (qs: string) => {
+      const r = await fetch(`/api/v1/public/qr/${encodeURIComponent(token)}/locations?${qs}`);
+      if (!r.ok) return [] as Loc[];
+      return ((await r.json()).data ?? []) as Loc[];
+    };
+    return {
+      key: `qr:${token}`,
+      children: (_campus, parentId) => load(`parent_id=${parentId ?? "null"}`),
+      get: async (id) => (await load(`id=${id}`))[0] ?? null,
+    };
+  }, [token]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetch(`/api/v1/public/qr/${encodeURIComponent(token)}`)
-      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message ?? t("public.qr.unknownCode")); setInfo(j.data); })
+      .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j?.error?.message ?? t("public.qr.unknownCode")); setInfo(j.data); setLocationId(j.data?.location_id ?? null); })
       .catch((e: Error) => setError(e.message));
   }, [token, t]);
 
@@ -51,6 +66,7 @@ export function QrReport({ token }: { token: string }) {
       const cat = info?.categories.find((c) => c.id === category);
       const r = await post<Result & { uploads: { url: string }[] }>("/public/issues", {
         qr_token: token, title: title.trim() || cat?.name || "Issue reported", description: description || undefined, category_id: category ?? undefined,
+        location_id: info?.kind === "location" && locationId ? locationId : undefined,
         priority: urgent ? "high" : undefined, captcha_token: captcha ?? undefined, website: honeypot || undefined,
         photos: photos.map((p) => ({ file_name: p.name || "photo.jpg", mime_type: p.type || "image/jpeg", size_bytes: p.size })),
       }, t("public.qr.somethingWrong"));
@@ -103,6 +119,11 @@ export function QrReport({ token }: { token: string }) {
       </div>
       <Card>
         <CardContent className="flex flex-col gap-4 pt-4">
+          {info.kind === "location" && (
+            <Field label={t("facility.issues.new.where")} hint={t("facility.issues.new.whereHint")}>
+              <LocationCascade campusId={info.campus_id} value={locationId} onChange={setLocationId} source={source} />
+            </Field>
+          )}
           <fieldset>
             <legend className="mb-2 text-sm font-medium">{t("public.qr.whatsProblem")}</legend>
             <div className="grid grid-cols-2 gap-2">

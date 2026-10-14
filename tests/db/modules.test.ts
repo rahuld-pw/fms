@@ -295,6 +295,19 @@ describe("facility", () => {
       );
       expect(minutes).toBe(30);
 
+      // a building's QR code: the reporter names the room; a place on another campus is refused
+      await s.asAdmin();
+      const buildingQr = await s.val<string>("select qr_token from locations where id = $1", [building]);
+      const elsewhere = await s.val<string>("insert into locations (org_id, campus_id, type, name) values ($1, $2, 'building', 'Block Z') returning id", [o.orgId, o.campusB]);
+      await s.as(null, "service_role");
+      const inRoom = await s.one<{ issue_id: string }>(
+        "select * from submit_public_report($1, 'Tap leaking', null, p_location_id => $2)",
+        [buildingQr, room.id],
+      );
+      expect(await s.error("select * from submit_public_report($1, 'Tap leaking', null, p_location_id => $2)", [buildingQr, elsewhere])).toMatch(/invalid location/);
+      await s.asAdmin();
+      expect(await s.val("select location_id from issues where id = $1", [inRoom.issue_id])).toBe(room.id);
+
       await s.as(null, "service_role");
       const status = await s.val<{ status: string; location: string }>("select public_issue_status($1)", [
         created.tracking_token,

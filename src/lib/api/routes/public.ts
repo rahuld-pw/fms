@@ -109,7 +109,37 @@ export const publicRoutes: RouteDef[] = [
       );
       const org = unwrapMaybe(await admin.from("organisations").select("settings").eq("id", info.org_id as string).maybeSingle());
       const settings = (org?.settings ?? {}) as { public_issue_reporting?: boolean };
-      return { ...info, categories, public_reporting: settings.public_issue_reporting !== false };
+      const locationId =
+        info.kind === "location"
+          ? (info.id as string)
+          : (unwrapMaybe(await admin.from("assets").select("location_id").eq("id", info.id as string).maybeSingle())?.location_id ?? null);
+      return { ...info, location_id: locationId, categories, public_reporting: settings.public_issue_reporting !== false };
+    },
+  }),
+  publicRoute({
+    public: true,
+    method: "GET",
+    path: "/public/qr/:token/locations",
+    summary: "Buildings, floors and rooms on the scanned code's campus, one level at a time",
+    description: "`parent_id=null` (or omitted) lists the top level; `id` returns a single location. Only the campus the QR code belongs to is visible.",
+    tags: ["public"],
+    rateLimit: { name: "qr-locations", limit: 120 },
+    query: z.object({ parent_id: z.union([z.uuid(), z.literal("null")]).optional(), id: z.uuid().optional() }),
+    handler: async ({ params, query }) => {
+      const admin = createAdminClient();
+      const info = unwrap(await admin.rpc("resolve_qr", { p_token: params.token })) as { campus_id: string; org_id: string; facility_enabled: boolean } | null;
+      if (!info || !info.facility_enabled) throw ApiError.notFound("QR code");
+      let q = admin
+        .from("locations")
+        .select("id, name, type, parent_id, campus_id")
+        .eq("org_id", info.org_id)
+        .eq("campus_id", info.campus_id)
+        .is("deleted_at", null);
+      const id = query.get("id");
+      const parent = query.get("parent_id");
+      if (id) q = q.eq("id", id);
+      else q = !parent || parent === "null" ? q.is("parent_id", null) : q.eq("parent_id", parent);
+      return unwrap(await q.order("name").limit(200));
     },
   }),
   publicRoute({
@@ -128,6 +158,7 @@ export const publicRoutes: RouteDef[] = [
         title: z.string().trim().min(3).max(200),
         description: z.string().trim().max(2000).optional(),
         category_id: z.uuid().optional(),
+        location_id: z.uuid().optional(),
         priority: z.enum(["low", "medium", "high", "critical"]).optional(),
         captcha_token: z.string().max(4096).optional(),
         // honeypot: real users never fill this
@@ -143,7 +174,7 @@ export const publicRoutes: RouteDef[] = [
       await verifyCaptcha(body.captcha_token, ip);
       const admin = createAdminClient();
       const res = unwrap(
-        await admin.rpc("submit_public_issue", {
+        await admin.rpc("submit_public_report", {
           p_qr_token: body.qr_token ?? (null as never),
           p_title: body.title,
           p_description: body.description ?? (null as never),
@@ -151,6 +182,7 @@ export const publicRoutes: RouteDef[] = [
           p_priority: body.priority,
           p_campus_id: body.campus_id,
           p_org_slug: body.org_slug,
+          p_location_id: body.location_id,
         }),
       )[0];
       const issue = unwrap(await admin.from("issues").select("org_id").eq("id", res.issue_id).single());

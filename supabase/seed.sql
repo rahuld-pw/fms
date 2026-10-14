@@ -219,7 +219,7 @@ begin
   from generate_series(1, 8) g;
   insert into public.assets (org_id, campus_id, location_id, category_id, asset_tag, name, status, purchase_date, purchase_cost)
   select v_org, v_main, r_101, ac_fur, '', 'Student desk ' || g, 'in_use', '2023-05-01', 4500 from generate_series(1, 12) g;
-  insert into public.amc_contract_assets (amc_contract_id, asset_id, org_id) values (amc_lift, a_ac1, v_org);
+  insert into public.amc_contract_assets (amc_contract_id, asset_id, org_id) values (amc_lift, a_ac1, v_org) on conflict do nothing;
 
   -- Checklists & PM -------------------------------------------------------------------
   insert into public.checklist_templates (org_id, name, items) values (v_org, 'DG monthly service', '[
