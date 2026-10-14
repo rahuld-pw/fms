@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
-import { Mail, Plus, Star } from "lucide-react";
+import { MapPin, Mail, Phone, Plus, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,38 @@ export default function VendorsPage() {
             { key: "contract_type", label: t("facility.vendors.fields.contractType"), type: "multi", options: CONTRACT_TYPES.map((c) => ({ value: c, label: t(`enum.vendorContractType.${c}`, undefined, c) })) },
             { key: "contract_end", label: t("facility.vendors.fields.contractEnd"), type: "date-range" },
           ]}
+          mobileCard={(r) => {
+            const served = r.campus_ids?.length
+              ? r.campus_ids.map((id: string) => campuses.find((c) => c.id === id)?.name).filter(Boolean).join(", ")
+              : t("facility.vendors.allCampuses");
+            const area = r.service_area || [r.city, r.state].filter(Boolean).join(", ");
+            return (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  {r.vendor_code && <span className="font-mono text-xs text-muted-foreground">{r.vendor_code}</span>}
+                  <StatusBadge status={r.status} />
+                  {r.rating_avg && (
+                    <span className="ml-auto inline-flex items-center gap-1 text-xs"><Star className="size-3.5 fill-amber-400 text-amber-400" />{Number(r.rating_avg).toFixed(1)}</span>
+                  )}
+                </div>
+                <span className="font-medium">{r.name}</span>
+                {r.category?.name && <span className="text-xs">{r.category.name}</span>}
+                <span className="flex items-start gap-1 text-xs text-muted-foreground">
+                  <MapPin className="mt-px size-3 shrink-0" />
+                  <span className="break-words">{[served, area].filter(Boolean).join(" · ")}</span>
+                </span>
+                {(r.contact_name || r.phone) && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Phone className="size-3 shrink-0" />
+                    <span className="truncate">{[r.contact_name, r.phone].filter(Boolean).join(" · ")}</span>
+                  </span>
+                )}
+                {r.contract_end && (
+                  <span className="text-xs text-muted-foreground">{t("facility.vendors.fields.contractEnd")}: <DueDate value={r.contract_end} done={["inactive", "blacklisted"].includes(r.status)} /></span>
+                )}
+              </div>
+            );
+          }}
         />
       </Suspense>
       <ResourceFormDialog

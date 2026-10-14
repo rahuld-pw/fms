@@ -414,7 +414,7 @@ export const vendors: ResourceSpec = {
   table: "vendors",
   module: [M, "po"],
   permission: "vendor",
-  select: "id, org_id, vendor_code, name, status, vendor_type, contact_name, email, phone, city, gstin, rating_avg, rating_count, service_category_ids, category_id, campus_ids, contract_type, contract_end, created_at, updated_at, category:service_categories(id, name)",
+  select: "id, org_id, vendor_code, name, status, vendor_type, contact_name, email, phone, city, state, service_area, gstin, rating_avg, rating_count, service_category_ids, category_id, campus_ids, contract_type, contract_end, created_at, updated_at, category:service_categories(id, name)",
   detailSelect: "*, category:service_categories(id, name)",
   filters: { status: "in", vendor_type: "in", service_category_ids: "contains", category_id: "eq", campus_ids: "contains", contract_type: "in", contract_end: "range", city: "eq" },
   sortable: ["name", "created_at", "rating_avg", "vendor_code", "contract_end"],
