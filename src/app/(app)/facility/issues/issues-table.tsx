@@ -1,6 +1,6 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, MapPin } from "lucide-react";
 import { useSession } from "@/components/app/session";
 import { DataTable, type Column, type Row } from "@/components/shared/data-table";
 import { DateTime, DueDate } from "@/components/shared/format";
@@ -65,9 +65,13 @@ export function IssuesTable() {
             </span>
           </div>
           <span className="font-medium">{r.title}</span>
-          <span className="text-xs text-muted-foreground">
-            {r.location?.name ?? r.campus?.name} · <PriorityLabel priority={r.priority} />
+          <span className="flex items-start gap-1 text-xs text-muted-foreground">
+            <MapPin className="mt-px size-3 shrink-0" />
+            <span className="break-words">
+              {[...(campuses.length > 1 || !r.location ? [r.campus?.name] : []), ...(r.location ? [...r.location.path_names, r.location.name] : [])].filter(Boolean).join(" › ")}
+            </span>
           </span>
+          <span className="text-xs"><PriorityLabel priority={r.priority} /></span>
         </div>
       )}
     />
