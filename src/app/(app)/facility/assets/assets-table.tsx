@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClipboardCheck, Plus, QrCode, Upload } from "lucide-react";
+import { ClipboardCheck, MapPin, Plus, QrCode, Upload, User } from "lucide-react";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -120,7 +120,16 @@ export function AssetsTable() {
               <StatusBadge status={r.status} />
             </div>
             <span className="font-medium">{r.name}</span>
-            <span className="text-xs text-muted-foreground">{r.location?.name ?? r.campus?.name} · {r.custodian?.full_name ?? t("facility.assets.noCustodian")}</span>
+            <span className="flex items-start gap-1 text-xs text-muted-foreground">
+              <MapPin className="mt-px size-3 shrink-0" />
+              <span className="break-words">
+                {[...(campuses.length > 1 || !r.location ? [r.campus?.name] : []), ...(r.location ? [...r.location.path_names, r.location.name] : [])].filter(Boolean).join(" › ")}
+              </span>
+            </span>
+            <span className="flex items-center gap-1 text-xs text-muted-foreground">
+              <User className="size-3 shrink-0" />
+              <span className="truncate">{r.custodian?.full_name ?? t("facility.assets.noCustodian")}</span>
+            </span>
           </div>
         )}
       />
