@@ -485,7 +485,7 @@ export const workOrders: ResourceSpec = {
   permission: "work_order",
   campusColumn: "campus_id",
   select:
-    "*, campus:campuses(id, name, code), asset:assets(id, name, asset_tag), location:locations(id, name, path_names), assignee:profiles!work_orders_assignee_id_fkey(id, full_name), vendor:vendors(id, name)",
+    "*, campus:campuses(id, name, code), asset:assets(id, name, asset_tag, location:locations(id, name, path_names)), location:locations(id, name, path_names), assignee:profiles!work_orders_assignee_id_fkey(id, full_name), vendor:vendors(id, name)",
   filters: {
     status: "in",
     type: "in",

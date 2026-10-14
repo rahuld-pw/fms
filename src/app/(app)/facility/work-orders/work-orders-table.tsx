@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { MapPin, Package, Plus } from "lucide-react";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -36,6 +36,12 @@ export function WorkOrdersTable() {
   const can = useCan();
   const router = useRouter();
   const { campuses } = useSession();
+  // campus › building › floor › room, from the work order's own location or its asset's
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const place = (r: Record<string, any>) => {
+    const loc = r.location ?? r.asset?.location;
+    return [...(campuses.length > 1 || !loc ? [r.campus?.name] : []), ...(loc ? [...(loc.path_names ?? []), loc.name] : [])].filter(Boolean).join(" › ");
+  };
   const [open, setOpen] = useState(false);
   const columns: Column[] = [
     { key: "number", header: "#", sortable: true, pinned: true, className: "whitespace-nowrap font-mono text-xs text-muted-foreground" },
@@ -43,7 +49,17 @@ export function WorkOrdersTable() {
     { key: "type", header: t("ui.type"), render: (r) => t(`enum.workOrderType.${r.type}`, undefined, humanize(r.type)) },
     { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
     { key: "priority", header: t("ui.priority"), sortable: true, render: (r) => <PriorityLabel priority={r.priority} /> },
-    { key: "asset", header: t("facility.workOrders.colAssetLocation"), render: (r) => r.asset?.name ?? r.location?.name ?? "—" },
+    {
+      key: "asset",
+      header: t("facility.workOrders.colAssetLocation"),
+      className: "max-w-64",
+      render: (r) => (
+        <span className="flex flex-col">
+          {r.asset && <span className="truncate">{r.asset.name}</span>}
+          <span className={r.asset ? "truncate text-xs text-muted-foreground" : "truncate"}>{place(r) || (r.asset ? "" : "—")}</span>
+        </span>
+      ),
+    },
     { key: "assignee", header: t("ui.assignee"), render: (r) => (r.vendor ? r.vendor.name : <UserChip name={r.assignee?.full_name} />) },
     { key: "vendor_booking_status", header: t("facility.workOrders.colBooking"), render: (r) => (r.vendor_booking_status === "not_required" ? "—" : <StatusBadge status={r.vendor_booking_status} />), defaultHidden: true },
     { key: "scheduled_for", header: t("facility.workOrders.scheduled"), sortable: true, render: (r) => <DueDate value={r.scheduled_for} done /> },
@@ -79,7 +95,17 @@ export function WorkOrdersTable() {
               <span className="ml-auto text-xs"><DueDate value={r.due_at} done={["completed", "verified"].includes(r.status)} /></span>
             </div>
             <span className="font-medium">{r.title}</span>
-            <span className="text-xs text-muted-foreground">{r.asset?.name ?? r.location?.name ?? t(`enum.workOrderType.${r.type}`, undefined, humanize(r.type))}</span>
+            {r.asset && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Package className="size-3 shrink-0" />
+                <span className="truncate">{r.asset.name}{r.asset.asset_tag && ` · ${r.asset.asset_tag}`}</span>
+              </span>
+            )}
+            <span className="flex items-start gap-1 text-xs text-muted-foreground">
+              <MapPin className="mt-px size-3 shrink-0" />
+              <span className="break-words">{place(r) || r.campus?.name}</span>
+            </span>
+            <span className="text-xs text-muted-foreground">{t(`enum.workOrderType.${r.type}`, undefined, humanize(r.type))}</span>
           </div>
         )}
       />
