@@ -243,11 +243,18 @@ export function DataTable<T extends Row>(props: Props<T>) {
         <div className="flex flex-col gap-2 md:hidden">
           {isLoading
             ? Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20" />)
-            : rows.map((r) => (
-                <button key={r.id} onClick={() => go(r)} className="rounded-lg border bg-card p-3 text-left active:bg-muted">
-                  {props.mobileCard!(r)}
-                </button>
-              ))}
+            : rows.map((r) =>
+                props.onRowClick || props.rowHref ? (
+                  <button key={r.id} onClick={() => go(r)} className="rounded-lg border bg-card p-3 text-left active:bg-muted">
+                    {props.mobileCard!(r)}
+                  </button>
+                ) : (
+                  // not clickable: a plain card, so it can hold its own buttons
+                  <div key={r.id} className="rounded-lg border bg-card p-3">
+                    {props.mobileCard!(r)}
+                  </div>
+                ),
+              )}
         </div>
       )}
 

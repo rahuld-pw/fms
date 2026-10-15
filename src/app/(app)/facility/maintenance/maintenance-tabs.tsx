@@ -59,6 +59,8 @@ export const amcFields = (t: TFunction): FieldSpec[] => [
 const complianceFields = (t: TFunction): FieldSpec[] => [
   { name: "title", label: t("ui.title"), required: true, full: true },
   { name: "campus_id", label: t("ui.campus"), type: "campus", required: true },
+  { name: "location_id", label: t("ui.location"), type: "location", campusField: "campus_id" },
+  { name: "asset_id", label: t("ui.asset"), type: "resource", endpoint: "/assets", hintKey: "asset_tag", extraParams: (v) => (v.campus_id ? `&campus_id=${v.campus_id}` : "") },
   { name: "compliance_type", label: t("ui.type"), type: "select", required: true, options: ["fire_safety", "lift", "water_tank", "electrical", "pest_control", "dg_set", "building_safety", "pollution", "food_safety", "transport", "other"].map(enumOpt(t, "complianceType")) },
   { name: "authority", label: t("facility.maintenance.comp.authority") },
   { name: "frequency_months", label: t("facility.maintenance.comp.everyNMonths"), type: "number", required: true },
@@ -184,7 +186,17 @@ export function MaintenanceTabs() {
             columns={[
               { key: "title", header: t("facility.maintenance.comp.colRequirement"), pinned: true, render: (r) => <span className="font-medium">{r.title}</span> },
               { key: "compliance_type", header: t("ui.type"), render: (r) => (r.compliance_type ? t(`enum.complianceType.${r.compliance_type}`, undefined, humanize(r.compliance_type)) : humanize(r.compliance_type)) },
-              { key: "campus", header: t("ui.campus"), render: (r) => r.campus?.name },
+              {
+                key: "campus",
+                header: t("facility.workOrders.colAssetLocation"),
+                className: "max-w-64",
+                render: (r) => (
+                  <span className="flex flex-col">
+                    {r.asset && <span className="truncate">{r.asset.asset_tag} · {r.asset.name}</span>}
+                    <span className={r.asset ? "truncate text-xs text-muted-foreground" : "truncate"}>{pmPlace(r) || "—"}</span>
+                  </span>
+                ),
+              },
               { key: "authority", header: t("facility.maintenance.comp.authority"), defaultHidden: true },
               { key: "last_done_on", header: t("facility.maintenance.comp.lastDone") },
               { key: "next_due_on", header: t("facility.maintenance.nextDue"), sortable: true, render: (r) => <DueDate value={r.next_due_on} /> },
@@ -211,6 +223,47 @@ export function MaintenanceTabs() {
               },
             ]}
             filters={[{ key: "next_due_on", label: t("ui.due"), type: "date-range" }]}
+            mobileCard={(r) => (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{r.title}</span>
+                  <span className="ml-auto shrink-0 text-xs"><DueDate value={r.next_due_on} /></span>
+                </div>
+                <span className="text-xs">{r.compliance_type ? t(`enum.complianceType.${r.compliance_type}`, undefined, humanize(r.compliance_type)) : ""}{r.authority && <span className="text-muted-foreground"> · {r.authority}</span>}</span>
+                {r.asset && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Package className="size-3 shrink-0" />
+                    <span className="truncate">{r.asset.asset_tag} · {r.asset.name}</span>
+                  </span>
+                )}
+                <span className="flex items-start gap-1 text-xs text-muted-foreground">
+                  <MapPin className="mt-px size-3 shrink-0" />
+                  <span className="break-words">{pmPlace(r) || r.campus?.name}</span>
+                </span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <CalendarClock className="size-3 shrink-0" />
+                  <span className="truncate">
+                    {r.last_done_on ? `${t("facility.maintenance.comp.lastDone")}: ${r.last_done_on}` : t("facility.maintenance.comp.everyNMonths") + `: ${r.frequency_months}`}
+                    {" · "}
+                    {r.vendor?.name ?? r.responsible?.full_name ?? t("ui.unassigned")}
+                  </span>
+                </span>
+                {can("compliance:update", { campusId: r.campus_id }, "auto") && (
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="mt-1 self-start"
+                    disabled={complete.isPending}
+                    loading={isActing(complete, `/compliance-items/${r.id}/complete`)}
+                    onClick={() => {
+                      complete.mutate({ path: `/compliance-items/${r.id}/complete`, body: { done_on: new Date().toISOString().slice(0, 10) } });
+                    }}
+                  >
+                    {t("facility.maintenance.comp.markDoneToday")}
+                  </Button>
+                )}
+              </div>
+            )}
             toolbar={can("compliance:create") && <Button size="sm" onClick={() => setDialog("compliance")}><Plus /> {t("facility.maintenance.comp.newItem")}</Button>}
           />
         </TabsContent>

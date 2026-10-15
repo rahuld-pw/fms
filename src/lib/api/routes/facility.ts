@@ -646,7 +646,8 @@ export const complianceItems: ResourceSpec = {
   module: M,
   permission: "compliance",
   campusColumn: "campus_id",
-  select: "*, campus:campuses(id, name), responsible:profiles!compliance_items_responsible_user_id_fkey(id, full_name), vendor:vendors(id, name)",
+  select:
+    "*, campus:campuses(id, name), asset:assets(id, name, asset_tag, location:locations(id, name, path_names)), location:locations(id, name, path_names), responsible:profiles!compliance_items_responsible_user_id_fkey(id, full_name), vendor:vendors(id, name)",
   filters: { campus_id: "eq", compliance_type: "in", next_due_on: "range", responsible_user_id: "user" },
   sortable: ["next_due_on", "title"],
   defaultSort: "next_due_on",
