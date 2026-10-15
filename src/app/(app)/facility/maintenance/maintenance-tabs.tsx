@@ -79,6 +79,18 @@ export function MaintenanceTabs() {
   const router = useRouter();
   const can = useCan();
   const { campuses } = useSession();
+  // where an AMC's covered assets are: one path per distinct location
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const amcPlaces = (r: Record<string, any>): string[] => {
+    const paths = new Set<string>();
+    for (const link of r.assets ?? []) {
+      const loc = link.asset?.location;
+      const campus = campuses.length > 1 || !loc ? [r.campus?.name] : [];
+      paths.add([...campus, ...(loc ? [...(loc.path_names ?? []), loc.name] : [])].filter(Boolean).join(" › "));
+    }
+    paths.delete("");
+    return [...paths];
+  };
   // campus › building › floor › room, from the schedule's own location or its asset's
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const pmPlace = (r: Record<string, any>) => {
@@ -170,11 +182,57 @@ export function MaintenanceTabs() {
               { key: "start_date", header: t("facility.maintenance.amc.start"), sortable: true },
               { key: "end_date", header: t("facility.maintenance.amc.colEnds"), sortable: true, render: (r) => <DueDate value={r.end_date} done={r.status !== "active"} /> },
               { key: "visits_included", header: t("facility.maintenance.amc.colVisits"), render: (r) => r.visits_included || "—" },
-              { key: "assets", header: t("facility.maintenance.amc.colAssets"), render: (r) => r.assets?.length ?? 0 },
+              {
+                key: "assets",
+                header: t("facility.maintenance.amc.colAssets"),
+                className: "max-w-64",
+                render: (r) => {
+                  const places = amcPlaces(r);
+                  return (
+                    <span className="flex flex-col">
+                      <span>{r.assets?.length ?? 0}</span>
+                      {places.length > 0 && <span className="truncate text-xs text-muted-foreground">{places[0]}{places.length > 1 && ` +${places.length - 1}`}</span>}
+                    </span>
+                  );
+                },
+              },
               { key: "value", header: t("facility.maintenance.amc.colValue"), align: "right", render: (r) => <Money value={r.value} /> },
               { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
             ]}
             filters={[{ key: "status", label: t("ui.status"), type: "multi", options: ["active", "expired", "renewed", "terminated"].map((v) => ({ value: v, label: t(`status.${v}`, undefined, humanize(v)) })) }]}
+            mobileCard={(r) => {
+              const places = amcPlaces(r);
+              return (
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{r.title}</span>
+                    <span className="ml-auto shrink-0 text-xs"><DueDate value={r.end_date} done={r.status !== "active"} /></span>
+                  </div>
+                  <span className="text-xs">
+                    {r.vendor?.name}
+                    {r.contract_type && <span className="text-muted-foreground"> · {t(`enum.contractType.${r.contract_type}`, undefined, humanize(r.contract_type))}</span>}
+                  </span>
+                  {(places.length ? places.slice(0, 3) : [r.campus?.name ?? t("ui.allCampuses")]).map((p) => (
+                    <span key={p} className="flex items-start gap-1 text-xs text-muted-foreground">
+                      <MapPin className="mt-px size-3 shrink-0" />
+                      <span className="break-words">{p}</span>
+                    </span>
+                  ))}
+                  {places.length > 3 && <span className="pl-4 text-xs text-muted-foreground">+{places.length - 3} {t("ui.more").toLowerCase()}</span>}
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Package className="size-3 shrink-0" />
+                    <span className="truncate">
+                      {t("facility.maintenance.amc.colAssets")}: {r.assets?.length ?? 0}
+                      {r.visits_included ? ` · ${t("facility.maintenance.amc.colVisits")}: ${r.visits_included}` : ""}
+                    </span>
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <StatusBadge status={r.status} />
+                    {r.value != null && <span className="ml-auto text-xs"><Money value={r.value} /></span>}
+                  </div>
+                </div>
+              );
+            }}
             toolbar={can("amc:create") && <Button size="sm" onClick={() => setDialog("amc")}><Plus /> {t("facility.maintenance.amc.newAmc")}</Button>}
           />
         </TabsContent>

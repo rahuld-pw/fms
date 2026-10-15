@@ -610,7 +610,8 @@ export const amcContracts: ResourceSpec = {
   module: M,
   permission: "amc",
   campusColumn: "campus_id",
-  select: "*, vendor:vendors(id, name), campus:campuses(id, name), assets:amc_contract_assets(asset_id)",
+  select:
+    "*, vendor:vendors(id, name), campus:campuses(id, name), assets:amc_contract_assets(asset_id, asset:assets(id, name, asset_tag, location:locations(id, name, path_names)))",
   filters: { vendor_id: "eq", campus_id: "eq", status: "in", end_date: "range" },
   sortable: ["end_date", "start_date", "title", "created_at"],
   defaultSort: "end_date",
