@@ -318,9 +318,10 @@ export const assetTransfers: ResourceSpec = {
   updatePermission: "asset:transfer",
   campusColumn: "from_campus_id",
   select:
-    "*, asset:assets(id, name, asset_tag), from_campus:campuses!asset_transfers_from_campus_id_fkey(name), to_campus:campuses!asset_transfers_to_campus_id_fkey(name), to_location:locations!asset_transfers_to_location_id_fkey(name, path_names), from_location:locations!asset_transfers_from_location_id_fkey(name, path_names), from_custodian:profiles!asset_transfers_from_custodian_id_fkey(full_name), requester:profiles!asset_transfers_requested_by_fkey(full_name), decider:profiles!asset_transfers_decided_by_fkey(full_name), to_custodian:profiles!asset_transfers_to_custodian_id_fkey(full_name)",
-  filters: { asset_id: "eq", status: "in", from_campus_id: "eq", to_campus_id: "eq" },
-  sortable: ["created_at"],
+    "*, asset:assets(id, name, asset_tag, status), from_campus:campuses!asset_transfers_from_campus_id_fkey(name), to_campus:campuses!asset_transfers_to_campus_id_fkey(name), to_location:locations!asset_transfers_to_location_id_fkey(name, path_names), from_location:locations!asset_transfers_from_location_id_fkey(name, path_names), from_custodian:profiles!asset_transfers_from_custodian_id_fkey(full_name), requester:profiles!asset_transfers_requested_by_fkey(full_name), decider:profiles!asset_transfers_decided_by_fkey(full_name), to_custodian:profiles!asset_transfers_to_custodian_id_fkey(full_name)",
+  filters: { asset_id: "eq", status: "in", from_campus_id: "eq", to_campus_id: "eq", requested_by: "user", to_custodian_id: "user", created_at: "range" },
+  sortable: ["created_at", "decided_at"],
+  search: ["reason"],
   defaultSort: "-created_at",
   createSchema: z.object({
     asset_id: z.uuid(),

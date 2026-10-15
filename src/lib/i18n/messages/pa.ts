@@ -30,6 +30,7 @@ const punjabi = {
     "/facility/work-orders": "ਵਰਕ ਆਰਡਰ",
     "/facility/assets": "ਸੰਪਤੀਆਂ",
     "/facility/assets/audits": "ਸੰਪਤੀ ਆਡਿਟ",
+    "/facility/assets/transfers": "ਸੰਪਤੀ ਤਬਾਦਲੇ",
     "/facility/locations": "ਥਾਵਾਂ",
     "/facility/maintenance": "ਮੁਰੰਮਤ",
     "/facility/vendors": "ਵਿਕਰੇਤਾ",

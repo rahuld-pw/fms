@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   BarChart3,
   Boxes,
   Building2,
@@ -69,6 +70,7 @@ export const NAV: NavSection[] = [
       { label: "Work orders", href: "/facility/work-orders", icon: Wrench, anyOf: ["work_order:read"] },
       { label: "Assets", href: "/facility/assets", icon: Boxes, anyOf: ["asset:read"] },
       { label: "Asset audits", href: "/facility/assets/audits", icon: ClipboardCheck, anyOf: ["asset_audit:read"] },
+      { label: "Asset transfers", href: "/facility/assets/transfers", icon: ArrowLeftRight, anyOf: ["asset:read", "asset:transfer"] },
       { label: "Locations", href: "/facility/locations", icon: MapPin, anyOf: ["location:read"] },
       { label: "Maintenance", href: "/facility/maintenance", icon: CalendarClock, anyOf: ["pm:read", "amc:read", "compliance:read"] },
       { label: "Vendors", href: "/facility/vendors", icon: Truck, anyOf: ["vendor:read"] },

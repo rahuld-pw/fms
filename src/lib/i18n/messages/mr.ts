@@ -30,6 +30,7 @@ const mr = {
     "/facility/work-orders": "वर्क ऑर्डर",
     "/facility/assets": "मालमत्ता",
     "/facility/assets/audits": "मालमत्ता ऑडिट",
+    "/facility/assets/transfers": "मालमत्ता हस्तांतरण",
     "/facility/locations": "ठिकाणे",
     "/facility/maintenance": "देखभाल",
     "/facility/vendors": "विक्रेते",

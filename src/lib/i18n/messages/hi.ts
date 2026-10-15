@@ -30,6 +30,7 @@ const hi = {
     "/facility/work-orders": "वर्क ऑर्डर",
     "/facility/assets": "एसेट",
     "/facility/assets/audits": "एसेट ऑडिट",
+    "/facility/assets/transfers": "एसेट ट्रांसफ़र",
     "/facility/locations": "जगहें",
     "/facility/maintenance": "रखरखाव",
     "/facility/vendors": "वेंडर",

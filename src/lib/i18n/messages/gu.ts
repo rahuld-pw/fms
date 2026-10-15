@@ -30,6 +30,7 @@ const gu = {
     "/facility/work-orders": "વર્ક ઓર્ડર",
     "/facility/assets": "એસેટ",
     "/facility/assets/audits": "એસેટ ઓડિટ",
+    "/facility/assets/transfers": "એસેટ ટ્રાન્સફર",
     "/facility/locations": "જગ્યાઓ",
     "/facility/maintenance": "જાળવણી",
     "/facility/vendors": "વેન્ડર",

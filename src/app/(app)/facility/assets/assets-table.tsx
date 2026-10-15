@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ClipboardCheck, MapPin, Plus, QrCode, Upload, User } from "lucide-react";
+import { ArrowLeftRight, ClipboardCheck, MapPin, Plus, QrCode, Upload, User } from "lucide-react";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { DataTable, type Column } from "@/components/shared/data-table";
@@ -94,6 +94,11 @@ export function AssetsTable() {
         ]}
         toolbar={
           <>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/facility/assets/transfers?status=pending" aria-label={t("nav./facility/assets/transfers")}>
+                <ArrowLeftRight /> <span className="hidden sm:inline">{t("facility.assets.detail.transfers")}</span>
+              </Link>
+            </Button>
             <Button size="sm" variant="outline" asChild>
               <Link href="/facility/assets/audits">
                 <ClipboardCheck /> <span className="hidden sm:inline">{t("facility.assets.auditsLabel")}</span>

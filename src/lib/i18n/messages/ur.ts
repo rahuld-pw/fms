@@ -30,6 +30,7 @@ const urdu = {
     "/facility/work-orders": "ورک آرڈرز",
     "/facility/assets": "اثاثے",
     "/facility/assets/audits": "اثاثہ آڈٹ",
+    "/facility/assets/transfers": "اثاثوں کی منتقلی",
     "/facility/locations": "مقامات",
     "/facility/maintenance": "دیکھ بھال",
     "/facility/vendors": "وینڈرز",

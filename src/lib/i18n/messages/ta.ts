@@ -30,6 +30,7 @@ const tamil = {
     "/facility/work-orders": "பணி ஆணைகள்",
     "/facility/assets": "சொத்துகள்",
     "/facility/assets/audits": "சொத்து தணிக்கைகள்",
+    "/facility/assets/transfers": "சொத்து இடமாற்றங்கள்",
     "/facility/locations": "இடங்கள்",
     "/facility/maintenance": "பராமரிப்பு",
     "/facility/vendors": "விற்பனையாளர்கள்",
