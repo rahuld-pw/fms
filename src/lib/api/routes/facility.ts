@@ -576,7 +576,7 @@ export const pmSchedules: ResourceSpec = {
   permission: "pm",
   campusColumn: "campus_id",
   select:
-    "*, campus:campuses(id, name), asset:assets(id, name, asset_tag), location:locations(id, name), assignee:profiles!pm_schedules_assignee_id_fkey(id, full_name), vendor:vendors(id, name)",
+    "*, campus:campuses(id, name), asset:assets(id, name, asset_tag, location:locations(id, name, path_names)), location:locations(id, name, path_names), assignee:profiles!pm_schedules_assignee_id_fkey(id, full_name), vendor:vendors(id, name)",
   filters: { campus_id: "eq", asset_id: "eq", active: "bool", trigger_type: "eq", next_due_date: "range" },
   sortable: ["next_due_date", "title", "created_at"],
   defaultSort: "next_due_date",

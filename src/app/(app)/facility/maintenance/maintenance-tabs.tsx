@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { addDays, endOfMonth, format, startOfMonth, startOfWeek } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { CalendarClock, ChevronLeft, ChevronRight, MapPin, Package, Plus } from "lucide-react";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -77,6 +77,12 @@ export function MaintenanceTabs() {
   const router = useRouter();
   const can = useCan();
   const { campuses } = useSession();
+  // campus › building › floor › room, from the schedule's own location or its asset's
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const pmPlace = (r: Record<string, any>) => {
+    const loc = r.location ?? r.asset?.location;
+    return [...(campuses.length > 1 || !loc ? [r.campus?.name] : []), ...(loc ? [...(loc.path_names ?? []), loc.name] : [])].filter(Boolean).join(" › ");
+  };
   const tab = params.get("tab") ?? "calendar";
   const [dialog, setDialog] = useState<"pm" | "amc" | "compliance" | null>(null);
   const complete = useAction({ success: t("facility.maintenance.comp.recorded"), invalidate: ["/compliance-items"] });
@@ -101,7 +107,17 @@ export function MaintenanceTabs() {
             exportable
             columns={[
               { key: "title", header: t("facility.maintenance.pm.colSchedule"), pinned: true, render: (r) => <span className="font-medium">{r.title}</span> },
-              { key: "asset", header: t("facility.workOrders.colAssetLocation"), render: (r) => r.asset ? `${r.asset.asset_tag} · ${r.asset.name}` : r.location?.name },
+              {
+                key: "asset",
+                header: t("facility.workOrders.colAssetLocation"),
+                className: "max-w-64",
+                render: (r) => (
+                  <span className="flex flex-col">
+                    {r.asset && <span className="truncate">{r.asset.asset_tag} · {r.asset.name}</span>}
+                    <span className={r.asset ? "truncate text-xs text-muted-foreground" : "truncate"}>{pmPlace(r) || (r.asset ? "" : "—")}</span>
+                  </span>
+                ),
+              },
               { key: "trigger_type", header: t("facility.maintenance.pm.trigger"), render: (r) => (r.trigger_type === "usage" ? t("facility.maintenance.pm.everyUnits", { n: r.usage_interval }) : r.frequency ? t(`enum.frequency.${r.frequency}`, undefined, humanize(r.frequency)) : humanize(r.frequency)) },
               { key: "next_due_date", header: t("facility.maintenance.nextDue"), sortable: true, render: (r) => (r.trigger_type === "usage" ? t("facility.maintenance.pm.onMeter") : <DueDate value={r.next_due_date} />) },
               { key: "priority", header: t("ui.priority"), render: (r) => <PriorityLabel priority={r.priority} /> },
@@ -109,6 +125,34 @@ export function MaintenanceTabs() {
               { key: "active", header: t("ui.active"), render: (r) => (r.active ? t("ui.yes") : t("facility.maintenance.pm.paused")) },
             ]}
             filters={[{ key: "active", label: t("ui.active"), type: "boolean" }, { key: "trigger_type", label: t("facility.maintenance.pm.trigger"), type: "select", options: ["time", "usage"].map(enumOpt(t, "triggerType")) }]}
+            mobileCard={(r) => (
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{r.title}</span>
+                  {!r.active && <span className="text-xs text-muted-foreground">· {t("facility.maintenance.pm.paused")}</span>}
+                  <span className="ml-auto shrink-0 text-xs">{r.trigger_type === "usage" ? t("facility.maintenance.pm.onMeter") : <DueDate value={r.next_due_date} />}</span>
+                </div>
+                {r.asset && (
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <Package className="size-3 shrink-0" />
+                    <span className="truncate">{r.asset.asset_tag} · {r.asset.name}</span>
+                  </span>
+                )}
+                <span className="flex items-start gap-1 text-xs text-muted-foreground">
+                  <MapPin className="mt-px size-3 shrink-0" />
+                  <span className="break-words">{pmPlace(r) || r.campus?.name}</span>
+                </span>
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <CalendarClock className="size-3 shrink-0" />
+                  <span className="truncate">
+                    {r.trigger_type === "usage" ? t("facility.maintenance.pm.everyUnits", { n: r.usage_interval }) : r.frequency ? t(`enum.frequency.${r.frequency}`, undefined, humanize(r.frequency)) : "—"}
+                    {" · "}
+                    {r.vendor ? r.vendor.name : (r.assignee?.full_name ?? t("ui.unassigned"))}
+                  </span>
+                </span>
+                <span className="text-xs"><PriorityLabel priority={r.priority} /></span>
+              </div>
+            )}
             toolbar={can("pm:create") && <Button size="sm" onClick={() => setDialog("pm")}><Plus /> {t("facility.maintenance.pm.newSchedule")}</Button>}
           />
         </TabsContent>
