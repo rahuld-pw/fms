@@ -257,6 +257,10 @@ export function AssetDetail({ id }: { id: string }) {
   );
 }
 
+// campus › building › floor › room
+const place = (campus: { name: string } | null | undefined, loc: { name: string; path_names?: string[] } | null | undefined) =>
+  [campus?.name, ...(loc ? [...(loc.path_names ?? []), loc.name] : [])].filter(Boolean).join(" › ");
+
 function TransfersList({ rows, onDone }: { rows: any[]; onDone: () => void }) {
   const { t } = useT();
   const can = useCan();
@@ -265,19 +269,23 @@ function TransfersList({ rows, onDone }: { rows: any[]; onDone: () => void }) {
   return (
     <Card className="divide-y">
       {rows.map((tr) => (
-        <div key={tr.id} className="flex flex-wrap items-center gap-3 px-4 py-3 text-sm">
-          <div className="min-w-0 flex-1">
-            <p>
-              {[tr.from_campus?.name, ...(tr.from_location ? [...tr.from_location.path_names, tr.from_location.name] : [])].join(" › ")}
-              {" → "}
-              {[tr.to_campus?.name, ...(tr.to_location ? [...tr.to_location.path_names, tr.to_location.name] : [])].join(" › ")}
-              {tr.to_custodian?.full_name && <> · {t("facility.assets.detail.toCustodian", { name: tr.to_custodian.full_name })}</>}
-            </p>
-            <p className="text-xs text-muted-foreground">
+        <div key={tr.id} className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <div className="flex items-start gap-2">
+              <div className="grid min-w-0 flex-1 grid-cols-[auto_1fr] gap-x-2 gap-y-0.5">
+                <span className="text-xs text-muted-foreground">{t("ui.from")}</span>
+                <span className="break-words">{place(tr.from_campus, tr.from_location)}</span>
+                <span className="text-xs text-muted-foreground">{t("ui.to")}</span>
+                <span className="break-words font-medium">{place(tr.to_campus, tr.to_location)}</span>
+              </div>
+              <span className="shrink-0 sm:hidden"><StatusBadge status={tr.status} /></span>
+            </div>
+            {tr.to_custodian?.full_name && <p className="text-xs">{t("facility.assets.detail.toCustodian", { name: tr.to_custodian.full_name })}</p>}
+            <p className="break-words text-xs text-muted-foreground">
               {[tr.reason, tr.requester?.full_name && t("facility.assets.transfer.requestedBy", { name: tr.requester.full_name }), tr.decider?.full_name && t("facility.assets.transfer.decidedBy", { name: tr.decider.full_name })].filter(Boolean).join(" · ")} · <DateTime value={tr.created_at} relative />
             </p>
           </div>
-          <StatusBadge status={tr.status} />
+          <span className="hidden sm:inline-flex"><StatusBadge status={tr.status} /></span>
           {tr.status === "pending" && can("asset:transfer", { campusId: tr.to_campus_id }, "auto") && (
             <div className="flex gap-1">
               <Button size="xs" disabled={decide.isPending} loading={isActing(decide, `/asset-transfers/${tr.id}/decide`, { status: "completed" })} onClick={() => decide.mutate({ path: `/asset-transfers/${tr.id}/decide`, body: { status: "completed" } })}>{t("facility.assets.detail.receive")}</Button>
