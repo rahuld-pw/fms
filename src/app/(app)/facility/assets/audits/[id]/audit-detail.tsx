@@ -1,6 +1,7 @@
 "use client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
+import { MapPin } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -20,6 +21,9 @@ import { useT } from "@/lib/i18n/client";
 import { humanize } from "@/lib/utils/format";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// building › floor › room (an audit is on one campus, so no campus prefix)
+const path = (l: { name: string; path_names?: string[] } | null | undefined) => (l ? [...(l.path_names ?? []), l.name].join(" › ") : null);
+
 export function AuditDetail({ id }: { id: string }) {
   const { t } = useT();
   const qc = useQueryClient();
@@ -71,9 +75,9 @@ export function AuditDetail({ id }: { id: string }) {
         <Stat label={t("facility.assets.audits.detail.statMissing")} value={counts.missing} tone={counts.missing ? "danger" : "default"} />
         <Stat label={t("facility.assets.audits.detail.statDamaged")} value={counts.damaged + counts.relocated} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[360px_minmax(0,1fr)]">
         {audit.data.status !== "completed" && (
-          <Card className="h-fit">
+          <Card className="h-fit min-w-0">
             <CardHeader>
               <CardTitle>{t("facility.assets.audits.detail.scan")}</CardTitle>
             </CardHeader>
@@ -82,9 +86,9 @@ export function AuditDetail({ id }: { id: string }) {
             </CardContent>
           </Card>
         )}
-        <div>
+        <div className="min-w-0">
           <Tabs value={filter} onValueChange={setFilter}>
-            <TabsList>
+            <TabsList className="max-w-full overflow-x-auto scrollbar-thin">
               {["pending", "found", "missing", "damaged", "relocated"].map((k) => (
                 <TabsTrigger key={k} value={k} className="capitalize">
                   {t(`enum.auditResult.${k}`, undefined, humanize(k))} <span className="text-xs text-muted-foreground">{counts[k]}</span>
@@ -96,17 +100,22 @@ export function AuditDetail({ id }: { id: string }) {
                 {(items.data ?? [])
                   .filter((i) => i.result === filter)
                   .map((i) => (
-                    <div key={i.id} className="flex flex-wrap items-center gap-2 px-4 py-2.5 text-sm">
-                      <span className="font-mono text-xs">{i.asset?.asset_tag}</span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate">{i.asset?.name}</span>
-                        {(i.condition || i.notes || i.found_location) && (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {[i.condition && t(`enum.assetCondition.${i.condition}`, undefined, humanize(i.condition)), i.found_location && t("facility.assets.audits.detail.foundAt", { place: i.found_location.name }), i.notes, i.verifier?.full_name].filter(Boolean).join(" · ")}
+                    <div key={i.id} className="flex flex-col gap-1.5 px-4 py-2.5 text-sm sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+                      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                        <span className="flex items-baseline gap-2">
+                          <span className="shrink-0 font-mono text-xs">{i.asset?.asset_tag}</span>
+                          <span className="min-w-0 truncate">{i.asset?.name}</span>
+                        </span>
+                        <span className="flex items-start gap-1 text-xs text-muted-foreground">
+                          <MapPin className="mt-px size-3 shrink-0" />
+                          <span className="break-words">{path(i.asset?.location) ?? t("facility.assets.audits.wholeCampus")}</span>
+                        </span>
+                        {(i.condition || i.notes || i.found_location || i.verifier) && (
+                          <span className="break-words text-xs text-muted-foreground">
+                            {[i.condition && t(`enum.assetCondition.${i.condition}`, undefined, humanize(i.condition)), i.found_location && t("facility.assets.audits.detail.foundAt", { place: path(i.found_location) ?? "" }), i.notes, i.verifier?.full_name].filter(Boolean).join(" · ")}
                           </span>
                         )}
                       </span>
-                      <span className="text-xs text-muted-foreground">{i.asset?.location?.name}</span>
                       {audit.data.status !== "completed" && (
                         <div className="flex gap-1">
                           {["found", "missing", "damaged"].filter((r) => r !== i.result).map((r) => (

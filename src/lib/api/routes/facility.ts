@@ -1085,7 +1085,7 @@ export const facilityRoutes: RouteDef[] = [
       return unwrap(
         await ctx.db
           .from("asset_verification_items")
-          .select("*, asset:assets(id, name, asset_tag, qr_token, location:locations(name)), verifier:profiles!asset_verification_items_verified_by_fkey(full_name), found_location:locations!asset_verification_items_found_location_id_fkey(name)")
+          .select("*, asset:assets(id, name, asset_tag, qr_token, location:locations(name, path_names)), verifier:profiles!asset_verification_items_verified_by_fkey(full_name), found_location:locations!asset_verification_items_found_location_id_fkey(name, path_names)")
           .eq("audit_id", params.id)
           .order("result"),
       );
