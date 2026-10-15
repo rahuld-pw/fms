@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
-import { Plus } from "lucide-react";
+import { CalendarDays, MapPin, Plus, Tag } from "lucide-react";
 import { useCan, useSession } from "@/components/app/session";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "@/components/shared/data-table";
@@ -30,10 +30,37 @@ export default function AuditsPage() {
           columns={[
             { key: "name", header: t("facility.assets.audits.colAudit"), pinned: true, render: (r) => <span className="font-medium">{r.name}</span> },
             { key: "campus", header: t("ui.campus"), render: (r) => r.campus?.name },
-            { key: "location", header: t("facility.assets.audits.colScope"), render: (r) => r.location?.name ?? t("facility.assets.audits.wholeCampus") },
+            { key: "location", header: t("facility.assets.audits.colScope"), className: "max-w-64 truncate", render: (r) => (r.location ? [...r.location.path_names, r.location.name].join(" › ") : t("facility.assets.audits.wholeCampus")) },
+            { key: "category", header: t("facility.assets.audits.limitCategory"), defaultHidden: true, render: (r) => r.category?.name ?? "—" },
             { key: "scheduled_for", header: t("facility.workOrders.scheduled"), sortable: true },
             { key: "status", header: t("ui.status"), render: (r) => <StatusBadge status={r.status} /> },
           ]}
+          mobileCard={(r) => (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <span className="font-medium">{r.name}</span>
+                <span className="ml-auto shrink-0"><StatusBadge status={r.status} /></span>
+              </div>
+              <span className="flex items-start gap-1 text-xs text-muted-foreground">
+                <MapPin className="mt-px size-3 shrink-0" />
+                <span className="break-words">
+                  {r.location
+                    ? [...(campuses.length > 1 ? [r.campus?.name] : []), ...r.location.path_names, r.location.name].filter(Boolean).join(" › ")
+                    : `${r.campus?.name ?? ""} · ${t("facility.assets.audits.wholeCampus")}`}
+                </span>
+              </span>
+              {r.category && (
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Tag className="size-3 shrink-0" />
+                  <span className="truncate">{r.category.name}</span>
+                </span>
+              )}
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <CalendarDays className="size-3 shrink-0" />
+                <span>{r.scheduled_for}</span>
+              </span>
+            </div>
+          )}
           toolbar={can("asset_audit:create") && <Button size="sm" loading={populating} onClick={() => setOpen(true)}><Plus /> {t("facility.assets.audits.newAudit")}</Button>}
         />
       </Suspense>

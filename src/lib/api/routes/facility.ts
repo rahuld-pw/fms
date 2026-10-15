@@ -361,7 +361,7 @@ export const assetAudits: ResourceSpec = {
   module: M,
   permission: "asset_audit",
   campusColumn: "campus_id",
-  select: "*, campus:campuses(id, name), location:locations(id, name)",
+  select: "*, campus:campuses(id, name), location:locations(id, name, path_names), category:asset_categories(id, name)",
   filters: { campus_id: "eq", status: "in" },
   sortable: ["scheduled_for", "created_at"],
   defaultSort: "-scheduled_for",
